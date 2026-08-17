@@ -23,12 +23,15 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
+      const user = ApiService.getCurrentUser();
+      const targetAgentId = user && user.role === 'AGENT' ? undefined : 1;
+
       const [agentProfile, healthData, liqData, txPaged, anomalyData] = await Promise.all([
-        ApiService.getMe(),
-        ApiService.getBusinessHealth(),
-        ApiService.getLiquidityRecommendations(),
-        ApiService.listTransactions({ page_size: 6 }),
-        ApiService.listAnomalies(1)
+        targetAgentId ? ApiService.getAgentProfile(targetAgentId) : ApiService.getMe(),
+        ApiService.getBusinessHealth(targetAgentId),
+        ApiService.getLiquidityRecommendations(targetAgentId),
+        ApiService.listTransactions({ agent_id: targetAgentId || undefined, page_size: 6 }),
+        ApiService.listAnomalies(targetAgentId || 1)
       ]);
 
       setAgent(agentProfile);

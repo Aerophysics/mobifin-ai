@@ -270,15 +270,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   return (
     <div className="grid grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-800">
       {/* Sidebar - Fix height & scroll internally */}
-      <aside className="bg-slate-950 text-slate-200 flex flex-col h-full border-r border-slate-900 overflow-hidden">
+      <aside className={`${
+        currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION' 
+          ? 'bg-[#17280e] text-white border-r border-[#243e16]' 
+          : 'bg-slate-950 text-slate-200 border-r border-slate-900'
+      } flex flex-col h-full overflow-hidden`}>
         {/* Logo/Wordmark */}
-        <div className="h-[70px] px-6 border-b border-slate-900 flex items-center space-x-3 flex-shrink-0">
+        <div className={`h-[70px] px-6 flex items-center space-x-3 flex-shrink-0 border-b ${
+          currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+            ? 'border-[#243e16]'
+            : 'border-slate-900'
+        }`}>
           <div className="bg-teal-500 text-slate-950 p-2 rounded font-black text-base flex items-center justify-center h-8 w-8">
             M
           </div>
           <div>
             <h1 className="font-extrabold text-sm leading-tight tracking-wider text-white">MobiFin AI</h1>
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest">Financial Console</p>
+            <p className={`text-[10px] font-semibold uppercase tracking-widest ${
+              currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                ? 'text-white/60'
+                : 'text-slate-500'
+            }`}>Financial Console</p>
           </div>
         </div>
 
@@ -286,24 +298,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <nav className="flex-1 px-4 py-6 space-y-5 overflow-y-auto">
           {sidebarGroups.map(group => (
             <div key={group.title} className="space-y-1">
-              <span className="text-[9px] font-bold text-slate-650 uppercase tracking-widest block px-3 mb-1.5">
+              <span className={`text-[9px] font-bold uppercase tracking-widest block px-3 mb-1.5 ${
+                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                  ? 'text-white'
+                  : 'text-slate-650'
+              }`}>
                 {group.title}
               </span>
               <div className="space-y-0.5">
                 {group.items.map(item => {
                   const Icon = item.icon;
                   const isActive = activePage === item.page;
+                  const isGreenSide = currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION';
                   return (
                     <button
                       key={item.name}
                       onClick={() => setActivePage(item.page)}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs transition cursor-pointer ${
                         isActive 
-                          ? 'bg-slate-900 text-white font-semibold border border-slate-850' 
-                          : 'text-slate-400 hover:bg-slate-900/60 hover:text-slate-200'
+                          ? (isGreenSide 
+                              ? 'bg-white/10 text-white font-semibold border border-white/20' 
+                              : 'bg-slate-900 text-white font-semibold border border-slate-850')
+                          : (isGreenSide 
+                              ? 'text-white/80 hover:bg-white/10 hover:text-white' 
+                              : 'text-slate-400 hover:bg-slate-900/60 hover:text-slate-200')
                       }`}
                     >
-                      <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-teal-405' : 'text-slate-500'}`} />
+                      <Icon className={`h-4.5 w-4.5 ${
+                        isActive 
+                          ? (isGreenSide ? 'text-white' : 'text-teal-400') 
+                          : (isGreenSide ? 'text-white/60' : 'text-slate-500')
+                      }`} />
                       <span>{item.name}</span>
                     </button>
                   );
@@ -314,24 +339,48 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </nav>
 
         {/* Bottom Profile info */}
-        <div className="p-4 border-t border-slate-900 flex-shrink-0">
+        <div className={`p-4 flex-shrink-0 border-t ${
+          currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+            ? 'border-[#243e16]'
+            : 'border-slate-900'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 overflow-hidden">
-              <div className="h-7 w-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center flex-shrink-0">
-                <User className="h-4 w-4 text-slate-500" />
+              <div className={`h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 border ${
+                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                  ? 'bg-white/5 border-white/10'
+                  : 'bg-slate-900 border-slate-800'
+              }`}>
+                <User className={`h-4 w-4 ${
+                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                    ? 'text-white'
+                    : 'text-slate-500'
+                }`} />
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[10px] text-slate-350 font-bold leading-tight truncate">
-                  {currentUser?.role === 'AGENT' ? 'Kwame Centre' : currentUser?.role === 'FINANCIAL_INSTITUTION' ? 'Forms FI' : 'System Admin'}
+                <span className={`text-[10px] font-bold leading-tight truncate ${
+                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                    ? 'text-white'
+                    : 'text-slate-350'
+                }`}>
+                  {currentUser?.role === 'AGENT' ? 'Kwame Centre' : currentUser?.role === 'FINANCIAL_INSTITUTION' ? 'Forms Capital' : 'System Admin'}
                 </span>
-                <span className="text-[9px] text-slate-500 truncate max-w-[120px]">
+                <span className={`text-[9px] truncate max-w-[120px] ${
+                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                    ? 'text-white/70'
+                    : 'text-slate-500'
+                }`}>
                   {currentUser?.username}
                 </span>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-900 transition cursor-pointer"
+              className={`p-1.5 rounded transition cursor-pointer ${
+                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
+                  ? 'text-white hover:text-red-300 hover:bg-white/10'
+                  : 'text-slate-500 hover:text-red-400 hover:bg-slate-900'
+              }`}
               title="Logout"
             >
               <LogOut className="h-4 w-4" />

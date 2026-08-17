@@ -221,7 +221,7 @@ const App: React.FC = () => {
                   M
                 </div>
                 <h1 className="font-bold text-[32px] tracking-wide text-white mt-4 leading-none">MobiFin AI</h1>
-                <p className="text-[17.5px] font-normal text-slate-400 mt-1.5 leading-normal max-w-[320px]">
+                <p className="text-[17.5px] font-normal text-white mt-1.5 leading-normal max-w-[320px]">
                   AI Financial Intelligence & Alternative Credit Intelligence
                 </p>
               </div>
@@ -235,7 +235,7 @@ const App: React.FC = () => {
                 )}
                 
                 <div className="space-y-2">
-                  <label className="text-[15px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                  <label className="text-[15px] font-semibold text-white uppercase tracking-[0.06em] block">
                     Username
                   </label>
                   <input
@@ -248,7 +248,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[15px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                  <label className="text-[15px] font-semibold text-white uppercase tracking-[0.06em] block">
                     Password
                   </label>
                   <input
@@ -271,28 +271,28 @@ const App: React.FC = () => {
 
               {/* Quick Demo Switcher Presets */}
               <div className="mt-7 pt-5 border-t border-white/5">
-                <span className="text-[14px] font-semibold text-slate-400 uppercase tracking-[0.12em] block text-center mb-4">
+                <span className="text-[14px] font-semibold text-white uppercase tracking-[0.12em] block text-center mb-4">
                   Demo Quick Access
                 </span>
                 <div className="flex flex-col space-y-2">
                   <button
                     onClick={() => handlePresetLogin('kwame')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     Agent — Kwame Centre
                   </button>
                   <button
                     onClick={() => handlePresetLogin('forms')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     Financial Institution — Forms Capital
                   </button>
                   <button
                     onClick={() => handlePresetLogin('admin')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     System Operator (Admin)
                   </button>
