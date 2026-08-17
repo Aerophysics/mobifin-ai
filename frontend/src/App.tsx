@@ -206,9 +206,9 @@ const App: React.FC = () => {
         {/* Tilted Card Container */}
         <div className="z-10 w-full max-w-sm flex items-center justify-center">
           <TiltedCard
-            imageSrc="https://i.scdn.co/image/ab67616d0000b273d9985092cd88bffd97653b58"
-            altText="Kendrick Lamar - GNX Album Cover"
-            captionText="Kendrick Lamar - GNX"
+            imageSrc="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            altText="Tilted card"
+            captionText=""
             imageWidth="340px"
             imageHeight="495px"
             containerWidth="340px"
