@@ -24,18 +24,29 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
     }
     requestAnimationFrame(raf);
 
-    // Unlock body overflow for smooth scrolling
+    // Unlock body overflow and height for smooth scrolling
     document.documentElement.style.overflow = 'auto';
+    document.documentElement.style.height = 'auto';
     document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+    
     const rootEl = document.getElementById('root');
-    if (rootEl) rootEl.style.overflow = 'auto';
+    if (rootEl) {
+      rootEl.style.overflow = 'visible';
+      rootEl.style.height = 'auto';
+    }
 
     return () => {
       lenis.destroy();
-      // Lock overflow back for dashboard layouts
+      // Lock overflow and height back for dashboard layouts
       document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.height = '100%';
       document.body.style.overflow = 'hidden';
-      if (rootEl) rootEl.style.overflow = 'hidden';
+      document.body.style.height = '100%';
+      if (rootEl) {
+        rootEl.style.overflow = 'hidden';
+        rootEl.style.height = '100%';
+      }
     };
   }, []);
 
