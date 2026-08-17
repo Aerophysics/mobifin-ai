@@ -204,96 +204,100 @@ const App: React.FC = () => {
         </div>
 
         {/* Tilted Card Container */}
-        <div className="z-10 w-full max-w-sm flex items-center justify-center">
+        <div className="z-10 flex items-center justify-center">
           <TiltedCard
             imageSrc="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             altText="Tilted card"
             captionText=""
-            imageWidth="340px"
-            imageHeight="495px"
-            containerWidth="340px"
-            containerHeight="495px"
+            imageWidth="min(460px, calc(100vw - 32px))"
+            imageHeight="670px"
+            containerWidth="min(460px, calc(100vw - 32px))"
+            containerHeight="670px"
             rotateAmplitude={0}
             scaleOnHover={1}
             showMobileWarning={false}
             showTooltip={false}
             displayOverlayContent={true}
             overlayContent={
-              <div className="w-full h-full bg-slate-950/50 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-100 p-6 space-y-5">
-                {/* Header */}
+              <div className="w-full h-full bg-slate-950/60 backdrop-blur-xl border border-white/10 rounded-[22px] shadow-2xl overflow-hidden flex flex-col text-slate-100 p-[38px] select-none">
+                {/* Logo & Brand Mark */}
                 <div className="flex flex-col items-center text-center">
-                  <div className="bg-teal-400 text-slate-950 p-2 rounded-lg font-black text-lg flex items-center justify-center h-9 w-9">
+                  <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-xl flex items-center justify-center h-[44px] w-[44px] transition-transform hover:scale-105 duration-300">
                     M
                   </div>
-                  <h1 className="font-extrabold text-sm tracking-wider text-white mt-3">MobiFin AI</h1>
-                  <p className="text-[10px] text-slate-400 mt-1 max-w-[280px]">
-                    AI Financial Intelligence & Alternative Credit Registry
+                  <h1 className="font-bold text-[28px] tracking-wide text-white mt-4 leading-none">MobiFin AI</h1>
+                  <p className="text-[13.5px] font-normal text-slate-400 mt-1.5 leading-normal max-w-[280px]">
+                    AI Financial Intelligence & Alternative Credit Intelligence
                   </p>
                 </div>
 
                 {/* Form Area */}
-                <form onSubmit={handleLoginSubmit} className="space-y-3.5 flex-1">
+                <form onSubmit={handleLoginSubmit} className="flex-1 mt-8 space-y-4.5">
                   {loginError && (
                     <div className="bg-red-500/10 text-red-300 text-[10px] p-2.5 rounded-lg border border-red-500/20 font-medium">
                       {loginError}
                     </div>
                   )}
                   
-                  <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Username</label>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                      Username
+                    </label>
                     <input
                       type="text"
                       value={usernameInput}
                       onChange={e => setUsernameInput(e.target.value)}
-                      placeholder="Username"
-                      className="w-full text-xs bg-white/5 border border-white/10 rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 transition"
+                      placeholder="Enter your username"
+                      className="w-full h-[50px] px-3.5 text-sm bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
                     />
                   </div>
 
-                  <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Password</label>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                      Password
+                    </label>
                     <input
                       type="password"
                       value={passwordInput}
                       onChange={e => setPasswordInput(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full text-xs bg-white/5 border border-white/10 rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 transition"
+                      className="w-full h-[50px] px-3.5 text-sm bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoggingIn}
-                    className="w-full bg-teal-400 hover:bg-teal-350 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition disabled:opacity-50 cursor-pointer mt-2"
+                    className="w-full h-[50px] bg-teal-400 hover:bg-teal-350 text-slate-950 font-semibold rounded-xl text-sm transition-all duration-200 disabled:opacity-50 cursor-pointer mt-6 shadow-md shadow-teal-500/5"
                   >
                     {isLoggingIn ? 'Authenticating...' : 'Sign In'}
                   </button>
                 </form>
 
                 {/* Quick Demo Switcher Presets */}
-                <div className="space-y-2 pt-4 border-t border-white/10">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block text-center mb-2">
+                <div className="mt-7 pt-5 border-t border-white/10">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] block text-center mb-4">
                     Demo Quick Access
                   </span>
-                  <div className="flex flex-col space-y-1.5">
+                  <div className="flex flex-col space-y-2">
                     <button
                       onClick={() => handlePresetLogin('kwame')}
                       disabled={isLoggingIn}
-                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                      className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                     >
                       Agent — Kwame Centre
                     </button>
                     <button
                       onClick={() => handlePresetLogin('forms')}
                       disabled={isLoggingIn}
-                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                      className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                     >
                       Financial Institution — Forms Capital
                     </button>
                     <button
                       onClick={() => handlePresetLogin('admin')}
                       disabled={isLoggingIn}
-                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                      className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                     >
                       System Operator (Admin)
                     </button>
