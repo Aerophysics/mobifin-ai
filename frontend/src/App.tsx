@@ -226,36 +226,36 @@ const App: React.FC = () => {
         {/* Border Glow Card Container */}
         <div className="z-10 flex items-center justify-center p-4">
           <BorderGlow
-            className="w-[calc(100vw-32px)] sm:w-[420px] lg:w-[460px] h-auto"
+            className="w-[calc(100vw-32px)] sm:w-[410px] lg:w-[440px] h-auto"
             backgroundColor="rgba(10, 15, 24, 0.65)"
-            borderRadius={22}
+            borderRadius={20}
             glowColor="160 80 50"
             colors={['#0d9488', '#0f172a', '#064e3b']}
             glowIntensity={1.0}
             edgeSensitivity={20}
           >
-            <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 p-6 sm:p-9 select-none rounded-[22px] border border-white/5">
+            <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 login-inner-card select-none rounded-[20px] border border-white/5">
               {/* Logo & Brand Mark */}
               <div className="flex flex-col items-center text-center">
-                <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-[18px] flex items-center justify-center h-12 w-12 transition-transform hover:scale-105 duration-300">
+                <div className="bg-teal-400 text-slate-950 rounded-xl font-black flex items-center justify-center transition-transform hover:scale-105 duration-300 login-logo">
                   M
                 </div>
-                <h1 className="font-bold text-[28px] sm:text-[30px] tracking-wide text-white mt-3.5 leading-[1.1]">MobiFin AI</h1>
-                <p className="text-[13px] sm:text-[13.5px] font-normal text-white/85 mt-1.5 leading-[1.45] max-w-[340px] text-center">
+                <h1 className="text-white tracking-wide leading-none login-title">MobiFin AI</h1>
+                <p className="font-normal text-white/85 leading-normal login-subtitle">
                   AI Financial Intelligence & Alternative Credit Intelligence
                 </p>
               </div>
 
               {/* Form Area */}
-              <form onSubmit={handleLoginSubmit} className="mt-7">
+              <form onSubmit={handleLoginSubmit} className="login-form">
                 {loginError && (
-                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-4">
+                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-3">
                     {loginError}
                   </div>
                 )}
                 
                 <div>
-                  <label className="text-[11.5px] font-semibold text-white/80 uppercase tracking-[0.08em] block">
+                  <label className="text-white/80 login-label">
                     Username
                   </label>
                   <input
@@ -263,12 +263,12 @@ const App: React.FC = () => {
                     value={usernameInput}
                     onChange={e => setUsernameInput(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full h-[50px] px-[14px] text-[14px] sm:text-[15px] bg-slate-900/40 border border-[#8ea978] rounded-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 mt-[7px]"
+                    className="bg-slate-900/40 border border-[#8ea978] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
                   />
                 </div>
 
-                <div>
-                  <label className="text-[11.5px] font-semibold text-white/80 uppercase tracking-[0.08em] block mt-4">
+                <div className="login-input-group">
+                  <label className="text-white/80 login-label">
                     Password
                   </label>
                   <input
@@ -276,43 +276,43 @@ const App: React.FC = () => {
                     value={passwordInput}
                     onChange={e => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-[50px] px-[14px] text-[14px] sm:text-[15px] bg-slate-900/40 border border-white/5 rounded-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 mt-[7px]"
+                    className="bg-slate-900/40 border border-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full h-[50px] bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 font-semibold rounded-[10px] text-[14.5px] transition-all duration-200 disabled:opacity-50 cursor-pointer mt-[22px] shadow-md shadow-[#8ea978]/10 flex items-center justify-center"
+                  className="bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-md shadow-[#8ea978]/10 flex items-center justify-center login-btn"
                 >
                   {isLoggingIn ? 'Authenticating...' : 'Sign In'}
                 </button>
               </form>
 
               {/* Quick Demo Switcher Presets */}
-              <div className="mt-7 pt-[18px] border-t border-white/5">
-                <span className="text-[10.5px] font-semibold text-white uppercase tracking-[0.12em] block text-center">
+              <div className="border-t border-white/5 login-divider-group">
+                <span className="text-white login-demo-label">
                   Demo Quick Access
                 </span>
-                <div className="flex flex-col mt-3.5 space-y-2">
+                <div className="login-demo-list">
                   <button
                     onClick={() => handlePresetLogin('kwame')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
+                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
                   >
                     Agent — Kwame Centre
                   </button>
                   <button
                     onClick={() => handlePresetLogin('forms')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
+                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
                   >
                     Financial Institution — Forms Capital
                   </button>
                   <button
                     onClick={() => handlePresetLogin('admin')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
+                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
                   >
                     System Operator (Admin)
                   </button>
