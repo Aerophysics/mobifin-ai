@@ -82,14 +82,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
           items={[
             { label: 'About', link: '#', onClick: scrollToImpact },
             { label: 'Log In', link: '#', onClick: onLoginClick },
-            { label: 'Start', link: '#', onClick: onLoginClick }
+            { label: 'Sign Up', link: '#', onClick: onLoginClick }
           ]}
         />
       </div>
 
       {/* Floating Centered Nav Bar (Desktop Only) */}
-      <div className="hidden lg:flex sticky top-6 z-50 w-full px-4 justify-center pointer-events-none">
-        <header className="h-[72px] w-full max-w-[1100px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-200/50 rounded-full transition-all pointer-events-auto" style={{ background: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+      <div className="hidden lg:block fixed top-6 left-0 right-0 z-40 mx-auto px-5 w-full max-w-[66.75rem]">
+        <header className="h-[64px] w-full rounded-full border border-forest/10 bg-white/75 backdrop-blur-md shadow-sm transition-all duration-300">
           <div className="px-6 lg:px-8 h-full">
             <div className="flex h-full items-center justify-between w-full">
               <div className="flex-1 flex items-center space-x-3.5">
@@ -120,7 +120,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                 </button>
                 <button onClick={onLoginClick} className="group relative inline-flex appearance-none items-center py-2.5 select-none transition-colors justify-center text-white min-h-[39px] px-5 border-none bg-transparent cursor-pointer">
                   <span className="absolute inset-0 rounded-full transition-all group-hover:scale-[0.98] origin-center bg-forest group-hover:bg-[#203415]"></span>
-                  <span className="text-[15px] font-semibold relative z-10">Start Platform</span>
+                  <span className="text-[15px] font-semibold relative z-10">Sign Up</span>
                 </button>
               </div>
             </div>
