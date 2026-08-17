@@ -208,20 +208,20 @@ const App: React.FC = () => {
           <BorderGlow
             className="w-[min(460px,calc(100vw-32px))] max-h-[90vh]"
             backgroundColor="rgba(10, 15, 24, 0.65)"
-            borderRadius={22}
+            borderRadius={28}
             glowColor="160 80 50"
             colors={['#0d9488', '#0f172a', '#064e3b']}
             glowIntensity={1.0}
             edgeSensitivity={20}
           >
-            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-[38px] space-y-5 select-none overflow-y-auto">
+            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px]">
               {/* Logo & Brand Mark */}
               <div className="flex flex-col items-center text-center">
                 <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-xl flex items-center justify-center h-[44px] w-[44px] transition-transform hover:scale-105 duration-300">
                   M
                 </div>
-                <h1 className="font-bold text-[28px] tracking-wide text-white mt-4 leading-none">MobiFin AI</h1>
-                <p className="text-[13.5px] font-normal text-slate-400 mt-1.5 leading-normal max-w-[280px]">
+                <h1 className="font-bold text-[32px] tracking-wide text-white mt-4 leading-none">MobiFin AI</h1>
+                <p className="text-[17.5px] font-normal text-slate-400 mt-1.5 leading-normal max-w-[320px]">
                   AI Financial Intelligence & Alternative Credit Intelligence
                 </p>
               </div>
@@ -229,13 +229,13 @@ const App: React.FC = () => {
               {/* Form Area */}
               <form onSubmit={handleLoginSubmit} className="mt-8 space-y-4.5">
                 {loginError && (
-                  <div className="bg-red-500/10 text-red-300 text-[10px] p-2.5 rounded-lg border border-red-500/20 font-medium">
+                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium">
                     {loginError}
                   </div>
                 )}
                 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                  <label className="text-[15px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
                     Username
                   </label>
                   <input
@@ -243,12 +243,12 @@ const App: React.FC = () => {
                     value={usernameInput}
                     onChange={e => setUsernameInput(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full h-[50px] px-3.5 text-sm bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
+                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
+                  <label className="text-[15px] font-semibold text-slate-400 uppercase tracking-[0.06em] block">
                     Password
                   </label>
                   <input
@@ -256,14 +256,14 @@ const App: React.FC = () => {
                     value={passwordInput}
                     onChange={e => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-[50px] px-3.5 text-sm bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
+                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full h-[50px] bg-teal-400 hover:bg-teal-350 text-slate-950 font-semibold rounded-xl text-sm transition-all duration-200 disabled:opacity-50 cursor-pointer mt-6 shadow-md shadow-teal-500/5"
+                  className="w-full h-[52px] bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 font-semibold rounded-xl text-[18px] transition-all duration-200 disabled:opacity-50 cursor-pointer mt-6 shadow-md shadow-[#8ea978]/10"
                 >
                   {isLoggingIn ? 'Authenticating...' : 'Sign In'}
                 </button>
@@ -271,28 +271,28 @@ const App: React.FC = () => {
 
               {/* Quick Demo Switcher Presets */}
               <div className="mt-7 pt-5 border-t border-white/10">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.12em] block text-center mb-4">
+                <span className="text-[14px] font-semibold text-slate-400 uppercase tracking-[0.12em] block text-center mb-4">
                   Demo Quick Access
                 </span>
                 <div className="flex flex-col space-y-2">
                   <button
                     onClick={() => handlePresetLogin('kwame')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                   >
                     Agent — Kwame Centre
                   </button>
                   <button
                     onClick={() => handlePresetLogin('forms')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                   >
                     Financial Institution — Forms Capital
                   </button>
                   <button
                     onClick={() => handlePresetLogin('admin')}
                     disabled={isLoggingIn}
-                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[13.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
                   >
                     System Operator (Admin)
                   </button>
