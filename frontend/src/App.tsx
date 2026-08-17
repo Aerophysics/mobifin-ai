@@ -214,7 +214,7 @@ const App: React.FC = () => {
             glowIntensity={1.0}
             edgeSensitivity={20}
           >
-            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px]">
+            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px] border border-white/5">
               {/* Logo & Brand Mark */}
               <div className="flex flex-col items-center text-center">
                 <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-xl flex items-center justify-center h-[44px] w-[44px] transition-transform hover:scale-105 duration-300">
@@ -243,7 +243,7 @@ const App: React.FC = () => {
                     value={usernameInput}
                     onChange={e => setUsernameInput(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
+                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-[#8ea978] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200"
                   />
                 </div>
 
@@ -256,7 +256,7 @@ const App: React.FC = () => {
                     value={passwordInput}
                     onChange={e => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-all duration-200"
+                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/5 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200"
                   />
                 </div>
 
@@ -270,7 +270,7 @@ const App: React.FC = () => {
               </form>
 
               {/* Quick Demo Switcher Presets */}
-              <div className="mt-7 pt-5 border-t border-white/10">
+              <div className="mt-7 pt-5 border-t border-white/5">
                 <span className="text-[14px] font-semibold text-slate-400 uppercase tracking-[0.12em] block text-center mb-4">
                   Demo Quick Access
                 </span>
@@ -278,21 +278,21 @@ const App: React.FC = () => {
                   <button
                     onClick={() => handlePresetLogin('kwame')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     Agent — Kwame Centre
                   </button>
                   <button
                     onClick={() => handlePresetLogin('forms')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     Financial Institution — Forms Capital
                   </button>
                   <button
                     onClick={() => handlePresetLogin('admin')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/20 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/10 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-slate-200 font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
                   >
                     System Operator (Admin)
                   </button>
