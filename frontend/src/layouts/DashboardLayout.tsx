@@ -1,0 +1,422 @@
+import React, { useEffect, useState } from 'react';
+import { 
+  LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound, 
+  BarChart2, Database, Settings as SettingsIcon, BrainCircuit, 
+  LogOut, RefreshCw, ShieldCheck, Activity, User, ChevronDown, ShieldAlert,
+  Server, Wrench
+} from 'lucide-react';
+import ApiService from '../services/api';
+import { UserProfile } from '../types';
+
+interface SidebarItem {
+  name: string;
+  icon: React.ComponentType<any>;
+  page: string;
+}
+
+interface SidebarGroup {
+  title: string;
+  items: SidebarItem[];
+}
+
+interface DashboardLayoutProps {
+  activePage: string;
+  setActivePage: (page: string) => void;
+  currentUser: UserProfile | null;
+  setCurrentUser: (user: UserProfile | null) => void;
+  children: React.ReactNode;
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  activePage,
+  setActivePage,
+  currentUser,
+  setCurrentUser,
+  children
+}) => {
+  const [dbStatus, setDbStatus] = useState<string>('Detecting DB...');
+  const [isSqlite, setIsSqlite] = useState<boolean>(false);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchDbStatus();
+  }, []);
+
+  const fetchDbStatus = async () => {
+    try {
+      const res = await ApiService.getSystemStatus();
+      setDbStatus(res.database);
+      setIsSqlite(res.sqlite_active);
+    } catch {
+      setDbStatus('SQLite Fallback Active');
+      setIsSqlite(true);
+    }
+  };
+
+  const handleRoleSwitch = async (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => {
+    let username = 'admin';
+    let password = 'admin123';
+    
+    if (role === 'AGENT') {
+      username = 'kwame';
+      password = 'kwame123';
+    } else if (role === 'FINANCIAL_INSTITUTION') {
+      username = 'forms_capital';
+      password = 'forms123';
+    }
+    
+    try {
+      await ApiService.login(username, password);
+      const profile = ApiService.getCurrentUser();
+      setCurrentUser(profile);
+      setDropdownOpen(false);
+      
+      if (role === 'AGENT') {
+        setActivePage('dashboard');
+      } else if (role === 'FINANCIAL_INSTITUTION') {
+        setActivePage('dashboard');
+      } else {
+        setActivePage('admin-dashboard');
+      }
+    } catch (e: any) {
+      alert(`Role switch login failed. Make sure database is seeded! Error: ${e.message}`);
+    }
+  };
+
+  const handleLogout = () => {
+    ApiService.logout();
+    setCurrentUser(null);
+  };
+
+  // 1. Get role-based sidebar groups
+  const getSidebarGroups = (): SidebarGroup[] => {
+    const role = currentUser?.role;
+
+    if (role === 'AGENT') {
+      return [
+        {
+          title: 'Overview',
+          items: [
+            { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' }
+          ]
+        },
+        {
+          title: 'Operations',
+          items: [
+            { name: 'Transactions', icon: Receipt, page: 'transactions' },
+            { name: 'Liquidity', icon: Droplet, page: 'liquidity' },
+            { name: 'Business Analytics', icon: LineChart, page: 'analytics' }
+          ]
+        },
+        {
+          title: 'Intelligence',
+          items: [
+            { name: 'AI Insights', icon: BrainCircuit, page: 'ai-insights' }
+          ]
+        },
+        {
+          title: 'Account',
+          items: [
+            { name: 'Settings', icon: SettingsIcon, page: 'settings' }
+          ]
+        }
+      ];
+    }
+
+    if (role === 'FINANCIAL_INSTITUTION') {
+      return [
+        {
+          title: 'Overview',
+          items: [
+            { name: 'Dashboard', icon: LayoutDashboard, page: 'dashboard' }
+          ]
+        },
+        {
+          title: 'Customer Intelligence',
+          items: [
+            { name: 'Customers', icon: Users, page: 'credit' }
+          ]
+        },
+        {
+          title: 'Analytics',
+          items: [
+            { name: 'Portfolio Insights', icon: LineChart, page: 'analytics' }
+          ]
+        },
+        {
+          title: 'Account',
+          items: [
+            { name: 'Settings', icon: SettingsIcon, page: 'settings' }
+          ]
+        }
+      ];
+    }
+
+    if (role === 'ADMIN') {
+      return [
+        {
+          title: 'System Overview',
+          items: [
+            { name: 'Admin Dashboard', icon: LayoutDashboard, page: 'admin-dashboard' }
+          ]
+        },
+        {
+          title: 'Model & Data',
+          items: [
+            { name: 'Model Performance', icon: BarChart2, page: 'performance' },
+            { name: 'Data Explorer', icon: Database, page: 'explorer' }
+          ]
+        },
+        {
+          title: 'System',
+          items: [
+            { name: 'Demo Management', icon: Wrench, page: 'demo-mgmt' },
+            { name: 'Settings', icon: SettingsIcon, page: 'settings' }
+          ]
+        }
+      ];
+    }
+
+    return [];
+  };
+
+  // 2. Page titles based on role
+  const getPageTitle = (): string => {
+    const role = currentUser?.role;
+
+    if (role === 'AGENT') {
+      switch (activePage) {
+        case 'dashboard': return 'Dashboard';
+        case 'transactions': return 'Transactions';
+        case 'liquidity': return 'Liquidity Intelligence';
+        case 'analytics': return 'Business Analytics';
+        case 'ai-insights': return 'AI Insights';
+        case 'settings': return 'Settings';
+        default: return 'Operational Panel';
+      }
+    }
+
+    if (role === 'FINANCIAL_INSTITUTION') {
+      switch (activePage) {
+        case 'dashboard': return 'Dashboard';
+        case 'credit': return 'Customer Intelligence';
+        case 'analytics': return 'Portfolio Insights';
+        case 'settings': return 'Settings';
+        default: return 'Institutional Console';
+      }
+    }
+
+    if (role === 'ADMIN') {
+      switch (activePage) {
+        case 'admin-dashboard': return 'System Overview';
+        case 'performance': return 'Model Performance';
+        case 'explorer': return 'Data Explorer';
+        case 'demo-mgmt': return 'Demo Management';
+        case 'settings': return 'Settings';
+        default: return 'Internal Control Console';
+      }
+    }
+
+    return 'Operational Panel';
+  };
+
+  // 3. Page subtitles based on role
+  const getPageSubtitle = (): string => {
+    const role = currentUser?.role;
+
+    if (role === 'AGENT') {
+      switch (activePage) {
+        case 'dashboard': return 'Monitor your agent operations and financial position.';
+        case 'transactions': return 'Audit log of deposits, withdrawals, and merchant payments.';
+        case 'liquidity': return 'Forecast demand and optimize your cash and e-float.';
+        case 'analytics': return 'Understand your transaction activity and business performance.';
+        case 'ai-insights': return 'Grounded AI audits and anomaly alerts.';
+        case 'settings': return 'Configure your security keys, notifications, and profile details.';
+        default: return '';
+      }
+    }
+
+    if (role === 'FINANCIAL_INSTITUTION') {
+      switch (activePage) {
+        case 'dashboard': return 'Monitor aggregate platform credit metrics and consented history.';
+        case 'credit': return 'Evaluate consented alternative financial profiles.';
+        case 'analytics': return 'Understand customer financial behavior and readiness.';
+        case 'settings': return 'Configure custom underwriting parameters and connection keys.';
+        default: return '';
+      }
+    }
+
+    if (role === 'ADMIN') {
+      switch (activePage) {
+        case 'admin-dashboard': return 'Monitor MobiFin AI platform health.';
+        case 'performance': return 'Monitor predictive model performance and validation.';
+        case 'explorer': return 'Inspect the underlying platform dataset.';
+        case 'demo-mgmt': return 'Generative sandbox environment manager.';
+        case 'settings': return 'System variables and environment controls.';
+        default: return '';
+      }
+    }
+
+    return '';
+  };
+
+  const sidebarGroups = getSidebarGroups();
+  const currentRoleName = currentUser?.role === 'AGENT' 
+    ? 'Agent — Kwame' 
+    : currentUser?.role === 'FINANCIAL_INSTITUTION' 
+      ? 'FI — Forms Capital' 
+      : 'Admin';
+
+  return (
+    <div className="grid grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-800">
+      {/* Sidebar - Fix height & scroll internally */}
+      <aside className="bg-slate-950 text-slate-200 flex flex-col h-full border-r border-slate-900 overflow-hidden">
+        {/* Logo/Wordmark */}
+        <div className="h-[70px] px-6 border-b border-slate-900 flex items-center space-x-3 flex-shrink-0">
+          <div className="bg-teal-500 text-slate-950 p-2 rounded font-black text-base flex items-center justify-center h-8 w-8">
+            M
+          </div>
+          <div>
+            <h1 className="font-extrabold text-sm leading-tight tracking-wider text-white">MobiFin AI</h1>
+            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest">Financial Console</p>
+          </div>
+        </div>
+
+        {/* Dynamic Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-5 overflow-y-auto">
+          {sidebarGroups.map(group => (
+            <div key={group.title} className="space-y-1">
+              <span className="text-[9px] font-bold text-slate-650 uppercase tracking-widest block px-3 mb-1.5">
+                {group.title}
+              </span>
+              <div className="space-y-0.5">
+                {group.items.map(item => {
+                  const Icon = item.icon;
+                  const isActive = activePage === item.page;
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => setActivePage(item.page)}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs transition cursor-pointer ${
+                        isActive 
+                          ? 'bg-slate-900 text-white font-semibold border border-slate-850' 
+                          : 'text-slate-400 hover:bg-slate-900/60 hover:text-slate-200'
+                      }`}
+                    >
+                      <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-teal-405' : 'text-slate-500'}`} />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Bottom Profile info */}
+        <div className="p-4 border-t border-slate-900 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 overflow-hidden">
+              <div className="h-7 w-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center flex-shrink-0">
+                <User className="h-4 w-4 text-slate-500" />
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-[10px] text-slate-350 font-bold leading-tight truncate">
+                  {currentUser?.role === 'AGENT' ? 'Kwame Centre' : currentUser?.role === 'FINANCIAL_INSTITUTION' ? 'Forms FI' : 'System Admin'}
+                </span>
+                <span className="text-[9px] text-slate-500 truncate max-w-[120px]">
+                  {currentUser?.username}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-900 transition cursor-pointer"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Container Workspace */}
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Header - Height 70px */}
+        <header className="h-[70px] bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0">
+          <div>
+            <h2 className="text-sm font-bold text-slate-950 tracking-tight leading-none">
+              {getPageTitle()}
+            </h2>
+            <p className="text-[10px] text-slate-400 font-medium mt-1">
+              {getPageSubtitle()}
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {/* Database status tag */}
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
+              isSqlite 
+                ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                : 'bg-emerald-50 text-teal-700 border-emerald-200'
+            }`}>
+              <Server className="h-3 w-3 mr-1.5" />
+              {isSqlite ? 'SQLite sandbox' : 'Postgres active'}
+            </span>
+
+            {/* Custom Dropdown environment role switcher */}
+            <div className="relative">
+              <div className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">
+                Demo Mode
+              </div>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="bg-slate-50 hover:bg-slate-100 border border-slate-250 rounded-lg px-2.5 py-1.5 flex items-center justify-between space-x-2 text-[11px] font-bold text-slate-700 transition cursor-pointer"
+              >
+                <span>{currentRoleName}</span>
+                <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {dropdownOpen && (
+                <>
+                  {/* Click outside backdrop overlay */}
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                  <div className="absolute right-0 mt-1 w-52 bg-white border border-slate-250 rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
+                    <button
+                      onClick={() => handleRoleSwitch('AGENT')}
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <User className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Agent — Kwame</span>
+                    </button>
+                    <button
+                      onClick={() => handleRoleSwitch('FINANCIAL_INSTITUTION')}
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+                      <span>FI — Forms Capital</span>
+                    </button>
+                    <button
+                      onClick={() => handleRoleSwitch('ADMIN')}
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <Activity className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Admin Console</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Content Box scrolling independently */}
+        <main className="flex-1 overflow-y-auto p-6 bg-slate-50">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardLayout;
