@@ -107,11 +107,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
                       <span>About</span>
                     </button>
                   </li>
-                  <li className="relative">
-                    <button onClick={onLoginClick} className="inline-block text-[15px] font-medium text-forest/80 hover:text-forest cursor-pointer transition-colors border-none bg-transparent">
-                      <span>Dashboard</span>
-                    </button>
-                  </li>
                 </ul>
               </nav>
               
@@ -173,7 +168,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <section id="impact-section" className="relative min-h-[80vh] flex flex-col justify-center items-center px-5 py-24 bg-[#e6ebd9]">
           <div className="max-w-[900px] text-center">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight tracking-tight text-forest mb-8">
-              Micro-merchants lack formal credit, <span className="text-lemongrass">leaving them unable to build capital.</span>
+              Micro-merchants lack formal credit, <span className="text-forest">leaving them unable to build capital.</span>
             </h2>
             <h3 className="text-2xl md:text-3xl text-slate-700 font-medium leading-relaxed">
               MobiFin AI bridges the credit gap, translating informal transaction velocity into structured credit registry data and smart rebalancing recommendations.
