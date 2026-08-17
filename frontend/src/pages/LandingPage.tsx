@@ -24,6 +24,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
     }
     requestAnimationFrame(raf);
 
+    // Ensure dark mode is disabled on the landing page
+    document.documentElement.classList.remove('dark');
+
     // Unlock body overflow and height for smooth scrolling
     document.documentElement.style.overflow = 'auto';
     document.documentElement.style.height = 'auto';
@@ -152,7 +155,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         <section className="relative overflow-hidden bg-white text-slate-900 pt-12 md:pt-16 lg:pt-20 pb-12 md:pb-16 lg:pb-20 border-t border-slate-100">
           <div className="container mx-auto px-5 lg:px-8 space-y-18 lg:space-y-24">
             <div className="flex flex-col items-center gap-10">
-              <p className="text-base md:text-lg uppercase tracking-wider font-semibold w-full text-center text-slate-400">Empowering merchants and financial institutions in Ghana & emerging markets</p>
+              <p className="text-base md:text-lg uppercase tracking-wider font-semibold w-full text-center text-forest">Empowering merchants and financial institutions in Ghana & emerging markets</p>
               
               <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-85">
                 <span className="font-semibold text-lg text-forest tracking-tight bg-slate-50 border border-slate-100 px-4.5 py-2.5 rounded-full">Real-Time E-Float Forecasts</span>

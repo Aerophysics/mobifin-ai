@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound, 
   BarChart2, Database, Settings as SettingsIcon, BrainCircuit, 
   LogOut, RefreshCw, ShieldCheck, Activity, User, ChevronDown, ShieldAlert,
-  Server, Wrench
+  Server, Wrench, Sun, Moon
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { UserProfile } from '../types';
@@ -37,6 +37,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [dbStatus, setDbStatus] = useState<string>('Detecting DB...');
   const [isSqlite, setIsSqlite] = useState<boolean>(false);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    return localStorage.getItem('mobifin_theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('mobifin_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('mobifin_theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
 
   useEffect(() => {
     fetchDbStatus();
@@ -412,6 +429,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <Server className="h-3 w-3 mr-1.5" />
               {isSqlite ? 'SQLite sandbox' : 'Postgres active'}
             </span>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 transition cursor-pointer border-none bg-transparent flex items-center justify-center"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
 
             {/* Custom Dropdown environment role switcher */}
             <div className="relative">

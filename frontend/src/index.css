@@ -81,3 +81,90 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Dark Mode Override System */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #0b0f19;
+  color: #f8fafc;
+}
+
+.dark .bg-slate-50,
+.dark .bg-gray-50 {
+  background-color: #0b0f19 !important;
+}
+
+.dark .bg-white {
+  background-color: rgba(22, 30, 49, 0.7) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .premium-card {
+  background-color: rgba(22, 30, 49, 0.7) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark header.bg-white {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(20px);
+}
+
+.dark .text-slate-800,
+.dark .text-slate-850,
+.dark .text-slate-900,
+.dark .text-slate-950,
+.dark .text-gray-900,
+.dark .text-gray-800 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-400,
+.dark .text-slate-550,
+.dark .text-slate-600,
+.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-250,
+.dark .border-slate-100,
+.dark .border-gray-100,
+.dark .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Fix chart components tooltip background in dark mode */
+.dark .recharts-default-tooltip {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+.dark .recharts-tooltip-item {
+  color: #ffffff !important;
+}
+.dark .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Custom styles for theme toggle alignment */
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
