@@ -178,9 +178,9 @@ const App: React.FC = () => {
         {/* Grainient WebGL Background */}
         <div className="absolute inset-0 z-0">
           <Grainient 
-            color1="#0d9488" 
-            color2="#0f172a" 
-            color3="#064e3b"
+            color1="#FF9FFC" 
+            color2="#5227FF" 
+            color3="#B497CF"
             timeSpeed={0.15}
             warpStrength={0.7}
             zoom={1.1}
