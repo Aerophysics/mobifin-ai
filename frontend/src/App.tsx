@@ -178,27 +178,48 @@ const App: React.FC = () => {
         {/* Grainient WebGL Background */}
         <div className="absolute inset-0 z-0">
           <Grainient 
-            color1="#FF9FFC" 
-            color2="#5227FF" 
-            color3="#B497CF"
+            color1="#8ea978"
+            color2="#223814"
+            color3="#8ea978"
             timeSpeed={0.15}
-            warpStrength={0.7}
-            zoom={1.1}
+            colorBalance={0}
+            warpStrength={1}
+            warpFrequency={5}
+            warpSpeed={2}
+            warpAmplitude={50}
+            blendAngle={0}
+            blendSoftness={0.05}
+            rotationAmount={500}
+            noiseScale={2}
+            grainAmount={0}
+            grainScale={0.2}
+            grainAnimated={false}
+            contrast={1.5}
+            gamma={1}
+            saturation={1}
+            centerX={0}
+            centerY={0}
+            zoom={0.9}
           />
         </div>
 
         {/* Tilted Card Container */}
         <div className="z-10 w-full max-w-sm flex items-center justify-center">
           <TiltedCard
-            imageSrc="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            imageSrc="https://i.scdn.co/image/ab67616d0000b273d9985092cd88bffd97653b58"
+            altText="Kendrick Lamar - GNX Album Cover"
+            captionText="Kendrick Lamar - GNX"
             imageWidth="340px"
             imageHeight="495px"
             containerWidth="340px"
             containerHeight="495px"
+            rotateAmplitude={0}
+            scaleOnHover={1}
+            showMobileWarning={false}
             showTooltip={false}
             displayOverlayContent={true}
             overlayContent={
-              <div className="w-full h-full bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-100 p-6 space-y-5">
+              <div className="w-full h-full bg-slate-950/50 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-100 p-6 space-y-5">
                 {/* Header */}
                 <div className="flex flex-col items-center text-center">
                   <div className="bg-teal-400 text-slate-950 p-2 rounded-lg font-black text-lg flex items-center justify-center h-9 w-9">
