@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound, 
   BarChart2, Database, Settings as SettingsIcon, BrainCircuit, 
   LogOut, RefreshCw, ShieldCheck, Activity, User, ChevronDown, ShieldAlert,
-  Server, Wrench, Sun, Moon
+  Server, Wrench, Sun, Moon, Menu
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { UserProfile } from '../types';
@@ -37,6 +37,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [dbStatus, setDbStatus] = useState<string>('Detecting DB...');
   const [isSqlite, setIsSqlite] = useState<boolean>(false);
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [isDark, setIsDark] = useState<boolean>(() => {
     return localStorage.getItem('mobifin_theme') === 'dark';
   });
@@ -284,31 +285,50 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       ? 'FI — Forms Capital' 
       : 'Admin';
 
+  const isGreenSide = currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION';
+  
   return (
-    <div className="grid grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-800">
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#0b0f19] font-sans text-slate-800 dark:text-slate-100">
+      
+      {/* Mobile Drawer Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-sm lg:hidden animate-fadeIn" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
+
       {/* Sidebar - Fix height & scroll internally */}
-      <aside className={`${
-        currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION' 
-          ? 'bg-[#17280e] text-white border-r border-[#243e16]' 
-          : 'bg-slate-950 text-slate-200 border-r border-slate-900'
-      } flex flex-col h-full overflow-hidden`}>
+      <aside className={`
+        flex flex-col h-full overflow-hidden transition-all duration-300
+        fixed inset-y-0 left-0 z-40 w-[260px] lg:static lg:h-full lg:w-auto lg:z-auto
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isGreenSide 
+            ? 'bg-[#17280e] text-white border-r border-[#243e16]' 
+            : 'bg-slate-950 text-slate-200 border-r border-slate-900'}
+      `}>
         {/* Logo/Wordmark */}
-        <div className={`h-[70px] px-6 flex items-center space-x-3 flex-shrink-0 border-b ${
-          currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-            ? 'border-[#243e16]'
-            : 'border-slate-900'
+        <div className={`h-[70px] px-6 flex items-center justify-between flex-shrink-0 border-b ${
+          isGreenSide ? 'border-[#243e16]' : 'border-slate-900'
         }`}>
-          <div className="bg-teal-500 text-slate-950 p-2 rounded font-black text-base flex items-center justify-center h-8 w-8">
-            M
+          <div className="flex items-center space-x-3">
+            <div className="bg-teal-500 text-slate-950 p-2 rounded font-black text-base flex items-center justify-center h-8 w-8">
+              M
+            </div>
+            <div>
+              <h1 className="font-extrabold text-sm leading-tight tracking-wider text-white">MobiFin AI</h1>
+              <p className={`text-[10px] font-semibold uppercase tracking-widest ${
+                isGreenSide ? 'text-white/60' : 'text-slate-500'
+              }`}>Financial Console</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-extrabold text-sm leading-tight tracking-wider text-white">MobiFin AI</h1>
-            <p className={`text-[10px] font-semibold uppercase tracking-widest ${
-              currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                ? 'text-white/60'
-                : 'text-slate-500'
-            }`}>Financial Console</p>
-          </div>
+          {/* Mobile close button inside sidebar drawer */}
+          <button 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="lg:hidden p-1 rounded hover:bg-white/10 text-white cursor-pointer border-none bg-transparent"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Dynamic Navigation */}
@@ -316,9 +336,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {sidebarGroups.map(group => (
             <div key={group.title} className="space-y-1">
               <span className={`text-[9px] font-bold uppercase tracking-widest block px-3 mb-1.5 ${
-                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                  ? 'text-white'
-                  : 'text-slate-650'
+                isGreenSide ? 'text-white' : 'text-slate-650'
               }`}>
                 {group.title}
               </span>
@@ -326,11 +344,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 {group.items.map(item => {
                   const Icon = item.icon;
                   const isActive = activePage === item.page;
-                  const isGreenSide = currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION';
                   return (
                     <button
                       key={item.name}
-                      onClick={() => setActivePage(item.page)}
+                      onClick={() => {
+                        setActivePage(item.page);
+                        setMobileMenuOpen(false);
+                      }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs transition cursor-pointer ${
                         isActive 
                           ? (isGreenSide 
@@ -357,35 +377,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
         {/* Bottom Profile info */}
         <div className={`p-4 flex-shrink-0 border-t ${
-          currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-            ? 'border-[#243e16]'
-            : 'border-slate-900'
+          isGreenSide ? 'border-[#243e16]' : 'border-slate-900'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 overflow-hidden">
               <div className={`h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0 border ${
-                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                  ? 'bg-white/5 border-white/10'
-                  : 'bg-slate-900 border-slate-800'
+                isGreenSide ? 'bg-white/5 border-white/10' : 'bg-slate-900 border-slate-800'
               }`}>
-                <User className={`h-4 w-4 ${
-                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                    ? 'text-white'
-                    : 'text-slate-500'
-                }`} />
+                <User className={`h-4 w-4 ${isGreenSide ? 'text-white' : 'text-slate-500'}`} />
               </div>
               <div className="flex flex-col overflow-hidden">
                 <span className={`text-[10px] font-bold leading-tight truncate ${
-                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                    ? 'text-white'
-                    : 'text-slate-350'
+                  isGreenSide ? 'text-white' : 'text-slate-350'
                 }`}>
                   {currentUser?.role === 'AGENT' ? 'Kwame Centre' : currentUser?.role === 'FINANCIAL_INSTITUTION' ? 'Forms Capital' : 'System Admin'}
                 </span>
                 <span className={`text-[9px] truncate max-w-[120px] ${
-                  currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                    ? 'text-white/70'
-                    : 'text-slate-500'
+                  isGreenSide ? 'text-white/70' : 'text-slate-500'
                 }`}>
                   {currentUser?.username}
                 </span>
@@ -394,8 +402,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <button
               onClick={handleLogout}
               className={`p-1.5 rounded transition cursor-pointer ${
-                currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION'
-                  ? 'text-white hover:text-red-300 hover:bg-white/10'
+                isGreenSide 
+                  ? 'text-white hover:text-red-300 hover:bg-white/10' 
                   : 'text-slate-500 hover:text-red-400 hover:bg-slate-900'
               }`}
               title="Logout"
@@ -409,19 +417,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Main Container Workspace */}
       <div className="flex flex-col h-full overflow-hidden">
         {/* Header - Height 70px */}
-        <header className="h-[70px] bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h2 className="text-sm font-bold text-slate-950 tracking-tight leading-none">
-              {getPageTitle()}
-            </h2>
-            <p className="text-[10px] text-slate-400 font-medium mt-1">
-              {getPageSubtitle()}
-            </p>
+        <header className="h-[70px] bg-white dark:bg-[#111726] border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 flex items-center justify-between flex-shrink-0 animate-fadeIn">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            {/* Hamburger button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 border-none bg-transparent cursor-pointer"
+              aria-label="Open sidebar menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="overflow-hidden">
+              <h2 className="text-xs md:text-sm font-bold text-slate-950 dark:text-white tracking-tight leading-none truncate">
+                {getPageTitle()}
+              </h2>
+              <p className="hidden md:block text-[10px] text-slate-450 dark:text-slate-400 font-medium mt-1 truncate">
+                {getPageSubtitle()}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {/* Database status tag */}
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Database status tag - Hide on small mobile */}
+            <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
               isSqlite 
                 ? 'bg-amber-50 text-amber-700 border-amber-200' 
                 : 'bg-emerald-50 text-teal-700 border-emerald-200'
@@ -433,7 +451,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 transition cursor-pointer border-none bg-transparent flex items-center justify-center"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300 transition cursor-pointer border-none bg-transparent flex items-center justify-center"
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -441,14 +459,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
             {/* Custom Dropdown environment role switcher */}
             <div className="relative">
-              <div className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">
+              <div className="hidden sm:block text-[8px] font-extrabold text-slate-400 uppercase tracking-widest mb-0.5">
                 Demo Mode
               </div>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="bg-slate-50 hover:bg-slate-100 border border-slate-250 rounded-lg px-2.5 py-1.5 flex items-center justify-between space-x-2 text-[11px] font-bold text-slate-700 transition cursor-pointer"
+                className="bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-250 dark:border-slate-800 rounded-lg px-2 py-1 md:px-2.5 md:py-1.5 flex items-center justify-between space-x-1.5 md:space-x-2 text-[10px] md:text-[11px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
               >
-                <span>{currentRoleName}</span>
+                <span className="truncate max-w-[80px] md:max-w-none">{currentRoleName}</span>
                 <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -456,24 +474,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <>
                   {/* Click outside backdrop overlay */}
                   <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-52 bg-white border border-slate-250 rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
+                  <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-[#111726] border border-slate-250 dark:border-slate-800 rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
                     <button
                       onClick={() => handleRoleSwitch('AGENT')}
-                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <User className="h-3.5 w-3.5 text-slate-400" />
                       <span>Agent — Kwame</span>
                     </button>
                     <button
                       onClick={() => handleRoleSwitch('FINANCIAL_INSTITUTION')}
-                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                       <span>FI — Forms Capital</span>
                     </button>
                     <button
                       onClick={() => handleRoleSwitch('ADMIN')}
-                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 hover:bg-slate-50 transition flex items-center space-x-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <Activity className="h-3.5 w-3.5 text-slate-400" />
                       <span>Admin Console</span>
@@ -486,7 +504,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </header>
 
         {/* Content Box scrolling independently */}
-        <main className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 dark:bg-[#0b0f19] text-slate-850 dark:text-slate-100">
           {children}
         </main>
       </div>

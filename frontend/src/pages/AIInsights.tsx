@@ -45,9 +45,9 @@ const AIInsights: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Health Score Summary */}
-        <div className="md:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6">
           <div className="premium-card bg-white flex flex-col justify-between h-fit">
             <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-4 flex items-center">
               <BrainCircuit className="h-4 w-4 text-teal-605 mr-1.5" />
@@ -100,7 +100,7 @@ const AIInsights: React.FC = () => {
         </div>
 
         {/* Right Columns: Active Recommendations & Anomalies */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           {/* Recommendations List */}
           <div className="premium-card bg-white space-y-4">
             <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Calculated Action Recommendations</h4>

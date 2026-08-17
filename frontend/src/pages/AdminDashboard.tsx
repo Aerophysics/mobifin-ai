@@ -34,7 +34,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
       {/* Telemetry Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-5">
         <div className="premium-card bg-white">
           <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Total Agents</span>
           <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.agent_count || 0}</span>
@@ -63,7 +63,7 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Model Status Register */}
         <div className="premium-card bg-white space-y-4">
           <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center">

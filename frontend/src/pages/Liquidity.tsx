@@ -60,7 +60,7 @@ const Liquidity: React.FC = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
       {/* Top Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Cash Balance */}
         <div className="premium-card bg-white flex flex-col justify-between">
           <div>
@@ -138,7 +138,7 @@ const Liquidity: React.FC = () => {
                 <p className="text-xs text-slate-300 leading-relaxed font-semibold">
                   {rec.description}
                 </p>
-                <div className="grid grid-cols-3 gap-4 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                   <div className="bg-slate-850 p-3 rounded-lg border border-slate-800">
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Recommended Amount</span>
                     <span className="text-sm font-extrabold text-white mt-1 block">

@@ -19,12 +19,12 @@ const Settings: React.FC = () => {
         <p className="text-xs text-slate-500 mt-1">Manage your account profile, access controls, and notifications.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Navigation Tabs */}
-        <div className="md:col-span-1 flex flex-col space-y-1">
+        <div className="lg:col-span-1 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-0 lg:space-y-1 pb-3 lg:pb-0 border-b border-slate-150 lg:border-none">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
+            className={`flex-shrink-0 flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
               activeTab === 'profile'
                 ? 'bg-slate-900 text-white'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -35,7 +35,7 @@ const Settings: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('security')}
-            className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
+            className={`flex-shrink-0 flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
               activeTab === 'security'
                 ? 'bg-slate-900 text-white'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -46,7 +46,7 @@ const Settings: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
-            className={`flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
+            className={`flex-shrink-0 flex items-center space-x-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition ${
               activeTab === 'notifications'
                 ? 'bg-slate-900 text-white'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -58,12 +58,12 @@ const Settings: React.FC = () => {
         </div>
 
         {/* Configurations Form */}
-        <div className="md:col-span-3 premium-card bg-white space-y-6">
+        <div className="lg:col-span-3 premium-card bg-white space-y-6">
           {activeTab === 'profile' && (
             <form onSubmit={handleSave} className="space-y-4">
               <h4 className="font-bold text-xs uppercase tracking-wider text-slate-800 border-b border-slate-100 pb-2">Profile Configuration</h4>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Display Name</label>
                   <input

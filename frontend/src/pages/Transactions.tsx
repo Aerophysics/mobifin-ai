@@ -74,7 +74,7 @@ const Transactions: React.FC = () => {
     <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
       {/* Filters Form */}
       <div className="premium-card bg-white">
-        <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+        <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
           <div>
             <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Customer ID</label>
             <input

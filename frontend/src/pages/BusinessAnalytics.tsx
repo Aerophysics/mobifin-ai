@@ -72,7 +72,7 @@ const BusinessAnalytics: React.FC = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Total volume */}
         <div className="premium-card bg-white flex items-center justify-between">
           <div className="space-y-1">

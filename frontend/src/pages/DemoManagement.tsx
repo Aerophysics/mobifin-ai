@@ -56,9 +56,9 @@ const DemoManagement: React.FC = () => {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Seeder Action Control */}
-        <div className="premium-card bg-white flex flex-col justify-between md:col-span-2">
+        <div className="premium-card bg-white flex flex-col justify-between lg:col-span-2">
           <div className="space-y-3">
             <h4 className="font-bold text-slate-850 text-xs uppercase tracking-wider">Sandbox Database Seeder</h4>
             <p className="text-xs text-slate-500 leading-relaxed">

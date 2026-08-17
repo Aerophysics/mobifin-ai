@@ -234,7 +234,7 @@ const App: React.FC = () => {
             glowIntensity={1.0}
             edgeSensitivity={20}
           >
-            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px] border border-white/5">
+            <div className="w-full h-full backdrop-blur-xl flex flex-col text-slate-100 p-6 sm:p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px] border border-white/5">
               {/* Logo & Brand Mark */}
               <div className="flex flex-col items-center text-center">
                 <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-xl flex items-center justify-center h-[44px] w-[44px] transition-transform hover:scale-105 duration-300">

@@ -48,7 +48,7 @@ const ModelPerformance: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
       {/* Primary summary KPI cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="premium-card bg-white">
           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Credit ROC-AUC</span>
           <span className="text-xl font-bold text-slate-800 block mt-1.5">{credit?.metrics.roc_auc.toFixed(4) || '—'}</span>
@@ -84,8 +84,8 @@ const ModelPerformance: React.FC = () => {
         </div>
 
         {credit ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2.5 md:border-r md:border-slate-100 md:pr-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-2.5 lg:border-r lg:border-slate-100 lg:pr-6">
               <h5 className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Validation Metrics</h5>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
@@ -103,7 +103,7 @@ const ModelPerformance: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-2.5 md:border-r md:border-slate-100 md:pr-6">
+            <div className="space-y-2.5 lg:border-r lg:border-slate-100 lg:pr-6">
               <h5 className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Confusion Matrix (Test set)</h5>
               <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg font-mono text-[9px] text-slate-650 space-y-1">
                 <div className="flex justify-between">
@@ -153,8 +153,8 @@ const ModelPerformance: React.FC = () => {
         </div>
 
         {demand ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2.5 md:border-r md:border-slate-100 md:pr-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-2.5 lg:border-r lg:border-slate-100 lg:pr-6">
               <h5 className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Error Metrics</h5>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
@@ -172,7 +172,7 @@ const ModelPerformance: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-2.5 md:border-r md:border-slate-100 md:pr-6">
+            <div className="space-y-2.5 lg:border-r lg:border-slate-100 lg:pr-6">
               <h5 className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Baseline Performance</h5>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
@@ -219,8 +219,8 @@ const ModelPerformance: React.FC = () => {
         </div>
 
         {anomaly ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2.5 md:border-r md:border-slate-100 md:pr-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-2.5 lg:border-r lg:border-slate-100 lg:pr-6">
               <h5 className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Contamination Parameters</h5>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">

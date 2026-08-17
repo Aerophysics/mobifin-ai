@@ -16,6 +16,7 @@ const CustomerIntelligence: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [viewState, setViewState] = useState<'list' | 'profile'>('list');
 
   useEffect(() => {
     fetchCustomers();
@@ -29,7 +30,24 @@ const CustomerIntelligence: React.FC = () => {
       
       if (res.length > 0) {
         const hero = res.find(c => c.customer_id === 1048) || res[0];
-        handleSelectCustomer(hero);
+        // Do not force redirecting to profile viewState on initial mount list load
+        setSelectedCustomerId(hero.customer_id);
+        setSelectedCustomer(hero);
+        setIsDetailLoading(true);
+        ApiService.getCreditAssessment(hero.customer_id)
+          .then(assessmentData => {
+            setAssessment(assessmentData);
+            const profile = assessmentData.profile;
+            if (profile) {
+              setChartData([
+                { month: 'M - 3', 'Observed Inflows': profile.monthly_inflows * 0.9, 'Outflows': profile.monthly_outflows * 0.85 },
+                { month: 'M - 2', 'Observed Inflows': profile.monthly_inflows * 1.05, 'Outflows': profile.monthly_outflows * 0.95 },
+                { month: 'M - 1', 'Observed Inflows': profile.monthly_inflows * 0.95, 'Outflows': profile.monthly_outflows * 1.0 },
+                { month: 'Current', 'Observed Inflows': profile.monthly_inflows, 'Outflows': profile.monthly_outflows }
+              ]);
+            }
+          })
+          .finally(() => setIsDetailLoading(false));
       }
     } catch (e) {
       console.error(e);
@@ -41,6 +59,7 @@ const CustomerIntelligence: React.FC = () => {
   const handleSelectCustomer = async (cust: CustomerProfile) => {
     setSelectedCustomerId(cust.customer_id);
     setSelectedCustomer(cust);
+    setViewState('profile');
     setIsDetailLoading(true);
     try {
       const assessmentData = await ApiService.getCreditAssessment(cust.customer_id);
@@ -68,9 +87,9 @@ const CustomerIntelligence: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-140px)] overflow-hidden animate-fadeIn max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100dvh-95px)] lg:h-[calc(100vh-140px)] overflow-hidden animate-fadeIn max-w-6xl mx-auto">
       {/* Left Sidebar: Customer List */}
-      <div className="lg:col-span-1 premium-card bg-white flex flex-col space-y-3 h-full overflow-hidden">
+      <div className={`lg:col-span-1 premium-card bg-white flex flex-col space-y-3 h-full overflow-hidden ${viewState === 'list' ? 'flex' : 'hidden lg:flex'}`}>
         <form onSubmit={handleSearch} className="relative flex-shrink-0">
           <input
             type="text"
@@ -114,7 +133,16 @@ const CustomerIntelligence: React.FC = () => {
       </div>
 
       {/* Right Area: Profile Details - independent scroll */}
-      <div className="lg:col-span-3 h-full overflow-y-auto pr-1 space-y-6 pb-6">
+      <div className={`lg:col-span-3 h-full overflow-y-auto pr-1 space-y-6 pb-6 ${viewState === 'profile' ? 'block' : 'hidden lg:block'}`}>
+        {/* Back to List button for mobile/tablet */}
+        <div className="lg:hidden flex-shrink-0">
+          <button
+            onClick={() => setViewState('list')}
+            className="flex items-center space-x-2 text-xs font-bold text-slate-650 dark:text-slate-300 bg-white dark:bg-[#1e293b]/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 rounded-lg cursor-pointer transition-colors shadow-sm"
+          >
+            <span>← Back to Customers</span>
+          </button>
+        </div>
         {isDetailLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>

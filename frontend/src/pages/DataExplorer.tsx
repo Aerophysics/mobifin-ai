@@ -73,7 +73,7 @@ const DataExplorer: React.FC = () => {
       </div>
 
       {/* Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="premium-card bg-white">
           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Registered Agents</span>
           <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.agent_count}</span>
@@ -100,13 +100,13 @@ const DataExplorer: React.FC = () => {
       </div>
 
       {/* Consent Statistics Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="premium-card bg-white col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="premium-card bg-white lg:col-span-2 space-y-6">
           <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center">
-            <ShieldCheck className="h-4.5 w-4.5 text-teal-605 mr-1.5" />
+            <ShieldCheck className="h-4.5 w-4.5 text-teal-655 mr-1.5" />
             Customer Consent Opt-in Metrics
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
             {/* Visual Indicator */}
             <div className="flex flex-col items-center">
               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest block mb-3">Consent Opt-In Rate</span>
