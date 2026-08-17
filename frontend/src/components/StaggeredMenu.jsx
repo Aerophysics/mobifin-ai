@@ -369,9 +369,10 @@ export const StaggeredMenu = ({
         })()}
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
-        <div className="sm-logo" aria-label="Logo">
-          <span style={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '1.4rem', letterSpacing: '-0.5px', color: '#1B4332' }}>
-            HazonSight
+        <div className="sm-logo" aria-label="Logo" style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-sans)', fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.5px', color: '#17280e' }}>
+            <span style={{ background: '#17280e', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 900 }}>M</span>
+            MobiFin AI
           </span>
         </div>
         <button
