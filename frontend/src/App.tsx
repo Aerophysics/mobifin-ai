@@ -187,11 +187,11 @@ const App: React.FC = () => {
       return <LandingPage onLoginClick={() => setViewMode('login')} />;
     }
     return (
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden font-sans p-4">
+      <div className="relative w-full min-h-screen min-h-[100dvh] flex items-center justify-center overflow-y-auto font-sans p-4 py-8">
         {/* Back to Home floating action button */}
         <button
           onClick={() => setViewMode('landing')}
-          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm"
+          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm animate-fadeIn"
         >
           <span>← Back to Home</span>
         </button>
@@ -224,38 +224,38 @@ const App: React.FC = () => {
         </div>
 
         {/* Border Glow Card Container */}
-        <div className="z-10 flex items-center justify-center p-4 max-h-full">
+        <div className="z-10 flex items-center justify-center p-4">
           <BorderGlow
-            className="w-[min(460px,calc(100vw-32px))] max-h-[90vh]"
+            className="w-[calc(100vw-32px)] sm:w-[420px] lg:w-[460px] h-auto"
             backgroundColor="rgba(10, 15, 24, 0.65)"
-            borderRadius={28}
+            borderRadius={22}
             glowColor="160 80 50"
             colors={['#0d9488', '#0f172a', '#064e3b']}
             glowIntensity={1.0}
             edgeSensitivity={20}
           >
-            <div className="w-full h-auto max-h-[85vh] backdrop-blur-xl flex flex-col text-slate-100 p-6 sm:p-[38px] space-y-5 select-none overflow-y-auto rounded-[28px] border border-white/5">
+            <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 p-6 sm:p-9 select-none rounded-[22px] border border-white/5">
               {/* Logo & Brand Mark */}
               <div className="flex flex-col items-center text-center">
-                <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-xl flex items-center justify-center h-[44px] w-[44px] transition-transform hover:scale-105 duration-300">
+                <div className="bg-teal-400 text-slate-950 rounded-xl font-black text-[18px] flex items-center justify-center h-12 w-12 transition-transform hover:scale-105 duration-300">
                   M
                 </div>
-                <h1 className="font-bold text-[32px] tracking-wide text-white mt-4 leading-none">MobiFin AI</h1>
-                <p className="text-[17.5px] font-normal text-white mt-1.5 leading-normal max-w-[320px]">
+                <h1 className="font-bold text-[28px] sm:text-[30px] tracking-wide text-white mt-3.5 leading-[1.1]">MobiFin AI</h1>
+                <p className="text-[13px] sm:text-[13.5px] font-normal text-white/85 mt-1.5 leading-[1.45] max-w-[340px] text-center">
                   AI Financial Intelligence & Alternative Credit Intelligence
                 </p>
               </div>
 
               {/* Form Area */}
-              <form onSubmit={handleLoginSubmit} className="mt-8 space-y-4.5">
+              <form onSubmit={handleLoginSubmit} className="mt-7">
                 {loginError && (
-                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium">
+                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-4">
                     {loginError}
                   </div>
                 )}
                 
-                <div className="space-y-2">
-                  <label className="text-[15px] font-semibold text-white uppercase tracking-[0.06em] block">
+                <div>
+                  <label className="text-[11.5px] font-semibold text-white/80 uppercase tracking-[0.08em] block">
                     Username
                   </label>
                   <input
@@ -263,12 +263,12 @@ const App: React.FC = () => {
                     value={usernameInput}
                     onChange={e => setUsernameInput(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-[#8ea978] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200"
+                    className="w-full h-[50px] px-[14px] text-[14px] sm:text-[15px] bg-slate-900/40 border border-[#8ea978] rounded-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 mt-[7px]"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[15px] font-semibold text-white uppercase tracking-[0.06em] block">
+                <div>
+                  <label className="text-[11.5px] font-semibold text-white/80 uppercase tracking-[0.08em] block mt-4">
                     Password
                   </label>
                   <input
@@ -276,43 +276,43 @@ const App: React.FC = () => {
                     value={passwordInput}
                     onChange={e => setPasswordInput(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-[52px] px-3.5 text-[18px] bg-slate-900/40 border border-white/5 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200"
+                    className="w-full h-[50px] px-[14px] text-[14px] sm:text-[15px] bg-slate-900/40 border border-white/5 rounded-[10px] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 mt-[7px]"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full h-[52px] bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 font-semibold rounded-xl text-[18px] transition-all duration-200 disabled:opacity-50 cursor-pointer mt-6 shadow-md shadow-[#8ea978]/10"
+                  className="w-full h-[50px] bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 font-semibold rounded-[10px] text-[14.5px] transition-all duration-200 disabled:opacity-50 cursor-pointer mt-[22px] shadow-md shadow-[#8ea978]/10 flex items-center justify-center"
                 >
                   {isLoggingIn ? 'Authenticating...' : 'Sign In'}
                 </button>
               </form>
 
               {/* Quick Demo Switcher Presets */}
-              <div className="mt-7 pt-5 border-t border-white/5">
-                <span className="text-[14px] font-semibold text-white uppercase tracking-[0.12em] block text-center mb-4">
+              <div className="mt-7 pt-[18px] border-t border-white/5">
+                <span className="text-[10.5px] font-semibold text-white uppercase tracking-[0.12em] block text-center">
                   Demo Quick Access
                 </span>
-                <div className="flex flex-col space-y-2">
+                <div className="flex flex-col mt-3.5 space-y-2">
                   <button
                     onClick={() => handlePresetLogin('kwame')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
                   >
                     Agent — Kwame Centre
                   </button>
                   <button
                     onClick={() => handlePresetLogin('forms')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
                   >
                     Financial Institution — Forms Capital
                   </button>
                   <button
                     onClick={() => handlePresetLogin('admin')}
                     disabled={isLoggingIn}
-                    className="w-full h-[48px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[17.5px] rounded-xl border border-white/5 transition-all duration-200 text-center cursor-pointer"
+                    className="w-full h-[46px] bg-white/5 hover:bg-white/10 hover:border-white/10 text-white font-medium text-[13.5px] rounded-[10px] border border-white/5 transition-all duration-200 text-center cursor-pointer flex items-center justify-center"
                   >
                     System Operator (Admin)
                   </button>
