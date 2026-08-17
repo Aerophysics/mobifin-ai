@@ -15,6 +15,11 @@ import DemoManagement from './pages/DemoManagement';
 import Settings from './pages/Settings';
 import AIInsights from './pages/AIInsights';
 import { Sparkles, ShieldAlert } from 'lucide-react';
+// @ts-ignore
+import Grainient from './components/Grainient';
+// @ts-ignore
+import TiltedCard from './components/TiltedCard';
+
 
 const Unauthorized: React.FC = () => (
   <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 p-6 animate-fadeIn">
@@ -169,89 +174,113 @@ const App: React.FC = () => {
 
   if (!currentUser) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-50 font-sans p-4">
-        <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-          {/* Header */}
-          <div className="p-6 bg-slate-950 text-slate-100 flex flex-col items-center text-center">
-            <div className="bg-teal-500 text-slate-950 p-2 rounded-lg font-black text-lg flex items-center justify-center h-9 w-9">
-              M
-            </div>
-            <h1 className="font-extrabold text-sm tracking-wider text-white mt-3">MobiFin AI</h1>
-            <p className="text-[10px] text-slate-400 mt-1 max-w-[280px]">
-              AI Financial Intelligence & Alternative Credit Registry
-            </p>
-          </div>
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden font-sans p-4">
+        {/* Grainient WebGL Background */}
+        <div className="absolute inset-0 z-0">
+          <Grainient 
+            color1="#0d9488" 
+            color2="#0f172a" 
+            color3="#064e3b"
+            timeSpeed={0.15}
+            warpStrength={0.7}
+            zoom={1.1}
+          />
+        </div>
 
-          {/* Form Area */}
-          <div className="p-6 space-y-5 flex-1">
-            <form onSubmit={handleLoginSubmit} className="space-y-3.5">
-              {loginError && (
-                <div className="bg-red-50 text-red-800 text-[10px] p-2.5 rounded-lg border border-red-200 font-medium">
-                  {loginError}
+        {/* Tilted Card Container */}
+        <div className="z-10 w-full max-w-sm flex items-center justify-center">
+          <TiltedCard
+            imageSrc="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            imageWidth="340px"
+            imageHeight="495px"
+            containerWidth="340px"
+            containerHeight="495px"
+            showTooltip={false}
+            displayOverlayContent={true}
+            overlayContent={
+              <div className="w-full h-full bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-100 p-6 space-y-5">
+                {/* Header */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-teal-400 text-slate-950 p-2 rounded-lg font-black text-lg flex items-center justify-center h-9 w-9">
+                    M
+                  </div>
+                  <h1 className="font-extrabold text-sm tracking-wider text-white mt-3">MobiFin AI</h1>
+                  <p className="text-[10px] text-slate-400 mt-1 max-w-[280px]">
+                    AI Financial Intelligence & Alternative Credit Registry
+                  </p>
                 </div>
-              )}
-              
-              <div>
-                <label className="text-[9px] font-bold text-slate-450 uppercase tracking-widest block mb-1">Username</label>
-                <input
-                  type="text"
-                  value={usernameInput}
-                  onChange={e => setUsernameInput(e.target.value)}
-                  placeholder="Username"
-                  className="w-full text-xs bg-slate-50 border border-slate-250 rounded-lg p-2.5 focus:outline-none focus:border-slate-800 transition"
-                />
-              </div>
 
-              <div>
-                <label className="text-[9px] font-bold text-slate-450 uppercase tracking-widest block mb-1">Password</label>
-                <input
-                  type="password"
-                  value={passwordInput}
-                  onChange={e => setPasswordInput(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full text-xs bg-slate-50 border border-slate-250 rounded-lg p-2.5 focus:outline-none focus:border-slate-800 transition"
-                />
-              </div>
+                {/* Form Area */}
+                <form onSubmit={handleLoginSubmit} className="space-y-3.5 flex-1">
+                  {loginError && (
+                    <div className="bg-red-500/10 text-red-300 text-[10px] p-2.5 rounded-lg border border-red-500/20 font-medium">
+                      {loginError}
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Username</label>
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={e => setUsernameInput(e.target.value)}
+                      placeholder="Username"
+                      className="w-full text-xs bg-white/5 border border-white/10 rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 transition"
+                    />
+                  </div>
 
-              <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs transition disabled:opacity-50 cursor-pointer"
-              >
-                {isLoggingIn ? 'Authenticating...' : 'Sign In'}
-              </button>
-            </form>
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={passwordInput}
+                      onChange={e => setPasswordInput(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full text-xs bg-white/5 border border-white/10 rounded-lg p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 transition"
+                    />
+                  </div>
 
-            {/* Quick Demo Switcher Presets */}
-            <div className="space-y-2 pt-4 border-t border-slate-100">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block text-center mb-2">
-                Demo Quick Access
-              </span>
-              <div className="flex flex-col space-y-1.5">
-                <button
-                  onClick={() => handlePresetLogin('kwame')}
-                  disabled={isLoggingIn}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-[10px] py-2 px-3 rounded-lg border border-slate-200 transition text-center cursor-pointer"
-                >
-                  Agent — Kwame
-                </button>
-                <button
-                  onClick={() => handlePresetLogin('forms')}
-                  disabled={isLoggingIn}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-[10px] py-2 px-3 rounded-lg border border-slate-200 transition text-center cursor-pointer"
-                >
-                  Financial Institution — Forms Capital
-                </button>
-                <button
-                  onClick={() => handlePresetLogin('admin')}
-                  disabled={isLoggingIn}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-[10px] py-2 px-3 rounded-lg border border-slate-200 transition text-center cursor-pointer"
-                >
-                  Admin
-                </button>
+                  <button
+                    type="submit"
+                    disabled={isLoggingIn}
+                    className="w-full bg-teal-400 hover:bg-teal-350 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition disabled:opacity-50 cursor-pointer mt-2"
+                  >
+                    {isLoggingIn ? 'Authenticating...' : 'Sign In'}
+                  </button>
+                </form>
+
+                {/* Quick Demo Switcher Presets */}
+                <div className="space-y-2 pt-4 border-t border-white/10">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block text-center mb-2">
+                    Demo Quick Access
+                  </span>
+                  <div className="flex flex-col space-y-1.5">
+                    <button
+                      onClick={() => handlePresetLogin('kwame')}
+                      disabled={isLoggingIn}
+                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                    >
+                      Agent — Kwame Centre
+                    </button>
+                    <button
+                      onClick={() => handlePresetLogin('forms')}
+                      disabled={isLoggingIn}
+                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                    >
+                      Financial Institution — Forms Capital
+                    </button>
+                    <button
+                      onClick={() => handlePresetLogin('admin')}
+                      disabled={isLoggingIn}
+                      className="w-full bg-white/5 hover:bg-white/10 text-slate-200 font-bold text-[10px] py-2 px-3 rounded-lg border border-white/10 transition text-center cursor-pointer"
+                    >
+                      System Operator (Admin)
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            }
+          />
         </div>
       </div>
     );

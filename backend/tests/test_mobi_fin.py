@@ -122,12 +122,12 @@ def test_liquidity_recommendations(db_session):
 def test_anomaly_detection():
     """Verify Isolation Forest / deterministic rules for anomaly checks"""
     # 1. Standard transaction
-    tx_normal = {"amount": 200.0, "direction": "inflow", "transaction_type": "deposit", "timestamp": datetime.utcnow(), "customer_id": 1}
+    tx_normal = {"amount": 200.0, "direction": "inflow", "transaction_type": "deposit", "timestamp": datetime(2026, 8, 17, 14, 0, 0), "customer_id": 1}
     is_anom, score, reason = MLInference.inspect_transaction_anomaly(tx_normal, [])
     assert is_anom is False
     
     # 2. Extreme amount rule check
-    tx_huge = {"amount": 10000.0, "direction": "outflow", "transaction_type": "withdrawal", "timestamp": datetime.utcnow(), "customer_id": 2}
+    tx_huge = {"amount": 10000.0, "direction": "outflow", "transaction_type": "withdrawal", "timestamp": datetime(2026, 8, 17, 14, 0, 0), "customer_id": 2}
     is_anom, score, reason = MLInference.inspect_transaction_anomaly(tx_huge, [])
     assert is_anom is True
     assert "exceeds the normal single transaction threshold" in reason
