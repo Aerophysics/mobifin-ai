@@ -19,6 +19,8 @@ import { Sparkles, ShieldAlert } from 'lucide-react';
 import Grainient from './components/Grainient';
 // @ts-ignore
 import BorderGlow from './components/BorderGlow';
+import LandingPage from './pages/LandingPage';
+
 
 
 const Unauthorized: React.FC = () => (
@@ -57,6 +59,14 @@ const App: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'landing' | 'login'>('landing');
+
+  useEffect(() => {
+    if (!currentUser) {
+      setViewMode('landing');
+    }
+  }, [currentUser]);
+
 
   useEffect(() => {
     const user = ApiService.getCurrentUser();
@@ -173,8 +183,18 @@ const App: React.FC = () => {
   };
 
   if (!currentUser) {
+    if (viewMode === 'landing') {
+      return <LandingPage onLoginClick={() => setViewMode('login')} />;
+    }
     return (
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden font-sans p-4">
+        {/* Back to Home floating action button */}
+        <button
+          onClick={() => setViewMode('landing')}
+          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm"
+        >
+          <span>← Back to Home</span>
+        </button>
         {/* Grainient WebGL Background */}
         <div className="absolute inset-0 z-0">
           <Grainient 
