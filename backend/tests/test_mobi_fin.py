@@ -9,20 +9,7 @@ from backend.app.ml.inference import MLInference
 from backend.app.services.analytics import AnalyticsService
 from backend.app.services.recommender import RecommenderService
 
-# Use an in-memory SQLite database for testing
-TEST_DATABASE_URL = "sqlite:///:memory:"
 
-@pytest.fixture(name="db_session")
-def fixture_db_session():
-    engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-    Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = TestingSessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
-        Base.metadata.drop_all(bind=engine)
 
 def test_feature_exclusion_location():
     """ML test verifying location is excluded from credit features"""

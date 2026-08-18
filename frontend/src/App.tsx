@@ -18,6 +18,9 @@ import AIInsights from './pages/AIInsights';
 import { Onboarding } from './pages/Onboarding';
 import { TrustedSources } from './pages/TrustedSources';
 import { AddBusinessLocation } from './pages/AddBusinessLocation';
+import { Referrals } from './pages/Referrals';
+import { InstitutionalReferrals } from './pages/InstitutionalReferrals';
+import { UssdSimulator } from './components/UssdSimulator';
 import { Sparkles, ShieldAlert } from 'lucide-react';
 // @ts-ignore
 import Grainient from './components/Grainient';
@@ -193,6 +196,8 @@ const App: React.FC = () => {
         return <CustomerIntelligence />;
       case 'consent':
         return <ConsentFlow />;
+      case 'referrals':
+        return currentUser.role === 'FINANCIAL_INSTITUTION' ? <InstitutionalReferrals /> : <Referrals />;
       case 'performance':
         return <ModelPerformance />;
       case 'explorer':
@@ -391,14 +396,17 @@ const App: React.FC = () => {
   }
 
   return (
-    <DashboardLayout
-      activePage={activePage}
-      setActivePage={setActivePage}
-      currentUser={currentUser}
-      setCurrentUser={setCurrentUser}
-    >
-      {renderPage()}
-    </DashboardLayout>
+    <>
+      <DashboardLayout
+        activePage={activePage}
+        setActivePage={setActivePage}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+      >
+        {renderPage()}
+      </DashboardLayout>
+      <UssdSimulator />
+    </>
   );
 };
 

@@ -262,3 +262,24 @@ class TrustedSource(Base):
     type = Column(String, nullable=False)  # Trusted Individual, Another Mobile Money Agent, Super Agent, Financial Institution, Other
     notes = Column(Text, nullable=True)
     status = Column(String, default="active")  # active, inactive
+
+class Referral(Base):
+    __tablename__ = "referrals"
+    
+    referral_id = Column(Integer, primary_key=True, index=True)
+    agent_id = Column(Integer, ForeignKey("agents.agent_id"), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=False)
+    institution_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    requested_amount = Column(Float, nullable=False)
+    purpose = Column(Text, nullable=True)
+    status = Column(String, default="CONSENT_REQUESTED")  # DRAFT, CONSENT_REQUESTED, CONSENT_GRANTED, etc.
+    consent_status = Column(String, default="AWAITING_CONSENT")  # AWAITING_CONSENT, CONSENT_ACTIVE, etc.
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    consent_requested_at = Column(DateTime, default=datetime.datetime.utcnow)
+    consent_responded_at = Column(DateTime, nullable=True)
+    consent_expiry = Column(DateTime, nullable=True)
+    application_status = Column(String, default="PENDING")  # PENDING, APPROVED, REJECTED, UNDER_REVIEW, MANUAL_REVIEW
+    
+    agent = relationship("Agent", backref="referrals")
+    customer = relationship("Customer", backref="referrals")
+    institution = relationship("User", backref="referrals")

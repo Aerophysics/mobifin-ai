@@ -143,12 +143,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
                 
                 {/* Refined Headline with tightened line-height */}
                 <h1 className="text-4xl md:text-5xl lg:text-[56px] font-extrabold tracking-tight text-forest leading-[1.08] max-w-[48rem] mb-6">
-                  Turn Mobile Money Data<br className="hidden sm:inline" /> Into Financial Intelligence.
+                  Turn Financial Activity<br className="hidden sm:inline" /> Into Financial Access.
                 </h1>
                 
                 {/* Corrected Subtitle detailing both layers without SME mention */}
                 <p className="mt-4 w-full max-w-[42rem] opacity-90 text-base md:text-lg lg:text-[19px] leading-relaxed text-slate-800 font-medium">
-                  MobiFin helps Mobile Money Agents manage liquidity and grow their businesses, while transforming consented financial behavior into explainable alternative credit intelligence for underserved customers.
+                  MobiFin connects Mobile Money Agents, underserved customers, and financial institutions through consent-based financial intelligence. Agents can refer customers to participating financial institutions. Customers control access through secure consent, while institutions receive additional financial intelligence to support responsible underwriting.
                 </p>
                 
                 {/* Hero CTA Structure with Hierarchy Gating */}

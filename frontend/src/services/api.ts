@@ -272,6 +272,48 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  // --- CUSTOMER REFERRALS & USSD CONSENT ---
+  static async getReferrals(): Promise<any[]> {
+    return this.request<any[]>('/referrals');
+  }
+
+  static async createReferral(data: any): Promise<any> {
+    return this.request<any>('/referrals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async getInstitutionReferrals(): Promise<any[]> {
+    return this.request<any[]>('/institution/referrals');
+  }
+
+  static async getReferredCustomerProfile(id: number): Promise<any> {
+    return this.request<any>(`/institution/referral/${id}/profile`);
+  }
+
+  static async postLendingDecision(id: number, decision: string): Promise<any> {
+    return this.request<any>(`/institution/referral/${id}/decision?decision=${decision}`, {
+      method: 'POST',
+    });
+  }
+
+  static async ussdGetPendingRequests(): Promise<any[]> {
+    return this.request<any[]>('/ussd/pending-requests');
+  }
+
+  static async ussdConsentRespond(referralId: number, selection: number): Promise<any> {
+    return this.request<any>(`/ussd/consent-respond?referral_id=${referralId}&selection=${selection}`, {
+      method: 'POST',
+    });
+  }
+
+  static async ussdConsentRevoke(referralId: number): Promise<any> {
+    return this.request<any>(`/ussd/consent-revoke?referral_id=${referralId}`, {
+      method: 'POST',
+    });
+  }
 }
 
 export default ApiService;

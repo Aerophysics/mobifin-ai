@@ -215,3 +215,34 @@ class TrustedSourceResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ReferralCreate(BaseModel):
+    phone: str
+    name: str
+    requested_amount: float
+    purpose: Optional[str] = None
+    institution_id: int
+
+class ReferralResponse(BaseModel):
+    referral_id: int
+    agent_id: int
+    customer_id: int
+    institution_id: int
+    requested_amount: float
+    purpose: Optional[str] = None
+    status: str
+    consent_status: str
+    created_at: datetime
+    consent_requested_at: Optional[datetime] = None
+    consent_responded_at: Optional[datetime] = None
+    consent_expiry: Optional[datetime] = None
+    application_status: str
+    customer_name: Optional[str] = None
+    agent_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class ConsentResponseRequest(BaseModel):
+    phone: str
+    selection: int  # 1 = Approve, 2 = Decline

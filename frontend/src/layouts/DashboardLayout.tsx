@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound, 
   BarChart2, Database, Settings as SettingsIcon, BrainCircuit, 
   LogOut, RefreshCw, ShieldCheck, Activity, User, ChevronDown, ShieldAlert,
-  Server, Wrench, Sun, Moon, Menu, BookOpen, Bell, Check
+  Server, Wrench, Sun, Moon, Menu, BookOpen, Bell, Check, Landmark
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { UserProfile } from '../types';
@@ -198,6 +198,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           ]
         },
         {
+          title: 'Financial Services',
+          items: [
+            { name: 'Customer Referrals', icon: Landmark, page: 'referrals' }
+          ]
+        },
+        {
           title: 'Intelligence',
           items: [
             { name: 'AI Insights', icon: BrainCircuit, page: 'ai-insights' }
@@ -223,7 +229,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {
           title: 'Customer Intelligence',
           items: [
-            { name: 'Customers', icon: Users, page: 'credit' }
+            { name: 'Customers', icon: Users, page: 'credit' },
+            { name: 'Customer Referrals', icon: Landmark, page: 'referrals' }
           ]
         },
         {
@@ -281,6 +288,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         case 'liquidity': return 'Liquidity Intelligence';
         case 'analytics': return 'Business Analytics';
         case 'ai-insights': return 'AI Insights';
+        case 'referrals': return 'Customer Referrals';
         case 'settings': return 'Settings';
         default: return 'Operational Panel';
       }
@@ -290,6 +298,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       switch (activePage) {
         case 'dashboard': return 'Dashboard';
         case 'credit': return 'Customer Intelligence';
+        case 'referrals': return 'Credit Applications';
         case 'analytics': return 'Portfolio Insights';
         case 'settings': return 'Settings';
         default: return 'Institutional Console';
@@ -322,6 +331,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         case 'liquidity': return 'Forecast demand and optimize your cash and e-float.';
         case 'analytics': return 'Understand your transaction activity and business performance.';
         case 'ai-insights': return 'Grounded AI audits and anomaly alerts.';
+        case 'referrals': return 'Initiate credit referrals for your Mobile Money customers.';
         case 'settings': return 'Configure your security keys, notifications, and profile details.';
         default: return '';
       }
@@ -331,6 +341,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       switch (activePage) {
         case 'dashboard': return 'Monitor aggregate platform credit metrics and consented history.';
         case 'credit': return 'Evaluate consented alternative financial profiles.';
+        case 'referrals': return 'Perform underwriting review and make lending decisions.';
         case 'analytics': return 'Understand customer financial behavior and readiness.';
         case 'settings': return 'Configure custom underwriting parameters and connection keys.';
         default: return '';
