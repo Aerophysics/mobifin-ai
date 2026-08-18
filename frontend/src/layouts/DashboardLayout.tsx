@@ -311,16 +311,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className={`h-[70px] px-6 flex items-center justify-between flex-shrink-0 border-b ${
           isGreenSide ? 'border-[#243e16]' : 'border-slate-900'
         }`}>
-          <div className="flex items-center space-x-3">
-            <div className="bg-teal-500 text-slate-950 p-2 rounded font-black text-base flex items-center justify-center h-8 w-8">
+          <div className="flex items-center space-x-2.5 pl-1">
+            <div className="bg-white text-[#17280e] p-1.5 rounded font-black text-sm flex items-center justify-center h-7 w-7">
               M
             </div>
-            <div>
-              <h1 className="font-extrabold text-sm leading-tight tracking-wider text-white">MobiFin AI</h1>
-              <p className={`text-[10px] font-semibold uppercase tracking-widest ${
-                isGreenSide ? 'text-white/60' : 'text-slate-500'
-              }`}>Financial Console</p>
-            </div>
+            <span className="font-bold text-xl tracking-tighter text-white">
+              MobiFin AI
+            </span>
           </div>
           {/* Mobile close button inside sidebar drawer */}
           <button 
@@ -435,16 +432,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Database status tag - Hide on small mobile */}
-            <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide border ${
-              isSqlite 
-                ? 'bg-amber-50 text-amber-700 border-amber-200' 
-                : 'bg-emerald-50 text-teal-700 border-emerald-200'
-            }`}>
-              <Server className="h-3 w-3 mr-1.5" />
-              {isSqlite ? 'SQLite sandbox' : 'Postgres active'}
-            </span>
-
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
