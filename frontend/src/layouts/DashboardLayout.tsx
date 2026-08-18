@@ -285,10 +285,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       ? 'FI — Forms Capital' 
       : 'Admin';
 
-  const isGreenSide = currentUser?.role === 'AGENT' || currentUser?.role === 'FINANCIAL_INSTITUTION';
+  const isGreenSide = true;
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#0b0f19] font-sans text-slate-800 dark:text-slate-100">
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-white dark:bg-[#091406] font-sans text-slate-800 dark:text-slate-100">
       
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileMenuOpen && (
@@ -417,7 +417,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Main Container Workspace */}
       <div className="flex flex-col h-full overflow-hidden">
         {/* Header - Height 70px */}
-        <header className="h-[70px] bg-white dark:bg-[#111726] border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 flex items-center justify-between flex-shrink-0 animate-fadeIn">
+        <header className="h-[70px] bg-white dark:bg-[#0c1c09] border-b border-slate-250 dark:border-[#1e3a12] px-4 md:px-8 flex items-center justify-between flex-shrink-0 animate-fadeIn">
           <div className="flex items-center space-x-3 overflow-hidden">
             {/* Hamburger button */}
             <button
@@ -474,7 +474,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <>
                   {/* Click outside backdrop overlay */}
                   <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-[#111726] border border-slate-250 dark:border-slate-800 rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
+                  <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-[#0c1c09] border border-slate-250 dark:border-[#1e3a12] rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
                     <button
                       onClick={() => handleRoleSwitch('AGENT')}
                       className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
@@ -504,7 +504,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </header>
 
         {/* Content Box scrolling independently */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 dark:bg-[#0b0f19] text-slate-850 dark:text-slate-100">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-white dark:bg-[#091406] text-slate-850 dark:text-slate-100">
           {children}
         </main>
       </div>

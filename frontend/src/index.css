@@ -88,31 +88,31 @@ body {
 }
 
 .dark body {
-  background-color: #0b0f19;
+  background-color: #091406;
   color: #f8fafc;
 }
 
 .dark .bg-slate-50,
 .dark .bg-gray-50 {
-  background-color: #0b0f19 !important;
+  background-color: #091406 !important;
 }
 
 .dark .bg-white {
-  background-color: rgba(22, 30, 49, 0.7) !important;
+  background-color: rgba(20, 35, 12, 0.55) !important;
   color: #f8fafc !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
 }
 
 .dark .premium-card {
-  background-color: rgba(22, 30, 49, 0.7) !important;
+  background-color: rgba(20, 35, 12, 0.55) !important;
   color: #f8fafc !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
 }
 
 .dark header.bg-white {
-  background-color: rgba(15, 23, 42, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(12, 28, 9, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
   backdrop-filter: blur(20px);
 }
 
@@ -143,14 +143,14 @@ body {
 .dark input,
 .dark select,
 .dark textarea {
-  background-color: rgba(15, 23, 42, 0.6) !important;
+  background-color: rgba(10, 20, 7, 0.75) !important;
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Fix chart components tooltip background in dark mode */
+/* Fix chart components tooltip background in dark mode System */
 .dark .recharts-default-tooltip {
-  background-color: #0f172a !important;
+  background-color: #0c1c09 !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 .dark .recharts-tooltip-item {
