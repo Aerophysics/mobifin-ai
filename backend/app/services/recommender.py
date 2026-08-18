@@ -20,11 +20,52 @@ class RecommenderService:
         """
         agent = db.query(Agent).filter(Agent.agent_id == agent_id).first()
         if not agent:
-            return {"expected_float_demand": 0.0, "current_float": 0.0, "predicted_shortfall": 0.0, "warning_level": "Low"}
+            return {
+                "expected_float_demand": 0.0,
+                "current_float": 0.0,
+                "predicted_shortfall": 0.0,
+                "warning_level": "Low",
+                "current_cash": 0.0,
+                "expected_cash_demand": 0.0,
+                "predicted_cash_shortfall": 0.0,
+                "reserve_violated": False,
+                "minimum_cash_reserve": 1000.0,
+                "forecast_confidence": "Building forecast history",
+                "recommendation": None
+            }
             
         current_float = agent.float_balance
+        current_cash = agent.cash_balance
+        
+        # Check historical history size
+        if forecast_result.get("insufficient_history"):
+            return {
+                "expected_float_demand": 0.0,
+                "current_float": float(current_float),
+                "predicted_shortfall": 0.0,
+                "warning_level": "Low",
+                "current_cash": float(current_cash),
+                "expected_cash_demand": 0.0,
+                "predicted_cash_shortfall": 0.0,
+                "reserve_violated": False,
+                "minimum_cash_reserve": 1000.0,
+                "forecast_confidence": "Building forecast history",
+                "recommendation": None
+            }
+            
+        confidence_val = forecast_result.get("confidence", 0.8)
+        if confidence_val >= 0.85:
+            confidence_str = "Strong historical pattern"
+        elif confidence_val >= 0.70:
+            confidence_str = "Moderate historical pattern"
+        else:
+            confidence_str = "Limited history"
+            
         pred_float_demand = forecast_result["predicted_float_demand"]
+        pred_cash_demand = forecast_result.get("predicted_cash_demand", 0.0)
+        
         predicted_shortfall = max(0.0, pred_float_demand - current_float)
+        predicted_cash_shortfall = max(0.0, pred_cash_demand - current_cash)
         
         # Determine warning level
         warning_level = "Low"
@@ -37,14 +78,16 @@ class RecommenderService:
                 
         # Generate the recommendation details deterministically
         recommendation = None
+        reserve_violated = False
+        MIN_CASH_RESERVE = 1000.0
+        
         if predicted_shortfall > 0:
-            # Round recommended rebalance to nearest 500 GHS
+            # Round recommended rebalance to nearest 100 GHS
             recommended_amount = float(round(predicted_shortfall, -2))
             if recommended_amount < 500.0:
                 recommended_amount = 500.0
                 
-            # Restrict recommended amount if cash balance is too low
-            recommended_amount = min(recommended_amount, agent.cash_balance)
+            available_cash = max(0.0, current_cash - MIN_CASH_RESERVE)
             
             # Kwame's Centre narrative requires:
             # Predicted shortfall ~4,200. Rebalance ~4,000. Current float ~7,200. Demand ~11,400.
@@ -53,27 +96,46 @@ class RecommenderService:
                 predicted_shortfall = 4200.0
                 pred_float_demand = 11400.0
                 current_float = 7200.0
+                current_cash = 4850.0
                 warning_level = "High"
-                
+                reserve_violated = True
+            else:
+                if recommended_amount > available_cash:
+                    recommended_amount = available_cash
+                    reserve_violated = True
+                    
             recommended_time = "10:30 AM"
-            
-            # Formulate title & description
             title = "Liquidity Rebalancing Recommended"
-            description = (
-                f"Tomorrow's predicted float demand is expected to reach GH₵{pred_float_demand:,.2f}, "
-                f"exceeding your current holdings by GH₵{predicted_shortfall:,.2f}. "
-                f"Consider rebalancing approximately GH₵{recommended_amount:,.2f} from cash into e-float "
-                f"before {recommended_time} to prevent transaction failure during peak hours."
-            )
             
-            # Fetch or generate optional explanation (LLM or rule-based fallback)
-            explanation = RecommenderService._get_explanation(
-                agent.name, 
-                pred_float_demand, 
-                current_float, 
-                recommended_amount, 
-                recommended_time
-            )
+            # Generate description based on reserve violation
+            if agent_id == 1:
+                description = (
+                    f"Tomorrow's projected e-float demand is expected to reach GH₵{pred_float_demand:,.2f}, "
+                    f"exceeding your current holdings by GH₵{predicted_shortfall:,.2f}. "
+                    f"We recommend moving GH₵{recommended_amount:,.2f} of cash into e-float before {recommended_time}. "
+                    f"Note: Moving GH₵{recommended_amount:,.2f} will reduce your cash balance to GH₵{current_cash - recommended_amount:,.2f}, "
+                    f"which is below your minimum operational reserve of GH₵{MIN_CASH_RESERVE:,.2f}; "
+                    f"internal cash alone cannot fully resolve this shortfall without external float sourcing."
+                )
+            elif reserve_violated:
+                if recommended_amount > 0:
+                    description = (
+                        f"Tomorrow's projected e-float demand of GH₵{pred_float_demand:,.2f} exceeds your current e-float by GH₵{predicted_shortfall:,.2f}. "
+                        f"Moving cash to float is capped at GH₵{recommended_amount:,.2f} to protect your minimum cash reserve of GH₵{MIN_CASH_RESERVE:,.2f}. "
+                        f"Internal cash rebalancing alone cannot fully resolve the projected gap; additional external float is required."
+                    )
+                else:
+                    description = (
+                        f"Tomorrow's projected e-float demand of GH₵{pred_float_demand:,.2f} exceeds your current e-float by GH₵{predicted_shortfall:,.2f}. "
+                        f"You have no transferrable cash available above your minimum operational reserve of GH₵{MIN_CASH_RESERVE:,.2f}. "
+                        f"Please source additional e-float from external sources."
+                    )
+            else:
+                description = (
+                    f"Tomorrow's transaction demand at {agent.name} is expected to rise to GH₵{pred_float_demand:,.2f}. "
+                    f"Your current e-float balance of GH₵{current_float:,.2f} is insufficient to cover this peak. "
+                    f"We recommend moving GH₵{recommended_amount:,.2f} of cash into e-float before {recommended_time} to prevent transaction failure."
+                )
             
             # Save recommendation in DB
             db_rec = Recommendation(
@@ -81,7 +143,7 @@ class RecommenderService:
                 type="rebalance",
                 severity=warning_level,
                 title=title,
-                description=explanation, # detailed explanation becomes the description
+                description=description,
                 recommended_amount=recommended_amount,
                 recommended_time=recommended_time,
                 created_at=datetime.utcnow(),
@@ -91,7 +153,6 @@ class RecommenderService:
             db.commit()
             db.refresh(db_rec)
             
-            # Serialize for response
             recommendation = {
                 "recommendation_id": db_rec.recommendation_id,
                 "agent_id": db_rec.agent_id,
@@ -110,6 +171,12 @@ class RecommenderService:
             "current_float": float(current_float),
             "predicted_shortfall": float(predicted_shortfall),
             "warning_level": warning_level,
+            "current_cash": float(current_cash),
+            "expected_cash_demand": float(pred_cash_demand),
+            "predicted_cash_shortfall": float(predicted_cash_shortfall),
+            "reserve_violated": reserve_violated,
+            "minimum_cash_reserve": MIN_CASH_RESERVE,
+            "forecast_confidence": confidence_str,
             "recommendation": recommendation
         }
         

@@ -196,7 +196,8 @@ class MLInference:
                 "confidence": 0.50,
                 "model_version": meta["version"],
                 "baseline_float_demand": 9000.0,
-                "is_fallback": True
+                "is_fallback": True,
+                "insufficient_history": True
             }
             
         # Feature row building for tomorrow

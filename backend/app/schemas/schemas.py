@@ -135,6 +135,12 @@ class LiquidityRecommendationEngineResponse(BaseModel):
     predicted_shortfall: float
     recommendation: Optional[RecommendationResponse] = None
     warning_level: str  # Low, Medium, High
+    current_cash: Optional[float] = 0.0
+    expected_cash_demand: Optional[float] = 0.0
+    predicted_cash_shortfall: Optional[float] = 0.0
+    reserve_violated: Optional[bool] = False
+    minimum_cash_reserve: Optional[float] = 1000.0
+    forecast_confidence: Optional[str] = "Strong historical pattern"
 
 class LiquidityStressTestResponse(BaseModel):
     stress_level: str  # +10%, +20%, +30%

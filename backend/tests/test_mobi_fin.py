@@ -471,3 +471,66 @@ def test_agent_onboarding_no_username(db_session):
     assert res["agent_id"] > 0
     assert res["username"] == "0554444444"
 
+
+def test_liquidity_intelligence_deep_audit(db_session):
+    """Verify deep liquidity intelligence audit: cash/float gaps, operational reserve, timing, insufficient history"""
+    # 1. Test Agent with sufficient cash but low e-float
+    agent = Agent(
+        agent_id=10,
+        name="Reginald Mobile Money",
+        location="Accra",
+        business_age=12,
+        operating_hours="08:00 - 18:00",
+        cash_balance=3000.0,
+        float_balance=500.0,
+        commission_rate=0.015
+    )
+    db_session.add(agent)
+    db_session.commit()
+
+    # Forecast prediction tomorrow:
+    # float demand: 4000.0 (shortfall = 3500.0)
+    # cash demand: 1500.0 (shortfall = 0.0)
+    forecast_data = {
+        "predicted_float_demand": 4000.0,
+        "predicted_cash_demand": 1500.0,
+        "predicted_transaction_volume": 5500.0,
+        "confidence": 0.88,
+        "model_version": "v1.0.0"
+    }
+
+    # Available cash above reserve = 3000 - 1000 = 2000 GHS.
+    # Recommended transfer should be limited to 2000 GHS to protect reserve.
+    rec_data = RecommenderService.generate_recommendation(db_session, 10, forecast_data)
+    
+    # Assertions
+    assert rec_data["expected_float_demand"] == 4000.0
+    assert rec_data["current_float"] == 500.0
+    assert rec_data["predicted_shortfall"] == 3500.0
+    assert rec_data["current_cash"] == 3000.0
+    assert rec_data["expected_cash_demand"] == 1500.0
+    assert rec_data["predicted_cash_shortfall"] == 0.0
+    assert rec_data["reserve_violated"] is True
+    assert rec_data["forecast_confidence"] == "Strong historical pattern"
+    
+    rec_details = rec_data["recommendation"]
+    assert rec_details is not None
+    assert rec_details["recommended_amount"] == 2000.0 # capped by reserve!
+    assert rec_details["recommended_time"] == "10:30 AM"
+
+    # 2. Test new location with insufficient history (insufficient_history: True)
+    insufficient_forecast = {
+        "predicted_float_demand": 9000.0,
+        "predicted_cash_demand": 3000.0,
+        "predicted_transaction_volume": 12000.0,
+        "confidence": 0.50,
+        "model_version": "v1.0.0",
+        "insufficient_history": True
+    }
+    
+    rec_new = RecommenderService.generate_recommendation(db_session, 10, insufficient_forecast)
+    assert rec_new["forecast_confidence"] == "Building forecast history"
+    assert rec_new["expected_float_demand"] == 0.0
+    assert rec_new["predicted_shortfall"] == 0.0
+    assert rec_new["recommendation"] is None
+

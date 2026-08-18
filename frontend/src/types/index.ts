@@ -106,6 +106,12 @@ export interface LiquidityRecommendations {
   predicted_shortfall: number;
   recommendation: Recommendation | null;
   warning_level: 'Low' | 'Medium' | 'High';
+  current_cash?: number;
+  expected_cash_demand?: number;
+  predicted_cash_shortfall?: number;
+  reserve_violated?: boolean;
+  minimum_cash_reserve?: number;
+  forecast_confidence?: string;
 }
 
 export interface StressTestScenario {

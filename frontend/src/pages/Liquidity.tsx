@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Droplet, AlertTriangle, CheckCircle, BarChart3, TrendingUp, ShieldAlert,
-  Flame, Sparkles, Coins, Wallet
+  CheckCircle, BarChart3, TrendingUp, ShieldAlert,
+  Flame, Sparkles, Coins, Wallet, ArrowRight, Info
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ApiService from '../services/api';
 import { Forecast, LiquidityRecommendations, StressTestScenario, AgentProfile } from '../types';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
-import { GlassMetric } from '../components/glass/GlassMetric';
 import { GlassButton } from '../components/glass/GlassButton';
 import { GlassBadge } from '../components/glass/GlassBadge';
 
@@ -18,6 +17,7 @@ const Liquidity: React.FC = () => {
   const [forecast, setForecast] = useState<Forecast | null>(null);
   const [stressTests, setStressTests] = useState<StressTestScenario[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
   useEffect(() => {
     fetchLiquidityData();
@@ -51,169 +51,363 @@ const Liquidity: React.FC = () => {
     );
   }
 
-  const shortfall = liquidity?.predicted_shortfall || 0;
-  const hasShortfall = shortfall > 0;
+  // Current Position
+  const cashOnHand = liquidity?.current_cash ?? agent?.cash_balance ?? 0;
+  const floatBalance = liquidity?.current_float ?? agent?.float_balance ?? 0;
+  const totalLiquidity = cashOnHand + floatBalance;
+
+  // Forecast values
+  const expectedFloatDemand = liquidity?.expected_float_demand ?? 0;
+  const expectedCashDemand = liquidity?.expected_cash_demand ?? 0;
+  const confidence = liquidity?.forecast_confidence || "Strong historical pattern";
+  const isBuildingHistory = confidence === "Building forecast history";
+
+  // Gap / Risk values
+  const floatShortfall = liquidity?.predicted_shortfall ?? 0;
+  const cashShortfall = liquidity?.predicted_cash_shortfall ?? 0;
+  const hasShortfall = floatShortfall > 0 || cashShortfall > 0;
   const rec = liquidity?.recommendation;
 
   const chartData = [
-    { name: 'Today', 'Projected Demand': forecast ? forecast.predicted_float_demand * 0.85 : 8500, 'Holdings Limit': liquidity?.current_float || 7200 },
-    { name: 'Tomorrow (Peak)', 'Projected Demand': forecast?.predicted_float_demand || 11400, 'Holdings Limit': liquidity?.current_float || 7200 },
-    { name: 'Day +2', 'Projected Demand': forecast ? forecast.predicted_float_demand * 0.9 : 9200, 'Holdings Limit': liquidity?.current_float || 7200 },
-    { name: 'Day +3', 'Projected Demand': forecast ? forecast.predicted_float_demand * 0.95 : 9800, 'Holdings Limit': liquidity?.current_float || 7200 }
+    { 
+      name: 'Cash', 
+      'Current Holdings': cashOnHand, 
+      'Expected Demand': isBuildingHistory ? 0 : expectedCashDemand 
+    },
+    { 
+      name: 'E-Float', 
+      'Current Holdings': floatBalance, 
+      'Expected Demand': isBuildingHistory ? 0 : expectedFloatDemand 
+    }
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
-      {/* Top Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <GlassMetric 
-          title="Current Cash"
-          value={`GH₵${agent?.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={Coins}
-          iconColorClass="text-emerald-500"
-          subtitle="Available for Rebalance"
-        />
+    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn pb-12 select-none text-white">
+      {/* Page Header */}
+      <div>
+        <h3 className="text-xl font-extrabold text-[var(--mf-text-primary)] tracking-tight">Liquidity Intelligence</h3>
+        <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Manage e-float and physical cash reserves driven by machine learning forecasts.</p>
+      </div>
 
-        <GlassMetric 
-          title="Current E-Float"
-          value={`GH₵${liquidity?.current_float.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={Wallet}
-          iconColorClass="text-sky-500"
-          subtitle="Digital Reserves"
-        />
+      {/* 1. CURRENT POSITION */}
+      <GlassPanel className="p-6 space-y-4">
+        <div>
+          <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Current Position</span>
+          <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Your cash and digital token positions across this branch.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <GlassCard className="p-4 flex flex-col justify-between space-y-2 border-white/5">
+            <div>
+              <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest block">Cash on Hand</span>
+              <span className="text-xl font-bold text-emerald-400 block mt-1">
+                GH₵{cashOnHand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <span className="text-[9.5px] text-[var(--mf-text-secondary)]">Cash available for withdrawals</span>
+          </GlassCard>
 
-        <GlassMetric 
-          title="Expected Demand"
-          value={`GH₵${forecast?.predicted_float_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={TrendingUp}
-          iconColorClass="text-teal-500"
-          subtitle="Predicted Tomorrow"
-        />
+          <GlassCard className="p-4 flex flex-col justify-between space-y-2 border-white/5">
+            <div>
+              <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest block">E-Float Balance</span>
+              <span className="text-xl font-bold text-sky-400 block mt-1">
+                GH₵{floatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <span className="text-[9.5px] text-[var(--mf-text-secondary)]">E-Float available for digital transactions</span>
+          </GlassCard>
 
-        {/* Projected Shortfall */}
-        <GlassPanel className={`p-5 flex items-center justify-between ${
-          hasShortfall ? 'border-amber-500/20 bg-amber-500/5' : 'border-emerald-500/20 bg-emerald-500/5'
-        }`}>
-          <div>
-            <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Projected Shortfall</span>
-            <span className={`text-2xl font-bold block mt-1.5 ${
-              hasShortfall ? 'text-amber-500' : 'text-emerald-500'
-            }`}>
-              GH₵{shortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="flex-shrink-0">
-            <GlassBadge variant={hasShortfall ? 'warning' : 'success'}>
-              {hasShortfall ? 'Action Required' : 'Sufficient'}
+          <GlassCard className="p-4 flex flex-col justify-between space-y-2 bg-white/2 border-dashed border-white/10">
+            <div>
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest block">Total Available Liquidity</span>
+              <span className="text-lg font-bold text-white/70 block mt-1">
+                GH₵{totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <span className="text-[9.5px] text-[var(--mf-text-secondary)] text-white/40">Combined branch holdings</span>
+          </GlassCard>
+        </div>
+      </GlassPanel>
+
+      {/* 2. DEMAND FORECAST & 3. LIQUIDITY RISK */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* DEMAND FORECAST */}
+        <GlassPanel className="p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Demand Forecast</span>
+              <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Predicted demand for tomorrow's operating hours.</p>
+            </div>
+            <GlassBadge variant={isBuildingHistory ? 'neutral' : 'info'}>
+              {confidence}
             </GlassBadge>
           </div>
+
+          {isBuildingHistory ? (
+            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-center space-y-2">
+              <BarChart3 className="h-8 w-8 mx-auto text-sky-400/50" />
+              <h5 className="font-bold text-xs text-white">Building your liquidity history</h5>
+              <p className="text-[11px] text-[var(--mf-text-secondary)] leading-relaxed">
+                More transaction history is needed before MobiFin can generate a reliable demand forecast.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3.5">
+              <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
+                <div>
+                  <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider block">Expected Cash Demand</span>
+                  <span className="text-base font-bold text-white mt-1 block">
+                    GH₵{expectedCashDemand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <Coins className="h-5 w-5 text-emerald-500/50" />
+              </div>
+              
+              <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
+                <div>
+                  <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider block">Expected E-Float Demand</span>
+                  <span className="text-base font-bold text-white mt-1 block">
+                    GH₵{expectedFloatDemand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <Wallet className="h-5 w-5 text-sky-500/50" />
+              </div>
+
+              <div className="text-[10.5px] text-[var(--mf-text-secondary)] flex items-start space-x-1.5 pt-1">
+                <Info className="h-3.5 w-3.5 text-sky-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  Based on your recent transaction patterns, MobiFin expects higher e-float demand tomorrow.
+                </span>
+              </div>
+            </div>
+          )}
+        </GlassPanel>
+
+        {/* LIQUIDITY RISK / GAP */}
+        <GlassPanel className="p-6 space-y-4">
+          <div>
+            <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Liquidity Risk</span>
+            <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Potential shortfalls based on predicted demand gaps.</p>
+          </div>
+
+          {isBuildingHistory ? (
+            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-center space-y-2">
+              <ShieldAlert className="h-8 w-8 mx-auto text-emerald-400/50" />
+              <h5 className="font-bold text-xs text-white">No active liquidity risks</h5>
+              <p className="text-[11px] text-[var(--mf-text-secondary)] leading-relaxed">
+                Branch operates under default liquidity tracking until forecast history is built.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4.5">
+              {/* E-Float Gap */}
+              <div className={`p-4 rounded-xl border ${
+                floatShortfall > 0 
+                  ? 'border-amber-500/20 bg-amber-500/5 text-amber-200' 
+                  : 'border-emerald-500/10 bg-emerald-500/5 text-emerald-200'
+              }`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider block opacity-70">
+                      {floatShortfall > 0 ? '⚠ Projected E-Float Shortfall' : '✓ E-Float Balance Sufficient'}
+                    </span>
+                    <span className="text-lg font-bold block mt-1">
+                      GH₵{floatShortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <GlassBadge variant={floatShortfall > 0 ? 'warning' : 'success'}>
+                    {floatShortfall > 0 ? 'Elevated Risk' : 'Low Risk'}
+                  </GlassBadge>
+                </div>
+                {floatShortfall > 0 && (
+                  <p className="text-[10.5px] mt-1.5 opacity-90 leading-relaxed">
+                    Expected demand tomorrow exceeds your current e-float reserves.
+                  </p>
+                )}
+              </div>
+
+              {/* Cash Gap */}
+              <div className={`p-4 rounded-xl border ${
+                cashShortfall > 0 
+                  ? 'border-rose-500/20 bg-rose-500/5 text-rose-200' 
+                  : 'border-emerald-500/10 bg-emerald-500/5 text-emerald-200'
+              }`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider block opacity-70">
+                      {cashShortfall > 0 ? '⚠ Projected Cash Shortfall' : '✓ Cash Holdings Sufficient'}
+                    </span>
+                    <span className="text-lg font-bold block mt-1">
+                      GH₵{cashShortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <GlassBadge variant={cashShortfall > 0 ? 'danger' : 'success'}>
+                    {cashShortfall > 0 ? 'Elevated Risk' : 'Low Risk'}
+                  </GlassBadge>
+                </div>
+                {cashShortfall > 0 && (
+                  <p className="text-[10.5px] mt-1.5 opacity-90 leading-relaxed">
+                    Expected cash withdrawals tomorrow exceed your cash holdings.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </GlassPanel>
       </div>
 
-      {/* Main layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recommendation & Chart */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* AI recommendations panel */}
-          <GlassPanel className="p-5 space-y-4">
-            <div className="flex items-center space-x-2 pb-2.5 border-b border-[var(--mf-border)]">
-              <Sparkles className="h-4.5 w-4.5 text-[var(--mf-accent)]" />
-              <span className="text-[10px] font-bold text-[var(--mf-accent)] uppercase tracking-widest">Calculated Rebalancing Actions</span>
+      {/* 4. AI ACTION / REBALANCING */}
+      <GlassPanel className="p-6 relative border-[var(--mf-accent)] bg-[var(--mf-accent)]/5 shadow-[var(--mf-accent)]/5 shadow-2xl">
+        <div className="absolute top-4 right-6 flex items-center space-x-2">
+          <Sparkles className="h-4.5 w-4.5 text-[var(--mf-accent)] animate-pulse" />
+          <span className="text-[9px] font-bold text-[var(--mf-accent)] uppercase tracking-widest">AI Action recommendation</span>
+        </div>
+
+        <div className="space-y-4 max-w-xl">
+          <div>
+            <h4 className="text-base font-extrabold text-white tracking-tight">AI Recommendation</h4>
+            <p className="text-xs text-[var(--mf-text-secondary)] mt-0.5">Optimized asset rebalancing based on predicted peak transactional hours.</p>
+          </div>
+
+          {isBuildingHistory ? (
+            <div className="py-4 text-xs text-[var(--mf-text-secondary)] leading-relaxed">
+              MobiFin is waiting for sufficient history. No automatic rebalancing actions can be generated yet.
             </div>
-            
-            {hasShortfall && rec ? (
-              <div className="space-y-4">
-                <p className="text-xs text-[var(--mf-text-primary)] leading-relaxed font-semibold">
+          ) : hasShortfall && rec ? (
+            <div className="space-y-4">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                    Rebalance GH₵{rec.recommended_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-white/50" />
+                  <div className="bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                    Cash → E-Float
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest block">Timing Boundary</span>
+                    <span className="font-bold text-white mt-1 block">Recommended before {rec.recommended_time}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest block">Reasoning Trigger</span>
+                    <span className="font-semibold text-white/85 mt-1 block leading-relaxed">
+                      Expected demand exceeds current e-float balance.
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[var(--mf-text-secondary)] leading-relaxed border-t border-white/5 pt-3">
                   {rec.description}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                  <GlassCard className="p-3">
-                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Recommended Amount</span>
-                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
-                      GH₵{rec.recommended_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </GlassCard>
-                  <GlassCard className="p-3">
-                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Operation flow</span>
-                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
-                      Cash → E-Float
-                    </span>
-                  </GlassCard>
-                  <GlassCard className="p-3">
-                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Time threshold</span>
-                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
-                      Before {rec.recommended_time}
-                    </span>
-                  </GlassCard>
-                </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-6 space-y-1.5">
-                <CheckCircle className="h-8 w-8 text-emerald-500" />
-                <p className="font-bold text-sm text-[var(--mf-text-primary)]">Holdings Balanced</p>
-                <p className="text-xs text-[var(--mf-text-secondary)]">Current electronic reserves cover all predicted peaks.</p>
-              </div>
-            )}
-          </GlassPanel>
 
-          {/* Forecasting Bar Chart */}
-          <GlassPanel className="p-5 space-y-4">
-            <h4 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Demand vs Holdings Forecast</h4>
-            <div className="h-60 w-full">
+              <div className="flex items-center space-x-3.5">
+                <GlassButton variant="primary" className="px-5 py-2.5 font-bold text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 border-none text-white flex items-center space-x-1.5">
+                  <span>View Rebalancing Plan →</span>
+                </GlassButton>
+
+                <button 
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  className="text-[11px] text-sky-400 hover:text-sky-300 font-bold transition border-none bg-transparent cursor-pointer"
+                >
+                  {showExplanation ? "Hide Explanation ▴" : "Why am I seeing this? ▾"}
+                </button>
+              </div>
+
+              {showExplanation && (
+                <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-[11px] text-[var(--mf-text-secondary)] leading-relaxed space-y-2">
+                  <span className="font-bold text-white block">Explanation Analysis:</span>
+                  <p>
+                    Based on your recent transaction patterns on similar days of the week, e-float digital cash-out transactions typically spike during the morning hours.
+                  </p>
+                  <p>
+                    MobiFin calculates this rebalancing target dynamically to ensure you maintain a cash holding above your minimum operational reserve boundary of GH₵{liquidity?.minimum_cash_reserve?.toLocaleString()}.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 flex items-start space-x-3 text-xs text-emerald-200">
+              <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold block">No rebalancing required</span>
+                <span className="opacity-90 block mt-0.5 leading-relaxed">
+                  Your current holdings are perfectly aligned to meet predicted transaction patterns for tomorrow.
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </GlassPanel>
+
+        {/* 5. VISUALIZATION & 6. STRESS TEST */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Chart */}
+          <GlassPanel className="p-6 space-y-4 md:col-span-2">
+            <div>
+              <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Demand vs Holdings</span>
+              <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Comparison of current assets against forecasted requirements.</p>
+            </div>
+            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                  <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="rgba(255,255,255,0.1)" />
+                  <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="rgba(255,255,255,0.1)" />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }} />
                   <Legend wrapperStyle={{ fontSize: 9 }} />
-                  <Bar dataKey="Projected Demand" fill="var(--mf-accent)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Holdings Limit" fill="rgba(255, 255, 255, 0.2)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Current Holdings" fill="var(--mf-accent)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Expected Demand" fill="rgba(255, 255, 255, 0.2)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </GlassPanel>
-        </div>
 
-        {/* Right Column: Stress Test */}
-        <GlassPanel className="p-5 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h4 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider flex items-center">
-              <Flame className="h-4.5 w-4.5 text-amber-500 mr-1.5" />
-              Liquidity Stress-Test Simulator
-            </h4>
-            <p className="text-xs text-[var(--mf-text-secondary)] leading-relaxed">
-              Assess your cash flow boundaries against transaction multipliers.
-            </p>
-            <div className="space-y-3">
-              {stressTests.map(sc => {
-                const isCritical = sc.risk_status === 'Critical';
-                return (
-                  <GlassCard key={sc.stress_level} className="text-xs space-y-1.5 p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-[var(--mf-text-primary)]">{sc.stress_level}</span>
-                      <GlassBadge variant={isCritical ? 'danger' : 'success'}>
-                        {sc.risk_status} Risk
-                      </GlassBadge>
-                    </div>
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-[var(--mf-text-secondary)]">Projected Demand</span>
-                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{sc.stressed_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-[var(--mf-text-secondary)]">Shortfall Gaps</span>
-                      <span className={`font-bold ${isCritical ? 'text-rose-500' : 'text-[var(--mf-text-primary)]'}`}>
-                        GH₵{sc.projected_shortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </GlassCard>
-                );
-              })}
+          {/* Stress test */}
+          <GlassPanel className="p-6 space-y-4 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Stress-Test Simulator</span>
+                <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Asset gap analysis under simulated transaction surges.</p>
+              </div>
+
+              {isBuildingHistory ? (
+                <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center text-[10px] text-[var(--mf-text-secondary)] leading-relaxed">
+                  Simulator waiting for baseline forecast data.
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {stressTests.map(sc => {
+                    const isCritical = sc.risk_status === 'Critical';
+                    return (
+                      <GlassCard key={sc.stress_level} className="text-xs space-y-1.5 p-3 text-white border-white/5">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-white/90">{sc.stress_level}</span>
+                          <GlassBadge variant={isCritical ? 'danger' : 'success'}>
+                            {sc.risk_status}
+                          </GlassBadge>
+                        </div>
+                        <div className="flex justify-between text-[10px]">
+                          <span className="text-[var(--mf-text-secondary)]">Demand Target</span>
+                          <span className="font-bold text-white">GH₵{sc.stressed_demand.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px]">
+                          <span className="text-[var(--mf-text-secondary)]">Potential Gap</span>
+                          <span className={`font-bold ${isCritical ? 'text-rose-400' : 'text-white'}`}>
+                            GH₵{sc.projected_shortfall.toLocaleString()}
+                          </span>
+                        </div>
+                      </GlassCard>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        </GlassPanel>
+          </GlassPanel>
+        </div>
       </div>
-    </div>
   );
 };
 
