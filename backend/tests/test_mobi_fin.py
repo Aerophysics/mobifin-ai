@@ -452,3 +452,22 @@ def test_agent_multi_location_creation_and_switching(db_session):
     assert switched_loc.agent_id == loc1.agent_id
     assert user.agent_id == loc1.agent_id
 
+
+def test_agent_onboarding_no_username(db_session):
+    """Verify onboarding creates user with phone number as username when no username is supplied"""
+    req = AgentOnboardingRequest(
+        username=None,
+        password="securepassword123",
+        full_name="Reginald Amoah",
+        business_name="Reginald Mobile Money",
+        phone="0554444444",
+        region="Greater Accra",
+        location="Greater Accra - Accra Central",
+        agent_type="Retailer",
+        starting_cash=2000.0,
+        starting_float=4000.0
+    )
+    res = onboard_agent(req, db=db_session)
+    assert res["agent_id"] > 0
+    assert res["username"] == "0554444444"
+

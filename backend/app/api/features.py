@@ -21,7 +21,7 @@ class BusinessLocationCreateRequest(BaseModel):
     starting_float: float
 
 class AgentOnboardingRequest(BaseModel):
-    username: str
+    username: Optional[str] = None
     password: str
     full_name: str
     business_name: str
@@ -96,13 +96,22 @@ class NotificationResponse(BaseModel):
 # 1. Agent Onboarding
 @router.post("/onboarding", response_model=AgentOnboardingResponse)
 def onboard_agent(req: AgentOnboardingRequest, db: Session = Depends(get_db)):
+    # Resolve username to phone number if not supplied
+    username = req.username.strip() if (req.username and req.username.strip()) else req.phone.strip()
+
     # Validate username uniqueness
-    existing_user = db.query(User).filter(User.username == req.username).first()
+    existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered. Please choose another one."
-        )
+        if username == req.phone.strip():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An account is already registered with this phone number. Please sign in or use a different number."
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already registered. Please choose another one."
+            )
 
     # Validate phone uniqueness
     existing_phone = db.query(Agent).filter(Agent.phone == req.phone).first()
@@ -134,7 +143,7 @@ def onboard_agent(req: AgentOnboardingRequest, db: Session = Depends(get_db)):
     # 2. Create User login credentials
     password_hash = get_password_hash(req.password)
     new_user = User(
-        username=req.username,
+        username=username,
         password_hash=password_hash,
         role="AGENT",
         agent_id=new_agent.agent_id,

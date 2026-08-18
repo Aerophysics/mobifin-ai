@@ -69,7 +69,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
     business_name: '',
     phone: '',
     region: 'Greater Accra',
-    location: 'Greater Accra - Central Accra',
+    city: '',
+    location: '',
     agent_type: 'Retailer',
     starting_cash: 2500,
     starting_float: 5000
@@ -83,7 +84,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name.includes('starting_') ? parseFloat(value) || 0 : value
+      [name]: name.startsWith('starting_') ? parseFloat(value) || 0 : value
     }));
   };
 
@@ -92,10 +93,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
     if (step === 1) {
       if (!formData.full_name.trim()) {
         setErrorMsg("Full Name is required.");
-        return;
-      }
-      if (!formData.business_name.trim()) {
-        setErrorMsg("Business Name is required.");
         return;
       }
       const phoneRegex = /^\+?[0-9\s-]{9,15}$/;
@@ -107,18 +104,26 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
         setErrorMsg("Please enter a valid Phone Number (e.g., +233 24 111 2222).");
         return;
       }
-      if (!formData.username.trim() || !formData.password.trim()) {
-        setErrorMsg("Username and Password are required to create your login account.");
+      if (!formData.password.trim()) {
+        setErrorMsg("Password is required to secure your account.");
         return;
       }
     }
     if (step === 2) {
+      if (!formData.business_name.trim()) {
+        setErrorMsg("Business Name is required.");
+        return;
+      }
       if (!formData.region) {
         setErrorMsg("Region is required.");
         return;
       }
-      if (!formData.location) {
-        setErrorMsg("Business Location is required.");
+      if (!formData.city.trim()) {
+        setErrorMsg("City is required.");
+        return;
+      }
+      if (!formData.location.trim()) {
+        setErrorMsg("Specific Location / Address is required.");
         return;
       }
       if (!formData.agent_type) {
@@ -148,22 +153,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
     setIsSubmitting(true);
     setErrorMsg(null);
     try {
+      const formattedPhone = formData.phone.trim();
       // 1. Post registration onboarding request
       await ApiService.registerAgent({
-        username: formData.username,
+        username: formattedPhone,
         password: formData.password,
         full_name: formData.full_name,
         business_name: formData.business_name,
-        phone: formData.phone,
+        phone: formattedPhone,
         region: formData.region,
-        location: formData.location,
+        location: `${formData.region} - ${formData.city}`,
         agent_type: formData.agent_type,
         starting_cash: formData.starting_cash,
         starting_float: formData.starting_float
       });
 
       // 2. Perform automatic login to capture token session
-      const loginRes = await ApiService.login(formData.username, formData.password);
+      const loginRes = await ApiService.login(formattedPhone, formData.password);
       setOnboardedUser(loginRes);
       
       setStep(5);
@@ -230,12 +236,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
           </div>
         )}
 
-        {/* STEP 1: Business Information */}
+        {/* STEP 1: Account Information */}
         {step === 1 && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-bold text-base text-white">Business Information</h3>
-              <p className="text-[11px] text-white/70">Please fill in your primary details to initialize your business profile.</p>
+              <h3 className="font-bold text-base text-white">Account Information</h3>
+              <p className="text-[11px] text-white/70">Create your secure agent account to get started.</p>
             </div>
 
             <div className="space-y-3">
@@ -252,18 +258,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
               </div>
 
               <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Business Name</label>
-                <input
-                  type="text"
-                  name="business_name"
-                  value={formData.business_name}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Kwame's Mobile Money Centre"
-                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                />
-              </div>
-
-              <div>
                 <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Phone Number</label>
                 <input
                   type="text"
@@ -275,29 +269,16 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Demo Username</label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    placeholder="kwame"
-                    className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="••••••••"
-                    className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                  />
-                </div>
+              <div>
+                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
+                />
               </div>
             </div>
 
@@ -308,45 +289,68 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
           </div>
         )}
 
-        {/* STEP 2: Operating Information */}
+        {/* STEP 2: Business & Operations */}
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-bold text-base text-white">Operating Information</h3>
-              <p className="text-[11px] text-white/70">Specify your operating region and agent status parameters.</p>
+              <h3 className="font-bold text-base text-white">Business & Operations</h3>
+              <p className="text-[11px] text-white/70">Specify your business name and primary branch coordinates.</p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Region</label>
-                <select
-                  name="region"
-                  value={formData.region}
+                <label className="text-[9px] font-bold text-white/70 tracking-widest block mb-1">Business Name</label>
+                <input
+                  type="text"
+                  name="business_name"
+                  value={formData.business_name}
                   onChange={handleInputChange}
-                  className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
-                >
-                  {GHANAIAN_REGIONS.map(r => (
-                    <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
-                  ))}
-                </select>
+                  placeholder="e.g. Kwame's Mobile Money Centre"
+                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[9px] font-bold text-white/70 tracking-widest block mb-1">Region</label>
+                  <select
+                    name="region"
+                    value={formData.region}
+                    onChange={handleInputChange}
+                    className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
+                  >
+                    {GHANAIAN_REGIONS.map(r => (
+                      <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold text-white/70 tracking-widest block mb-1">City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Kumasi"
+                    className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Business Location</label>
-                <select
+                <label className="text-[9px] font-bold text-white/70 tracking-widest block mb-1">Specific Location / Address</label>
+                <input
+                  type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
-                >
-                  {GHANAIAN_LOCATIONS.map(l => (
-                    <option key={l} value={l} className="bg-slate-900 text-white">{l}</option>
-                  ))}
-                </select>
+                  placeholder="e.g. Adum Market Square, block C"
+                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
+                />
               </div>
 
               <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Agent Type</label>
+                <label className="text-[9px] font-bold text-white/70 tracking-widest block mb-1">Agent Type</label>
                 <select
                   name="agent_type"
                   value={formData.agent_type}
@@ -354,8 +358,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
                   className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
                 >
                   <option value="Retailer" className="bg-slate-900 text-white">Retailer (Direct customer transactions)</option>
-                  <option value="Wholesaler" className="bg-slate-900 text-white">Wholesaler (Supplies other agents)</option>
-                  <option value="Aggregator" className="bg-slate-900 text-white">Aggregator (Manages networks)</option>
+                  <option value="Sub-Agent" className="bg-slate-900 text-white">Sub-Agent (Operates under super-agent)</option>
+                  <option value="Super-Agent" className="bg-slate-900 text-white">Super-Agent (Liquidity supplier)</option>
                 </select>
               </div>
             </div>
@@ -460,6 +464,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
               </div>
               <div className="flex justify-between">
                 <span className="text-white/70">Operating Location:</span>
+                <span className="font-bold text-white">{formData.region} — {formData.city}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Address:</span>
                 <span className="font-bold text-white">{formData.location}</span>
               </div>
             </GlassCard>
