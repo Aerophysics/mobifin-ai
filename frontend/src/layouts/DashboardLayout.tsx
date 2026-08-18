@@ -19,6 +19,32 @@ interface SidebarGroup {
   items: SidebarItem[];
 }
 
+const pageColorMap: Record<string, string> = {
+  dashboard: 'indigo',
+  liquidity: 'green',
+  transactions: 'blue',
+  customers: 'purple',
+  models: 'orange',
+  consent: 'red',
+  explorer: 'indigo',
+  settings: 'purple',
+  demo: 'red'
+};
+
+const gradientMapping = {
+  blue: 'linear-gradient(135deg, hsl(223, 90%, 55%), hsl(208, 90%, 50%))',
+  purple: 'linear-gradient(135deg, hsl(283, 90%, 55%), hsl(268, 90%, 50%))',
+  red: 'linear-gradient(135deg, hsl(3, 90%, 55%), hsl(348, 90%, 50%))',
+  indigo: 'linear-gradient(135deg, hsl(253, 90%, 55%), hsl(238, 90%, 50%))',
+  orange: 'linear-gradient(135deg, hsl(43, 90%, 55%), hsl(28, 90%, 50%))',
+  green: 'linear-gradient(135deg, hsl(123, 90%, 45%), hsl(108, 90%, 40%))'
+};
+
+const getBackgroundStyle = (page: string) => {
+  const color = pageColorMap[page] || 'indigo';
+  return gradientMapping[color as keyof typeof gradientMapping];
+};
+
 interface DashboardLayoutProps {
   activePage: string;
   setActivePage: (page: string) => void;
@@ -351,21 +377,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         setActivePage(item.page);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs transition cursor-pointer ${
+                      className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-lg text-xs transition cursor-pointer ${
                         isActive 
-                          ? (isGreenSide 
-                              ? 'bg-white/10 text-white font-semibold border border-white/20' 
-                              : 'bg-slate-900 text-white font-semibold border border-slate-850')
-                          : (isGreenSide 
-                              ? 'text-white/80 hover:bg-white/10 hover:text-white' 
-                              : 'text-slate-400 hover:bg-slate-900/60 hover:text-slate-200')
+                          ? 'bg-white/10 text-white font-semibold border border-white/20 sidebar-active-btn' 
+                          : 'text-white/80 hover:bg-white/10 hover:text-white'
                       }`}
                     >
-                      <Icon className={`h-4.5 w-4.5 ${
-                        isActive 
-                          ? (isGreenSide ? 'text-white' : 'text-teal-400') 
-                          : (isGreenSide ? 'text-white/60' : 'text-slate-500')
-                      }`} />
+                      <span className="glass-icon-wrapper">
+                        <span className="glass-icon-back" style={{ background: getBackgroundStyle(item.page) }}></span>
+                        <span className="glass-icon-front">
+                          <Icon className="glass-icon-svg" />
+                        </span>
+                      </span>
                       <span>{item.name}</span>
                     </button>
                   );

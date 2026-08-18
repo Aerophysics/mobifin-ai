@@ -348,3 +348,71 @@ body {
   }
 }
 
+/* Glass Icon Sidebar Effects */
+.glass-icon-wrapper {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  perspective: 100px;
+  transform-style: preserve-3d;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.glass-icon-back,
+.glass-icon-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  transition: transform 0.3s cubic-bezier(0.83, 0, 0.17, 1), opacity 0.3s cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.glass-icon-back {
+  transform: rotate(15deg);
+  transform-origin: 100% 100%;
+  opacity: 0.85;
+}
+
+.glass-icon-front {
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 50% 50%;
+}
+
+.glass-icon-svg {
+  width: 13px !important;
+  height: 13px !important;
+  color: #ffffff !important;
+}
+
+/* Animations on button hover and active states */
+button:hover .glass-icon-back {
+  transform: rotate(25deg) translate3d(-2px, -2px, 1px);
+  opacity: 1;
+}
+
+button:hover .glass-icon-front {
+  transform: translate3d(0, 0, 4px);
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+/* When the parent item is active */
+button.sidebar-active-btn .glass-icon-back {
+  transform: rotate(25deg) translate3d(-2px, -2px, 1px);
+  opacity: 1;
+}
+button.sidebar-active-btn .glass-icon-front {
+  transform: translate3d(0, 0, 4px);
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5);
+}
+
