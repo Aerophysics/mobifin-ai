@@ -19,32 +19,6 @@ interface SidebarGroup {
   items: SidebarItem[];
 }
 
-const pageColorMap: Record<string, string> = {
-  dashboard: 'indigo',
-  liquidity: 'green',
-  transactions: 'blue',
-  customers: 'purple',
-  models: 'orange',
-  consent: 'red',
-  explorer: 'indigo',
-  settings: 'purple',
-  demo: 'red'
-};
-
-const gradientMapping = {
-  blue: 'linear-gradient(135deg, hsl(223, 90%, 55%), hsl(208, 90%, 50%))',
-  purple: 'linear-gradient(135deg, hsl(283, 90%, 55%), hsl(268, 90%, 50%))',
-  red: 'linear-gradient(135deg, hsl(3, 90%, 55%), hsl(348, 90%, 50%))',
-  indigo: 'linear-gradient(135deg, hsl(253, 90%, 55%), hsl(238, 90%, 50%))',
-  orange: 'linear-gradient(135deg, hsl(43, 90%, 55%), hsl(28, 90%, 50%))',
-  green: 'linear-gradient(135deg, hsl(123, 90%, 45%), hsl(108, 90%, 40%))'
-};
-
-const getBackgroundStyle = (page: string) => {
-  const color = pageColorMap[page] || 'indigo';
-  return gradientMapping[color as keyof typeof gradientMapping];
-};
-
 interface DashboardLayoutProps {
   activePage: string;
   setActivePage: (page: string) => void;
@@ -384,7 +358,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       }`}
                     >
                       <span className="glass-icon-wrapper">
-                        <span className="glass-icon-back" style={{ background: getBackgroundStyle(item.page) }}></span>
+                        <span className="glass-icon-back"></span>
                         <span className="glass-icon-front">
                           <Icon className="glass-icon-svg" />
                         </span>
