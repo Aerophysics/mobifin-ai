@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Droplet, AlertTriangle, CheckCircle, BarChart3, TrendingUp, ShieldAlert,
-  Calendar, Flame, Sparkles, Coins, Wallet
+  Flame, Sparkles, Coins, Wallet
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ApiService from '../services/api';
 import { Forecast, LiquidityRecommendations, StressTestScenario, AgentProfile } from '../types';
+import { GlassPanel } from '../components/glass/GlassPanel';
+import { GlassCard } from '../components/glass/GlassCard';
+import { GlassMetric } from '../components/glass/GlassMetric';
+import { GlassButton } from '../components/glass/GlassButton';
+import { GlassBadge } from '../components/glass/GlassBadge';
 
 const Liquidity: React.FC = () => {
   const [agent, setAgent] = useState<AgentProfile | null>(null);
@@ -41,7 +46,7 @@ const Liquidity: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--mf-accent)]"></div>
       </div>
     );
   }
@@ -58,68 +63,51 @@ const Liquidity: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
+    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Cash Balance */}
-        <div className="premium-card bg-white flex flex-col justify-between">
-          <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Current Cash</span>
-            <span className="text-xl font-bold text-slate-800 block mt-1.5">
-              GH₵{agent?.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider pt-2.5 border-t border-slate-100 mt-3 flex items-center">
-            <Coins className="h-3.5 w-3.5 text-slate-400 mr-1 flex-shrink-0" /> Available for Rebalance
-          </div>
-        </div>
+        <GlassMetric 
+          title="Current Cash"
+          value={`GH₵${agent?.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={Coins}
+          iconColorClass="text-emerald-500"
+          subtitle="Available for Rebalance"
+        />
 
-        {/* E-Float Balance */}
-        <div className="premium-card bg-white flex flex-col justify-between">
-          <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Current E-Float</span>
-            <span className="text-xl font-bold text-slate-800 block mt-1.5">
-              GH₵{liquidity?.current_float.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider pt-2.5 border-t border-slate-100 mt-3 flex items-center">
-            <Wallet className="h-3.5 w-3.5 text-slate-400 mr-1 flex-shrink-0" /> Digital Reserves
-          </div>
-        </div>
+        <GlassMetric 
+          title="Current E-Float"
+          value={`GH₵${liquidity?.current_float.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={Wallet}
+          iconColorClass="text-sky-500"
+          subtitle="Digital Reserves"
+        />
 
-        {/* Expected Demand */}
-        <div className="premium-card bg-white flex flex-col justify-between">
-          <div>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Expected Demand</span>
-            <span className="text-xl font-bold text-slate-800 block mt-1.5">
-              GH₵{forecast?.predicted_float_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider pt-2.5 border-t border-slate-100 mt-3 flex items-center">
-            <TrendingUp className="h-3.5 w-3.5 text-teal-600 mr-1 flex-shrink-0" /> Predicted Tomorrow
-          </div>
-        </div>
+        <GlassMetric 
+          title="Expected Demand"
+          value={`GH₵${forecast?.predicted_float_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={TrendingUp}
+          iconColorClass="text-teal-500"
+          subtitle="Predicted Tomorrow"
+        />
 
         {/* Projected Shortfall */}
-        <div className={`premium-card flex flex-col justify-between ${
-          hasShortfall ? 'bg-amber-50 border-amber-250' : 'bg-emerald-50 border-emerald-250'
+        <GlassPanel className={`p-5 flex items-center justify-between ${
+          hasShortfall ? 'border-amber-500/20 bg-amber-500/5' : 'border-emerald-500/20 bg-emerald-500/5'
         }`}>
           <div>
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Projected Shortfall</span>
-            <span className={`text-xl font-extrabold block mt-1.5 ${
-              hasShortfall ? 'text-amber-700' : 'text-emerald-700'
+            <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Projected Shortfall</span>
+            <span className={`text-2xl font-bold block mt-1.5 ${
+              hasShortfall ? 'text-amber-500' : 'text-emerald-500'
             }`}>
               GH₵{shortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-wider pt-2.5 border-t mt-3 flex items-center border-slate-200">
-            {hasShortfall ? (
-              <span className="text-amber-700">Actions required</span>
-            ) : (
-              <span className="text-emerald-700">Holdings sufficient</span>
-            )}
+          <div className="flex-shrink-0">
+            <GlassBadge variant={hasShortfall ? 'warning' : 'success'}>
+              {hasShortfall ? 'Action Required' : 'Sufficient'}
+            </GlassBadge>
           </div>
-        </div>
+        </GlassPanel>
       </div>
 
       {/* Main layout */}
@@ -127,105 +115,103 @@ const Liquidity: React.FC = () => {
         {/* Recommendation & Chart */}
         <div className="lg:col-span-2 space-y-6">
           {/* AI recommendations panel */}
-          <div className="premium-card bg-slate-900 border-slate-800 text-slate-100 space-y-4">
-            <div className="flex items-center space-x-2 pb-2.5 border-b border-slate-800">
-              <Sparkles className="h-4.5 w-4.5 text-teal-400" />
-              <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest">Calculated Rebalancing Actions</span>
+          <GlassPanel className="p-5 space-y-4">
+            <div className="flex items-center space-x-2 pb-2.5 border-b border-[var(--mf-border)]">
+              <Sparkles className="h-4.5 w-4.5 text-[var(--mf-accent)]" />
+              <span className="text-[10px] font-bold text-[var(--mf-accent)] uppercase tracking-widest">Calculated Rebalancing Actions</span>
             </div>
             
             {hasShortfall && rec ? (
               <div className="space-y-4">
-                <p className="text-xs text-slate-300 leading-relaxed font-semibold">
+                <p className="text-xs text-[var(--mf-text-primary)] leading-relaxed font-semibold">
                   {rec.description}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                  <div className="bg-slate-850 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Recommended Amount</span>
-                    <span className="text-sm font-extrabold text-white mt-1 block">
+                  <GlassCard className="p-3">
+                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Recommended Amount</span>
+                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
                       GH₵{rec.recommended_amount?.toLocaleString()}
                     </span>
-                  </div>
-                  <div className="bg-slate-850 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Operation flow</span>
-                    <span className="text-sm font-extrabold text-white mt-1 block">
+                  </GlassCard>
+                  <GlassCard className="p-3">
+                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Operation flow</span>
+                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
                       Cash → E-Float
                     </span>
-                  </div>
-                  <div className="bg-slate-850 p-3 rounded-lg border border-slate-800">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Time threshold</span>
-                    <span className="text-sm font-extrabold text-white mt-1 block">
+                  </GlassCard>
+                  <GlassCard className="p-3">
+                    <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Time threshold</span>
+                    <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
                       Before {rec.recommended_time}
                     </span>
-                  </div>
+                  </GlassCard>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-6 space-y-1.5">
-                <CheckCircle className="h-8 w-8 text-teal-400" />
-                <p className="font-bold text-sm text-white">Holdings Balanced</p>
-                <p className="text-xs text-slate-400">Current electronic reserves cover all predicted transaction peaks.</p>
+                <CheckCircle className="h-8 w-8 text-emerald-500" />
+                <p className="font-bold text-sm text-[var(--mf-text-primary)]">Holdings Balanced</p>
+                <p className="text-xs text-[var(--mf-text-secondary)]">Current electronic reserves cover all predicted peaks.</p>
               </div>
             )}
-          </div>
+          </GlassPanel>
 
           {/* Forecasting Bar Chart */}
-          <div className="premium-card bg-white space-y-4">
-            <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Demand vs Holdings Forecast</h4>
+          <GlassPanel className="p-5 space-y-4">
+            <h4 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Demand vs Holdings Forecast</h4>
             <div className="h-60 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                  <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                  <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
                   <Legend wrapperStyle={{ fontSize: 9 }} />
-                  <Bar dataKey="Projected Demand" fill="#0d9488" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="Holdings Limit" fill="#cbd5e1" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="Projected Demand" fill="var(--mf-accent)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Holdings Limit" fill="rgba(255, 255, 255, 0.2)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </GlassPanel>
         </div>
 
         {/* Right Column: Stress Test */}
-        <div className="premium-card bg-white flex flex-col justify-between">
+        <GlassPanel className="p-5 flex flex-col justify-between">
           <div className="space-y-4">
-            <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center">
+            <h4 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider flex items-center">
               <Flame className="h-4.5 w-4.5 text-amber-500 mr-1.5" />
               Liquidity Stress-Test Simulator
             </h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-[var(--mf-text-secondary)] leading-relaxed">
               Assess your cash flow boundaries against transaction multipliers.
             </p>
             <div className="space-y-3">
               {stressTests.map(sc => {
                 const isCritical = sc.risk_status === 'Critical';
                 return (
-                  <div key={sc.stress_level} className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1.5">
+                  <GlassCard key={sc.stress_level} className="text-xs space-y-1.5 p-3">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-700">{sc.stress_level}</span>
-                      <span className={`text-[8px] font-extrabold uppercase px-1.5 rounded ${
-                        isCritical ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-emerald-50 text-emerald-700'
-                      }`}>
+                      <span className="font-bold text-[var(--mf-text-primary)]">{sc.stress_level}</span>
+                      <GlassBadge variant={isCritical ? 'danger' : 'success'}>
                         {sc.risk_status} Risk
-                      </span>
+                      </GlassBadge>
                     </div>
                     <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-400">Projected Demand</span>
-                      <span className="font-bold text-slate-700">GH₵{sc.stressed_demand.toLocaleString()}</span>
+                      <span className="text-[var(--mf-text-secondary)]">Projected Demand</span>
+                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{sc.stressed_demand.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-400">Shortfall Gaps</span>
-                      <span className={`font-bold ${isCritical ? 'text-red-600' : 'text-slate-700'}`}>
+                      <span className="text-[var(--mf-text-secondary)]">Shortfall Gaps</span>
+                      <span className={`font-bold ${isCritical ? 'text-rose-500' : 'text-[var(--mf-text-primary)]'}`}>
                         GH₵{sc.projected_shortfall.toLocaleString()}
                       </span>
                     </div>
-                  </div>
+                  </GlassCard>
                 );
               })}
             </div>
           </div>
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );

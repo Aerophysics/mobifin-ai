@@ -4,7 +4,7 @@ from backend.app.database.connection import is_sqlite_active
 from backend.app.api import (
     auth, agents, customers, transactions, 
     analytics, forecasts, liquidity, credit, 
-    anomalies, demo, models
+    anomalies, demo, models, features
 )
 
 app = FastAPI(
@@ -34,6 +34,7 @@ app.include_router(credit.router, prefix="/api")
 app.include_router(anomalies.router, prefix="/api")
 app.include_router(demo.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
+app.include_router(features.router, prefix="/api")
 
 @app.get("/api/status")
 def get_system_status():

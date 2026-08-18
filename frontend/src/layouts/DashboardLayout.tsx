@@ -3,10 +3,13 @@ import {
   LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound, 
   BarChart2, Database, Settings as SettingsIcon, BrainCircuit, 
   LogOut, RefreshCw, ShieldCheck, Activity, User, ChevronDown, ShieldAlert,
-  Server, Wrench, Sun, Moon, Menu
+  Server, Wrench, Sun, Moon, Menu, BookOpen, Bell, Check
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { UserProfile } from '../types';
+import { GlassBadge } from '../components/glass/GlassBadge';
+// @ts-ignore
+import Grainient from '../components/Grainient';
 
 interface SidebarItem {
   name: string;
@@ -41,6 +44,54 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [isDark, setIsDark] = useState<boolean>(() => {
     return localStorage.getItem('mobifin_theme') === 'dark';
   });
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifOpen, setNotifOpen] = useState<boolean>(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [activeNotifTab, setActiveNotifTab] = useState<string>('all');
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await ApiService.getNotifications();
+      setNotifications(data);
+      setUnreadCount(data.filter((n: any) => !n.read).length);
+    } catch (err) {
+      console.error("Failed to fetch alerts", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 10000); // 10s poll
+      return () => clearInterval(interval);
+    }
+  }, [currentUser]);
+
+  const handleMarkRead = async (id: number, actionUrl?: string) => {
+    try {
+      await ApiService.markNotificationAsRead(id);
+      fetchNotifications();
+      if (actionUrl) {
+        setNotifOpen(false);
+        if (actionUrl.includes('liquidity')) setActivePage('liquidity');
+        else if (actionUrl.includes('credit')) setActivePage('credit');
+        else if (actionUrl.includes('analytics')) setActivePage('analytics');
+        else if (actionUrl.includes('dashboard')) setActivePage('dashboard');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getFilteredNotifications = () => {
+    if (activeNotifTab === 'unread') return notifications.filter(n => !n.read);
+    if (activeNotifTab === 'critical') return notifications.filter(n => n.severity === 'High' || n.severity === 'Critical');
+    if (activeNotifTab === 'liquidity') return notifications.filter(n => n.type === 'LIQUIDITY');
+    if (activeNotifTab === 'credit') return notifications.filter(n => n.type === 'CREDIT');
+    if (activeNotifTab === 'business') return notifications.filter(n => n.type === 'BUSINESS');
+    return notifications;
+  };
 
   useEffect(() => {
     if (isDark) {
@@ -122,6 +173,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           title: 'Operations',
           items: [
             { name: 'Transactions', icon: Receipt, page: 'transactions' },
+            { name: 'Ledger', icon: BookOpen, page: 'ledger' },
             { name: 'Liquidity', icon: Droplet, page: 'liquidity' },
             { name: 'Business Analytics', icon: LineChart, page: 'analytics' }
           ]
@@ -206,6 +258,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       switch (activePage) {
         case 'dashboard': return 'Dashboard';
         case 'transactions': return 'Transactions';
+        case 'ledger': return 'Bookkeeping Ledger';
         case 'liquidity': return 'Liquidity Intelligence';
         case 'analytics': return 'Business Analytics';
         case 'ai-insights': return 'AI Insights';
@@ -246,6 +299,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       switch (activePage) {
         case 'dashboard': return 'Monitor your agent operations and financial position.';
         case 'transactions': return 'Audit log of deposits, withdrawals, and merchant payments.';
+        case 'ledger': return 'Track daily opening cash, float flows, and reconcile balances.';
         case 'liquidity': return 'Forecast demand and optimize your cash and e-float.';
         case 'analytics': return 'Understand your transaction activity and business performance.';
         case 'ai-insights': return 'Grounded AI audits and anomaly alerts.';
@@ -288,8 +342,62 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isGreenSide = true;
   
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] h-screen w-screen overflow-hidden bg-white dark:bg-[#091406] font-sans text-slate-800 dark:text-slate-100">
-      
+    <div className="relative flex h-screen w-screen overflow-hidden bg-white dark:bg-[#070d05] font-sans text-slate-800 dark:text-slate-100 lg:p-4 lg:gap-4">
+      {/* Dynamic Grainient WebGL Background Mesh */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {isDark ? (
+          <Grainient
+            color1="#283f0b"
+            color2="#485741"
+            color3="#263b18"
+            timeSpeed={0.25}
+            colorBalance={0}
+            warpStrength={1}
+            warpFrequency={5}
+            warpSpeed={2}
+            warpAmplitude={50}
+            blendAngle={0}
+            blendSoftness={0.05}
+            rotationAmount={500}
+            noiseScale={2}
+            grainAmount={0}
+            grainScale={0.3}
+            grainAnimated={false}
+            contrast={1.5}
+            gamma={1}
+            saturation={1}
+            centerX={0}
+            centerY={0}
+            zoom={0.9}
+          />
+        ) : (
+          <Grainient
+            color1="#8aa770"
+            color2="#92a38a"
+            color3="#84a56c"
+            timeSpeed={0.25}
+            colorBalance={0}
+            warpStrength={1}
+            warpFrequency={5}
+            warpSpeed={2}
+            warpAmplitude={50}
+            blendAngle={0}
+            blendSoftness={0.05}
+            rotationAmount={500}
+            noiseScale={2}
+            grainAmount={0}
+            grainScale={0.3}
+            grainAnimated={false}
+            contrast={1.5}
+            gamma={1}
+            saturation={1}
+            centerX={0}
+            centerY={0}
+            zoom={0.9}
+          />
+        )}
+      </div>
+
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileMenuOpen && (
         <div 
@@ -300,12 +408,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Sidebar - Fix height & scroll internally */}
       <aside className={`
-        flex flex-col h-full overflow-hidden transition-all duration-300
-        fixed inset-y-0 left-0 z-40 w-[260px] lg:static lg:h-full lg:w-auto lg:z-auto
+        flex flex-col h-full overflow-hidden transition-all duration-300 z-10
+        fixed inset-y-0 left-0 z-40 w-[260px] lg:static lg:h-full lg:w-[260px] lg:z-auto
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        ${isGreenSide 
-            ? 'bg-[#17280e] text-white border-r border-[#243e16]' 
-            : 'bg-slate-950 text-slate-200 border-r border-slate-900'}
+        bg-[#17280e]/95 text-white border-r border-[#243e16] lg:border-white/10 lg:rounded-[24px] lg:shadow-xl lg:backdrop-blur-xl
       `}>
         {/* Logo/Wordmark */}
         <div className={`h-[70px] px-6 flex items-center justify-between flex-shrink-0 border-b ${
@@ -409,9 +515,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </aside>
 
       {/* Main Container Workspace */}
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden flex-1 z-10 lg:gap-4">
         {/* Header - Height 70px */}
-        <header className="h-[70px] bg-white dark:bg-[#0c1c09] border-b border-slate-250 dark:border-[#1e3a12] px-4 md:px-8 flex items-center justify-between flex-shrink-0 animate-fadeIn">
+        <header className="relative z-30 h-[70px] bg-white dark:bg-[#0c1c09]/85 border-b border-slate-250 dark:border-[#1e3a12] lg:border lg:border-[var(--mf-border)] lg:rounded-[20px] px-4 md:px-8 flex items-center justify-between flex-shrink-0 lg:shadow-md lg:backdrop-blur-md animate-fadeIn">
           <div className="flex items-center space-x-3 overflow-hidden">
             {/* Hamburger button */}
             <button
@@ -440,6 +546,95 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
+
+            {/* AI notifications center */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300 transition cursor-pointer border-none bg-transparent flex items-center justify-center relative"
+                title="AI Notifications Center"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 bg-rose-550 text-white font-bold text-[7px] h-3.5 w-3.5 rounded-full flex items-center justify-center scale-95 border border-white dark:border-[#0c1c09]">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#0c1c09]/95 border border-slate-250 dark:border-[#1e3a12] rounded-2xl shadow-xl z-55 py-3 animate-fadeIn backdrop-blur-xl text-xs text-[var(--mf-text-primary)]">
+                    {/* Header */}
+                    <div className="px-4 pb-2 border-b border-[var(--mf-border)] flex items-center justify-between">
+                      <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--mf-text-primary)]">AI Alerts & Insights</span>
+                      <GlassBadge variant="danger">{unreadCount} Unread</GlassBadge>
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <div className="px-3 py-2 flex flex-wrap gap-1 border-b border-[var(--mf-border)]">
+                      {['all', 'unread', 'critical', 'liquidity', 'credit', 'business'].map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveNotifTab(tab)}
+                          className={`px-2 py-1 rounded text-[8px] font-bold uppercase transition cursor-pointer border-none ${
+                            activeNotifTab === tab
+                              ? 'bg-[var(--mf-accent)] text-white'
+                              : 'bg-white/5 text-[var(--mf-text-secondary)] hover:bg-white/10'
+                          }`}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Notification list */}
+                    <div className="max-h-64 overflow-y-auto divide-y divide-[var(--mf-border)]">
+                      {getFilteredNotifications().length === 0 ? (
+                        <div className="px-4 py-6 text-center text-[var(--mf-text-secondary)]">
+                          No notifications found matching filter.
+                        </div>
+                      ) : (
+                        getFilteredNotifications().map((n) => {
+                          const isUnread = !n.read;
+                          const isHigh = n.severity === 'High' || n.severity === 'Critical';
+                          return (
+                            <div 
+                              key={n.notification_id} 
+                              onClick={() => handleMarkRead(n.notification_id, n.action_url)}
+                              className={`p-3 text-left transition hover:bg-white/5 cursor-pointer flex items-start space-x-2.5 ${
+                                isUnread ? 'bg-[var(--mf-accent)]/5' : ''
+                              }`}
+                            >
+                              <div className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                isHigh ? 'bg-rose-500 animate-pulse' : isUnread ? 'bg-sky-500' : 'bg-slate-300 dark:bg-slate-700'
+                              }`} />
+                              <div className="flex-1 space-y-1">
+                                <div className="flex justify-between items-start">
+                                  <span className="font-bold text-[10px] uppercase text-[var(--mf-text-primary)]">
+                                    {n.title}
+                                  </span>
+                                  <span className="text-[8px] text-[var(--mf-text-secondary)] font-medium">
+                                    {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-[var(--mf-text-secondary)] leading-normal">{n.message}</p>
+                                {n.action_url && (
+                                  <span className="text-[8px] font-bold text-[var(--mf-accent)] flex items-center mt-1">
+                                    Take Action &rarr;
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Custom Dropdown environment role switcher */}
             <div className="relative">
@@ -488,7 +683,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </header>
 
         {/* Content Box scrolling independently */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-white dark:bg-[#091406] text-slate-850 dark:text-slate-100">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-white dark:bg-[#091406] text-slate-850 dark:text-slate-100 lg:bg-transparent lg:dark:bg-transparent lg:p-0">
           {children}
         </main>
       </div>

@@ -5,6 +5,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Transactions from './pages/Transactions';
+import Ledger from './pages/Ledger';
 import Liquidity from './pages/Liquidity';
 import BusinessAnalytics from './pages/BusinessAnalytics';
 import CustomerIntelligence from './pages/CustomerIntelligence';
@@ -14,6 +15,7 @@ import DataExplorer from './pages/DataExplorer';
 import DemoManagement from './pages/DemoManagement';
 import Settings from './pages/Settings';
 import AIInsights from './pages/AIInsights';
+import { Onboarding } from './pages/Onboarding';
 import { Sparkles, ShieldAlert } from 'lucide-react';
 // @ts-ignore
 import Grainient from './components/Grainient';
@@ -41,6 +43,7 @@ const PAGE_PERMISSIONS: Record<string, ('AGENT' | 'FINANCIAL_INSTITUTION' | 'ADM
   dashboard: ['AGENT', 'FINANCIAL_INSTITUTION'],
   'admin-dashboard': ['ADMIN'],
   transactions: ['AGENT'],
+  ledger: ['AGENT'],
   liquidity: ['AGENT'],
   analytics: ['AGENT', 'FINANCIAL_INSTITUTION'],
   credit: ['FINANCIAL_INSTITUTION'],
@@ -59,14 +62,32 @@ const App: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'landing' | 'login'>('landing');
+  const [viewMode, setViewMode] = useState<'landing' | 'login' | 'onboarding'>('landing');
 
+  // Synchronize browser history and views (router-less navigation mapping)
   useEffect(() => {
-    if (!currentUser) {
-      setViewMode('landing');
-    }
-  }, [currentUser]);
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/onboarding/agent') {
+        if (!currentUser) {
+          setViewMode('onboarding');
+        }
+      } else if (path === '/login') {
+        if (!currentUser) {
+          setViewMode('login');
+        }
+      } else {
+        if (!currentUser) {
+          setViewMode('landing');
+        }
+      }
+    };
 
+    window.addEventListener('popstate', handlePopState);
+    handlePopState(); // Initial check on mount
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentUser]);
 
   useEffect(() => {
     const user = ApiService.getCurrentUser();
@@ -159,6 +180,8 @@ const App: React.FC = () => {
         return <AdminDashboard />;
       case 'transactions':
         return <Transactions />;
+      case 'ledger':
+        return <Ledger />;
       case 'liquidity':
         return <Liquidity />;
       case 'analytics':
@@ -184,17 +207,33 @@ const App: React.FC = () => {
 
   if (!currentUser) {
     if (viewMode === 'landing') {
-      return <LandingPage onLoginClick={() => setViewMode('login')} />;
+      return (
+        <LandingPage 
+          onLoginClick={() => {
+            window.history.pushState({}, '', '/login');
+            setViewMode('login');
+          }} 
+          onSignUpClick={() => {
+            window.history.pushState({}, '', '/onboarding/agent');
+            setViewMode('onboarding');
+          }} 
+        />
+      );
     }
     return (
       <div className="relative w-full min-h-screen min-h-[100dvh] flex items-center justify-center overflow-y-auto font-sans p-4 py-8">
         {/* Back to Home floating action button */}
-        <button
-          onClick={() => setViewMode('landing')}
-          className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm animate-fadeIn"
-        >
-          <span>← Back to Home</span>
-        </button>
+        {viewMode !== 'onboarding' && (
+          <button
+            onClick={() => {
+              window.history.pushState({}, '', '/');
+              setViewMode('landing');
+            }}
+            className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm animate-fadeIn"
+          >
+            <span>← Back to Home</span>
+          </button>
+        )}
         {/* Grainient WebGL Background */}
         <div className="absolute inset-0 z-0">
           <Grainient 
@@ -223,103 +262,117 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Border Glow Card Container */}
-        <div className="z-10 flex items-center justify-center p-4">
-          <BorderGlow
-            className="w-[calc(100vw-32px)] sm:w-[410px] lg:w-[440px] h-auto"
-            backgroundColor="rgba(10, 15, 24, 0.65)"
-            borderRadius={20}
-            glowColor="160 80 50"
-            colors={['#0d9488', '#0f172a', '#064e3b']}
-            glowIntensity={1.0}
-            edgeSensitivity={20}
-          >
-            <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 login-inner-card select-none rounded-[20px] border border-white/5">
-              {/* Logo & Brand Mark */}
-              <div className="flex flex-col items-center text-center">
-                <div className="bg-teal-400 text-slate-950 rounded-xl font-black flex items-center justify-center transition-transform hover:scale-105 duration-300 login-logo">
-                  M
-                </div>
-                <h1 className="text-white tracking-wide leading-none login-title">MobiFin AI</h1>
-                <p className="font-normal text-white/85 leading-normal login-subtitle">
-                  AI Financial Intelligence & Alternative Credit Intelligence
-                </p>
-              </div>
-
-              {/* Form Area */}
-              <form onSubmit={handleLoginSubmit} className="login-form">
-                {loginError && (
-                  <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-3">
-                    {loginError}
+        {/* Content render selection: Onboarding or Login */}
+        <div className="z-10 flex items-center justify-center p-4 w-full">
+          {viewMode === 'onboarding' ? (
+            <Onboarding 
+              onComplete={(user) => {
+                window.history.pushState({}, '', '/');
+                setCurrentUser(user);
+                setActivePage('dashboard');
+              }}
+              onBackToLanding={() => {
+                window.history.pushState({}, '', '/');
+                setViewMode('landing');
+              }}
+            />
+          ) : (
+            <BorderGlow
+              className="w-[calc(100vw-32px)] sm:w-[410px] lg:w-[440px] h-auto"
+              backgroundColor="rgba(10, 15, 24, 0.65)"
+              borderRadius={20}
+              glowColor="160 80 50"
+              colors={['#0d9488', '#0f172a', '#064e3b']}
+              glowIntensity={1.0}
+              edgeSensitivity={20}
+            >
+              <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 login-inner-card select-none rounded-[20px] border border-white/5">
+                {/* Logo & Brand Mark */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-teal-400 text-slate-950 rounded-xl font-black flex items-center justify-center transition-transform hover:scale-105 duration-300 login-logo">
+                    M
                   </div>
-                )}
-                
-                <div>
-                  <label className="text-white/80 login-label">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={usernameInput}
-                    onChange={e => setUsernameInput(e.target.value)}
-                    placeholder="Enter your username"
-                    className="bg-slate-900/40 border border-[#8ea978] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
-                  />
+                  <h1 className="text-white tracking-wide leading-none login-title">MobiFin AI</h1>
+                  <p className="font-normal text-white/85 leading-normal login-subtitle">
+                    AI Financial Intelligence & Alternative Credit Intelligence
+                  </p>
                 </div>
 
-                <div className="login-input-group">
-                  <label className="text-white/80 login-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={passwordInput}
-                    onChange={e => setPasswordInput(e.target.value)}
-                    placeholder="••••••••"
-                    className="bg-slate-900/40 border border-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
-                  />
-                </div>
+                {/* Form Area */}
+                <form onSubmit={handleLoginSubmit} className="login-form">
+                  {loginError && (
+                    <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-3">
+                      {loginError}
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="text-white/80 login-label">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={e => setUsernameInput(e.target.value)}
+                      placeholder="Enter your username"
+                      className="bg-slate-900/40 border border-[#8ea978] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoggingIn}
-                  className="bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-md shadow-[#8ea978]/10 flex items-center justify-center login-btn"
-                >
-                  {isLoggingIn ? 'Authenticating...' : 'Sign In'}
-                </button>
-              </form>
+                  <div className="login-input-group">
+                    <label className="text-white/80 login-label">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordInput}
+                      onChange={e => setPasswordInput(e.target.value)}
+                      placeholder="••••••••"
+                      className="bg-slate-900/40 border border-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
+                    />
+                  </div>
 
-              {/* Quick Demo Switcher Presets */}
-              <div className="border-t border-white/5 login-divider-group">
-                <span className="text-white login-demo-label">
-                  Demo Quick Access
-                </span>
-                <div className="login-demo-list">
                   <button
-                    onClick={() => handlePresetLogin('kwame')}
+                    type="submit"
                     disabled={isLoggingIn}
-                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
+                    className="bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-md shadow-[#8ea978]/10 flex items-center justify-center login-btn"
                   >
-                    Agent — Kwame Centre
+                    {isLoggingIn ? 'Authenticating...' : 'Sign In'}
                   </button>
-                  <button
-                    onClick={() => handlePresetLogin('forms')}
-                    disabled={isLoggingIn}
-                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
-                  >
-                    Financial Institution — Forms Capital
-                  </button>
-                  <button
-                    onClick={() => handlePresetLogin('admin')}
-                    disabled={isLoggingIn}
-                    className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
-                  >
-                    System Operator (Admin)
-                  </button>
+                </form>
+
+                {/* Quick Demo Switcher Presets */}
+                <div className="border-t border-white/5 login-divider-group">
+                  <span className="text-white login-demo-label">
+                    Demo Quick Access
+                  </span>
+                  <div className="login-demo-list">
+                    <button
+                      onClick={() => handlePresetLogin('kwame')}
+                      disabled={isLoggingIn}
+                      className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
+                    >
+                      Agent — Kwame Centre
+                    </button>
+                    <button
+                      onClick={() => handlePresetLogin('forms')}
+                      disabled={isLoggingIn}
+                      className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
+                    >
+                      Financial Institution — Forms Capital
+                    </button>
+                    <button
+                      onClick={() => handlePresetLogin('admin')}
+                      disabled={isLoggingIn}
+                      className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
+                    >
+                      System Operator (Admin)
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </BorderGlow>
+            </BorderGlow>
+          )}
         </div>
       </div>
     );

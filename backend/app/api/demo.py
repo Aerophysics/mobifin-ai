@@ -4,7 +4,7 @@ from backend.app.database.connection import get_db
 from backend.app.models.db_models import (
     User, Agent, Customer, Transaction, Loan, 
     CustomerFinancialProfile, AgentDailyMetrics, 
-    Anomaly, Forecast, Recommendation
+    Anomaly, Forecast, Recommendation, FinancingRequest, Notification
 )
 from backend.app.ml.data_generator import SyntheticDataGenerator
 from backend.app.ml.inference import MLInference
@@ -23,6 +23,8 @@ def seed_demo_data(db: Session = Depends(get_db)):
     """
     try:
         # Clear existing data in reverse dependency order
+        db.query(FinancingRequest).delete()
+        db.query(Notification).delete()
         db.query(Recommendation).delete()
         db.query(Anomaly).delete()
         db.query(Forecast).delete()
@@ -116,15 +118,89 @@ def seed_demo_data(db: Session = Depends(get_db)):
             
         db.commit()
         
-        # 6. Seed Default Users with RBAC roles
-        print("Seeding users...")
+        # 6. Seed Default Users with RBAC roles and new demo records
+        print("Seeding users and core product demo data...")
+        # Create new onboarded agent (Agent 6)
+        yaaba_agent = Agent(
+            agent_id=6,
+            name="Yaaba's Express Money",
+            location="Ashanti - Obuasi",
+            business_age=1,
+            operating_hours="08:00 - 18:00",
+            cash_balance=1500.0,
+            float_balance=2500.0,
+            commission_rate=0.015,
+            full_name="Yaaba Mensah",
+            business_name="Yaaba's Express Money",
+            phone="0241112222",
+            region="Ashanti",
+            agent_type="Retailer",
+            status="active",
+            created_at=datetime.datetime.utcnow()
+        )
+        db.add(yaaba_agent)
+        db.commit()
+
+        # Seed ineligible customers (Customer 2000 has NO consent, Customer 2001 has consent but insufficient history)
+        no_consent_customer = Customer(
+            customer_id=2000,
+            display_name="Customer #2000 (No Consent)",
+            consent_status=False,
+            created_at=datetime.datetime.utcnow() - datetime.timedelta(days=5)
+        )
+        insufficient_customer = Customer(
+            customer_id=2001,
+            display_name="Customer #2001 (New Profile)",
+            consent_status=True,
+            consent_timestamp=datetime.datetime.utcnow() - datetime.timedelta(days=5),
+            profile_created_at=datetime.datetime.utcnow() - datetime.timedelta(days=5),
+            created_at=datetime.datetime.utcnow() - datetime.timedelta(days=10)
+        )
+        db.add(no_consent_customer)
+        db.add(insufficient_customer)
+
+        # Seed Financial Profile for Customer 2001 to generate a readiness score
+        new_profile = CustomerFinancialProfile(
+            customer_id=2001,
+            activity_days=5,
+            transaction_count=8,
+            transaction_volume=1200.0,
+            average_transaction_value=150.0,
+            monthly_inflows=400.0,
+            monthly_outflows=380.0,
+            inflow_outflow_ratio=1.05,
+            cashflow_volatility=0.2,
+            transaction_consistency=0.5,
+            savings_behavior_score=45.0,
+            activity_growth_rate=0.05,
+            financial_history_months=0.3,
+            repayment_history_score=0.0,
+            anomaly_score=0.02
+        )
+        db.add(new_profile)
+        db.commit()
+
         users = [
             User(username="kwame", password_hash=get_password_hash("kwame123"), role="AGENT", agent_id=1),
+            User(username="yaaba", password_hash=get_password_hash("yaaba123"), role="AGENT", agent_id=6),
             User(username="forms_capital", password_hash=get_password_hash("forms123"), role="FINANCIAL_INSTITUTION"),
             User(username="admin", password_hash=get_password_hash("admin123"), role="ADMIN")
         ]
         for u in users:
             db.add(u)
+        db.commit()
+
+        # Seed a pending financing request for Customer #1048
+        pending_req = FinancingRequest(
+            customer_id=1048,
+            product_name="Working Capital Facility",
+            requested_amount=5000.0,
+            requested_term=30,
+            purpose="Replenishing cash and e-float reserves to support high volume of withdrawal peak times.",
+            status="PENDING_INSTITUTIONAL_REVIEW",
+            created_at=datetime.datetime.utcnow()
+        )
+        db.add(pending_req)
         db.commit()
         
         # 7. Aggregate AgentDailyMetrics and Flag Anomalies

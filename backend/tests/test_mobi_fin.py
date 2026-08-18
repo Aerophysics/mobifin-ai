@@ -131,3 +131,197 @@ def test_anomaly_detection():
     is_anom, score, reason = MLInference.inspect_transaction_anomaly(tx_huge, [])
     assert is_anom is True
     assert "exceeds the normal single transaction threshold" in reason
+
+# --- NEW MOBIFIN PRODUCT FEATURES TESTS ---
+from fastapi import HTTPException
+from backend.app.api.features import (
+    onboard_agent, get_daily_ledger, create_financing_request, 
+    list_financing_requests, list_notifications, mark_notification_as_read,
+    AgentOnboardingRequest, FinancingRequestCreate
+)
+from backend.app.models.db_models import FinancingRequest, Notification, CreditAssessment
+
+def test_agent_onboarding_creation(db_session):
+    """Verify onboarding flow creates Agent, User, and welcome system alert"""
+    req = AgentOnboardingRequest(
+        username="test_new_agent",
+        password="testpassword123",
+        full_name="Yaaba Mensah",
+        business_name="Yaaba Express",
+        phone="0241112222",
+        region="Ashanti",
+        location="Ashanti - Obuasi",
+        agent_type="Retailer",
+        starting_cash=1500.0,
+        starting_float=2500.0
+    )
+    res = onboard_agent(req, db=db_session)
+    assert res["agent_id"] > 0
+    assert res["username"] == "test_new_agent"
+    assert res["full_name"] == "Yaaba Mensah"
+    
+    # Assert welcome alert was recorded
+    alerts = db_session.query(Notification).filter(Notification.agent_id == res["agent_id"]).all()
+    assert len(alerts) == 1
+    assert "Account Onboarding Successful" in alerts[0].title
+
+def test_ledger_calculation_and_reconciliation(db_session):
+    """Verify daily ledger cash/float calculations and Balanced reconciliation status"""
+    agent = Agent(
+        agent_id=10,
+        name="Test Agent",
+        location="Greater Accra - Central Accra",
+        business_age=12,
+        operating_hours="08:00 - 18:00",
+        cash_balance=1000.0,
+        float_balance=2000.0
+    )
+    db_session.add(agent)
+    db_session.commit()
+    
+    tx_day = datetime(2026, 8, 18, 10, 0, 0)
+    tx1 = Transaction(
+        transaction_id=1001,
+        agent_id=10,
+        timestamp=tx_day,
+        transaction_type="withdrawal",
+        amount=500.0,
+        direction="outflow",
+        cash_balance=500.0,
+        float_balance=2500.0,
+        commission=7.5,
+        location="Greater Accra"
+    )
+    db_session.add(tx1)
+    db_session.commit()
+    
+    class MockUser:
+        agent_id = 10
+        role = "AGENT"
+        
+    res = get_daily_ledger(date_str="2026-08-18", agent_id=10, current_user=MockUser(), db=db_session)
+    assert res["opening_cash"] == 1000.0  # 500 + 500
+    assert res["opening_float"] == 2000.0 # 2500 - 500
+    assert res["cash_out"] == 500.0
+    assert res["closing_cash"] == 500.0
+    assert res["closing_float"] == 2500.0
+    assert res["reconciliation_status"] == "Balanced"
+
+def test_financing_request_eligibility_and_capacity_limits(db_session):
+    """Verify consent gating, credit eligibility requirements, and borrowing capacity limits"""
+    # 1. New Customer without consent
+    cust_no_consent = Customer(
+        customer_id=3001,
+        display_name="No Consent Cust",
+        consent_status=False
+    )
+    db_session.add(cust_no_consent)
+    db_session.commit()
+    
+    class MockUser:
+        role = "FINANCIAL_INSTITUTION"
+        agent_id = None
+        
+    req = FinancingRequestCreate(
+        customer_id=3001,
+        product_name="Working Capital Facility",
+        requested_amount=1000.0,
+        requested_term=30,
+        purpose="Inventory replenishment"
+    )
+    # Must fail because consent is false
+    with pytest.raises(HTTPException) as exc_info:
+        create_financing_request(req, current_user=MockUser(), db=db_session)
+    assert exc_info.value.status_code == 400
+    assert "consent is unsigned" in exc_info.value.detail
+
+    # 2. Customer with consent but no assessment (insufficient history)
+    cust_no_history = Customer(
+        customer_id=3002,
+        display_name="New Opt-in Cust",
+        consent_status=True
+    )
+    db_session.add(cust_no_history)
+    db_session.commit()
+    
+    req_no_hist = FinancingRequestCreate(
+        customer_id=3002,
+        product_name="Working Capital Facility",
+        requested_amount=1000.0,
+        requested_term=30,
+        purpose="Stocking"
+    )
+    # Must fail because no assessment computed
+    with pytest.raises(HTTPException) as exc_info:
+        create_financing_request(req_no_hist, current_user=MockUser(), db=db_session)
+    assert exc_info.value.status_code == 400
+    assert "insufficient history" in exc_info.value.detail
+
+    # 3. Customer with assessment, but requested amount exceeds capacity
+    cust_eligible = Customer(
+        customer_id=3003,
+        display_name="KWAME Customer",
+        consent_status=True
+    )
+    db_session.add(cust_eligible)
+    db_session.commit()
+    
+    assess = CreditAssessment(
+        customer_id=3003,
+        model_version="v1.0.0",
+        repayment_probability=0.95,
+        default_probability=0.05,
+        credit_score=780,
+        risk_category="Low",
+        indicative_credit_capacity=4000.0,
+        assessment_date=datetime.utcnow()
+    )
+    db_session.add(assess)
+    db_session.commit()
+    
+    # Under limit: should pass
+    req_pass = FinancingRequestCreate(
+        customer_id=3003,
+        product_name="Working Capital Facility",
+        requested_amount=3000.0,
+        requested_term=30,
+        purpose="Inventory Restocking"
+    )
+    res_pass = create_financing_request(req_pass, current_user=MockUser(), db=db_session)
+    assert res_pass["status"] == "PENDING_INSTITUTIONAL_REVIEW"
+    assert res_pass["requested_amount"] == 3000.0
+    
+    # Over limit capacity checks: must raise 400
+    req_fail = FinancingRequestCreate(
+        customer_id=3003,
+        product_name="Working Capital Facility",
+        requested_amount=5000.0,
+        requested_term=30,
+        purpose="Restocking too much"
+    )
+    with pytest.raises(HTTPException) as exc_info:
+        create_financing_request(req_fail, current_user=MockUser(), db=db_session)
+    assert exc_info.value.status_code == 400
+    assert "exceeds the indicative capacity" in exc_info.value.detail
+
+def test_notification_read_unread_flow(db_session):
+    """Verify notification read state toggle and read/unread querying"""
+    notif = Notification(
+        agent_id=1,
+        type="LIQUIDITY",
+        severity="High",
+        title="Liquidity warning",
+        message="Reserves low",
+        read=False
+    )
+    db_session.add(notif)
+    db_session.commit()
+    
+    class MockUser:
+        agent_id = 1
+        role = "AGENT"
+        
+    # Check read toggles
+    mark_notification_as_read(notification_id=notif.notification_id, current_user=MockUser(), db=db_session)
+    assert notif.read is True
+

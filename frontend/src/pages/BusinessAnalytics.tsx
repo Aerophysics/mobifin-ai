@@ -9,8 +9,13 @@ import {
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { BusinessHealth } from '../types';
+import { GlassPanel } from '../components/glass/GlassPanel';
+import { GlassCard } from '../components/glass/GlassCard';
+import { GlassMetric } from '../components/glass/GlassMetric';
+import { GlassTable } from '../components/glass/GlassTable';
 
-const COLORS = ['#0d9488', '#0f766e', '#14b8a6', '#5eead4', '#2dd4bf', '#06b6d4'];
+// High-contrast color palette for visual readability
+const COLORS = ['#0d9488', '#3b82f6', '#8b5cf6', '#f97316', '#10b981', '#6366f1'];
 
 const BusinessAnalytics: React.FC = () => {
   const [health, setHealth] = useState<BusinessHealth | null>(null);
@@ -62,7 +67,7 @@ const BusinessAnalytics: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--mf-accent)]"></div>
       </div>
     );
   }
@@ -70,75 +75,60 @@ const BusinessAnalytics: React.FC = () => {
   const metrics = health?.metrics;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
+    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Total volume */}
-        <div className="premium-card bg-white flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total 14d Volume</span>
-            <span className="text-xl font-bold text-slate-800 block">
-              GH₵{metrics?.recent_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-            </span>
-          </div>
-          <div className="bg-slate-50 text-slate-700 p-2 rounded border border-slate-200">
-            <Activity className="h-4.5 w-4.5" />
-          </div>
-        </div>
+        <GlassMetric 
+          title="Total 14d Volume"
+          value={`GH₵${metrics?.recent_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+          icon={Activity}
+          iconColorClass="text-sky-500"
+          subtitle="Aggregate cashflow processed"
+        />
 
-        {/* Total Commission */}
-        <div className="premium-card bg-white flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Commission Earned</span>
-            <span className="text-xl font-bold text-slate-800 block">
-              GH₵{metrics?.recent_commission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="bg-teal-50 text-teal-700 p-2 rounded border border-teal-100">
-            <DollarSign className="h-4.5 w-4.5" />
-          </div>
-        </div>
+        <GlassMetric 
+          title="Commission Earned"
+          value={`GH₵${metrics?.recent_commission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={DollarSign}
+          iconColorClass="text-emerald-500"
+          subtitle="Total platform net earnings"
+        />
 
-        {/* Growth index */}
-        <div className="premium-card bg-white flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Weekly Growth Score</span>
-            <span className="text-xl font-bold text-slate-800 block">
-              {metrics?.volume_growth} <span className="text-xs text-slate-400 font-medium">/ 100</span>
-            </span>
-          </div>
-          <div className="bg-emerald-50 text-emerald-700 p-2 rounded border border-emerald-100">
-            <Percent className="h-4.5 w-4.5" />
-          </div>
-        </div>
+        <GlassMetric 
+          title="Weekly Growth Score"
+          value={`${metrics?.volume_growth || 0} / 100`}
+          icon={Percent}
+          iconColorClass="text-purple-500"
+          subtitle="Relative week-over-week growth rate"
+        />
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Commission Growth Line Chart */}
-        <div className="premium-card bg-white flex flex-col space-y-4">
+        <GlassPanel className="p-5 flex flex-col space-y-4">
           <div>
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Weekly Commission Growth</h3>
-            <p className="text-[10px] text-slate-400">Daily commission values earned over the week</p>
+            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Weekly Commission Growth</h3>
+            <p className="text-[10px] text-[var(--mf-text-secondary)]">Daily commission values earned over the week</p>
           </div>
           <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={commissionTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                <Tooltip />
-                <Line type="monotone" dataKey="Commission" stroke="#0d9488" strokeWidth={1.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
+                <Line type="monotone" dataKey="Commission" stroke="var(--mf-accent)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </GlassPanel>
 
         {/* Transaction Type Pie Chart */}
-        <div className="premium-card bg-white flex flex-col space-y-4">
+        <GlassPanel className="p-5 flex flex-col space-y-4">
           <div>
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Transaction Type Distribution</h3>
-            <p className="text-[10px] text-slate-400">Volumetric share of mobile money services</p>
+            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Transaction Type Distribution</h3>
+            <p className="text-[10px] text-[var(--mf-text-secondary)]">Volumetric share of mobile money services</p>
           </div>
           <div className="h-60 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -156,62 +146,56 @@ const BusinessAnalytics: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
                 <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 9 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </GlassPanel>
 
-        {/* Purely Operational Ghanaian Regional Activity Bar Chart */}
-        <div className="premium-card bg-white flex flex-col space-y-4 lg:col-span-2">
+        {/* Ghanaian Regional Activity Bar Chart */}
+        <GlassPanel className="p-5 flex flex-col space-y-4 lg:col-span-2">
           <div>
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center">
-              <Globe2 className="h-4.5 w-4.5 text-teal-600 mr-1.5" />
+            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider flex items-center">
+              <Globe2 className="h-4.5 w-4.5 text-[var(--mf-accent)] mr-1.5" />
               Ghanaian Regional Operational Analytics
             </h3>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-[var(--mf-text-secondary)]">
               Network demand across locales. Not utilized in ML customer credit scoring model.
             </p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
             {/* Table */}
-            <div className="lg:col-span-1 overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase">
-                    <th className="py-2.5">Region</th>
-                    <th className="py-2.5 text-right">Volume</th>
-                    <th className="py-2.5 text-right font-normal text-slate-400">Count</th>
+            <div className="lg:col-span-1">
+              <GlassTable 
+                headers={["Region", "Volume", "Count"]}
+                alignRightIndexes={[1, 2]}
+              >
+                {regionalActivity.map(reg => (
+                  <tr key={reg.location} className="hover:bg-white/5 transition-colors">
+                    <td className="py-2.5 px-2 font-medium">{reg.location}</td>
+                    <td className="py-2.5 px-2 text-right font-semibold">GH₵{reg['Tx Volume'].toLocaleString()}</td>
+                    <td className="py-2.5 px-2 text-right font-mono text-[var(--mf-text-secondary)]">{reg['Tx Count']}</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {regionalActivity.map(reg => (
-                    <tr key={reg.location}>
-                      <td className="py-2.5 font-medium">{reg.location}</td>
-                      <td className="py-2.5 text-right font-semibold">GH₵{reg['Tx Volume'].toLocaleString()}</td>
-                      <td className="py-2.5 text-right font-mono text-slate-400">{reg['Tx Count']}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </GlassTable>
             </div>
 
             {/* Chart */}
             <div className="lg:col-span-2 h-60 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={regionalActivity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" />
-                  <XAxis dataKey="location" tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                  <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#e2e8f0" />
-                  <Tooltip />
-                  <Bar dataKey="Tx Volume" fill="#0d9488" radius={[2, 2, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
+                  <XAxis dataKey="location" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                  <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
+                  <Bar dataKey="Tx Volume" fill="var(--mf-accent)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );

@@ -29,6 +29,14 @@ class Agent(Base):
     commission_rate = Column(Float, default=0.015)  # e.g., 1.5%
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
+    # Onboarding extensions
+    full_name = Column(String, nullable=True)
+    business_name = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    region = Column(String, nullable=True)
+    agent_type = Column(String, nullable=True)
+    status = Column(String, default="active")
+    
     user = relationship("User", back_populates="agent", uselist=False)
     transactions = relationship("Transaction", back_populates="agent")
     daily_metrics = relationship("AgentDailyMetrics", back_populates="agent")
@@ -195,3 +203,33 @@ class Recommendation(Base):
     status = Column(String, default="active")  # active, snoozed, applied
     
     agent = relationship("Agent", back_populates="recommendations")
+
+# --- HACKATHON CORE FEATURES ---
+class FinancingRequest(Base):
+    __tablename__ = "financing_requests"
+    
+    request_id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=False)
+    product_name = Column(String, nullable=False)
+    requested_amount = Column(Float, nullable=False)
+    requested_term = Column(Integer, nullable=False)  # in days
+    purpose = Column(Text, nullable=False)
+    status = Column(String, default="PENDING_INSTITUTIONAL_REVIEW")  # PENDING_INSTITUTIONAL_REVIEW, APPROVED, REJECTED
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    customer = relationship("Customer", backref="financing_requests")
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    
+    notification_id = Column(Integer, primary_key=True, index=True)
+    agent_id = Column(Integer, ForeignKey("agents.agent_id"), nullable=True)
+    type = Column(String, nullable=False)  # LIQUIDITY, BUSINESS, UNUSUAL_ACTIVITY, CREDIT, SYSTEM
+    severity = Column(String, nullable=False)  # Low, Medium, High, Critical
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    read = Column(Boolean, default=False)
+    action_url = Column(String, nullable=True)
+    
+    agent = relationship("Agent", backref="notifications")

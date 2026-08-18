@@ -198,6 +198,47 @@ class ApiService {
     return this.request<DataExplorerMetrics>('/models/explorer');
   }
 
+  // --- MOBIFIN FEATURE REDESIGN ADDITIONS ---
+  static async registerAgent(onboardingData: any): Promise<any> {
+    return this.request<any>('/onboarding', {
+      method: 'POST',
+      body: JSON.stringify(onboardingData),
+    });
+  }
+
+  static async getDailyLedger(dateStr?: string, agentId?: number): Promise<any> {
+    const queryParts = [];
+    if (dateStr) queryParts.push(`date_str=${dateStr}`);
+    if (agentId) queryParts.push(`agent_id=${agentId}`);
+    const query = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
+    return this.request<any>(`/ledger/daily${query}`);
+  }
+
+  static async getProductCatalog(): Promise<any[]> {
+    return this.request<any[]>('/financial-services/products');
+  }
+
+  static async submitFinancingRequest(requestData: any): Promise<any> {
+    return this.request<any>('/financing/request', {
+      method: 'POST',
+      body: JSON.stringify(requestData),
+    });
+  }
+
+  static async listFinancingRequests(): Promise<any[]> {
+    return this.request<any[]>('/financing/requests');
+  }
+
+  static async getNotifications(): Promise<any[]> {
+    return this.request<any[]>('/notifications');
+  }
+
+  static async markNotificationAsRead(notificationId: number): Promise<any> {
+    return this.request<any>(`/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
   // --- SYSTEM STATUS ---
   static async getSystemStatus(): Promise<any> {
     return this.request<any>('/status');

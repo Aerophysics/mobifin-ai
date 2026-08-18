@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import ApiService from '../services/api';
 import { Transaction } from '../types';
+import { GlassPanel } from '../components/glass/GlassPanel';
+import { GlassCard } from '../components/glass/GlassCard';
+import { GlassButton } from '../components/glass/GlassButton';
+import { GlassBadge } from '../components/glass/GlassBadge';
 
 const Transactions: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -71,126 +75,127 @@ const Transactions: React.FC = () => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn">
+    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
       {/* Filters Form */}
-      <div className="premium-card bg-white">
+      <GlassPanel className="p-5">
         <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
           <div>
-            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Customer ID</label>
+            <label className="text-[9px] font-bold text-[var(--mf-text-secondary)] uppercase tracking-widest block mb-1">Customer ID</label>
             <input
               type="number"
               value={customerId}
               onChange={e => setCustomerId(e.target.value)}
               placeholder="Search ID"
-              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-slate-800"
+              className="w-full text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--mf-accent)] text-[var(--mf-text-primary)]"
             />
           </div>
 
           <div>
-            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Type</label>
+            <label className="text-[9px] font-bold text-[var(--mf-text-secondary)] uppercase tracking-widest block mb-1">Type</label>
             <select
               value={txType}
               onChange={e => setTxType(e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-slate-800"
+              className="w-full text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--mf-accent)] text-[var(--mf-text-primary)] dark:text-white"
             >
-              <option value="">All Types</option>
-              <option value="deposit">Deposit</option>
-              <option value="withdrawal">Withdrawal</option>
-              <option value="transfer">Transfer</option>
-              <option value="airtime">Airtime</option>
-              <option value="bill_payment">Bill Payment</option>
-              <option value="merchant_payment">Merchant Payment</option>
+              <option value="" className="dark:bg-[#0c1c09]">All Types</option>
+              <option value="deposit" className="dark:bg-[#0c1c09]">Deposit</option>
+              <option value="withdrawal" className="dark:bg-[#0c1c09]">Withdrawal</option>
+              <option value="transfer" className="dark:bg-[#0c1c09]">Transfer</option>
+              <option value="airtime" className="dark:bg-[#0c1c09]">Airtime</option>
+              <option value="bill_payment" className="dark:bg-[#0c1c09]">Bill Payment</option>
+              <option value="merchant_payment" className="dark:bg-[#0c1c09]">Merchant Payment</option>
             </select>
           </div>
 
           <div>
-            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Direction</label>
+            <label className="text-[9px] font-bold text-[var(--mf-text-secondary)] uppercase tracking-widest block mb-1">Direction</label>
             <select
               value={direction}
               onChange={e => setDirection(e.target.value)}
-              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-slate-800"
+              className="w-full text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--mf-accent)] text-[var(--mf-text-primary)] dark:text-white"
             >
-              <option value="">All Flows</option>
-              <option value="inflow">Inflow</option>
-              <option value="outflow">Outflow</option>
+              <option value="" className="dark:bg-[#0c1c09]">All Flows</option>
+              <option value="inflow" className="dark:bg-[#0c1c09]">Inflow</option>
+              <option value="outflow" className="dark:bg-[#0c1c09]">Outflow</option>
             </select>
           </div>
 
           <div>
-            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Min Amount</label>
+            <label className="text-[9px] font-bold text-[var(--mf-text-secondary)] uppercase tracking-widest block mb-1">Min Amount</label>
             <input
               type="number"
               value={minAmount}
               onChange={e => setMinAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-slate-800"
+              className="w-full text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--mf-accent)] text-[var(--mf-text-primary)]"
             />
           </div>
 
           <div>
-            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Max Amount</label>
+            <label className="text-[9px] font-bold text-[var(--mf-text-secondary)] uppercase tracking-widest block mb-1">Max Amount</label>
             <input
               type="number"
               value={maxAmount}
               onChange={e => setMaxAmount(e.target.value)}
               placeholder="10000.00"
-              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-slate-800"
+              className="w-full text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--mf-accent)] text-[var(--mf-text-primary)]"
             />
           </div>
 
           <div className="flex space-x-2">
-            <button
+            <GlassButton
               type="submit"
-              className="flex-1 bg-slate-900 hover:bg-slate-850 text-white font-bold text-xs py-2.5 px-4 rounded-lg flex items-center justify-center space-x-1.5 transition"
+              variant="primary"
+              className="flex-1"
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4 mr-1.5" />
               <span>Apply</span>
-            </button>
-            <button
+            </GlassButton>
+            <GlassButton
               type="button"
               onClick={handleResetFilters}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 p-2.5 rounded-lg flex items-center justify-center transition"
+              className="p-2"
               title="Reset Filters"
             >
               <RotateCcw className="h-4 w-4" />
-            </button>
+            </GlassButton>
           </div>
         </form>
-      </div>
+      </GlassPanel>
 
       {/* Grid Table */}
-      <div className="premium-card bg-white">
+      <GlassPanel className="p-5">
         {isLoading ? (
           <div className="flex items-center justify-center h-80">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-teal-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[var(--mf-accent)]"></div>
           </div>
         ) : (
           <div className="flex flex-col space-y-4">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase">
+                  <tr className="border-b border-[var(--mf-border)] text-[var(--mf-text-secondary)] font-semibold uppercase">
                     <th className="py-3">Timestamp</th>
                     <th className="py-3">Type</th>
                     <th className="py-3">Customer ID</th>
                     <th className="py-3">Direction</th>
                     <th className="py-3 text-right">Amount</th>
                     <th className="py-3 text-right">Commission</th>
-                    <th className="py-3 text-right text-slate-400">Cash Bal</th>
-                    <th className="py-3 text-right text-slate-400">Float Bal</th>
+                    <th className="py-3 text-right text-[var(--mf-text-secondary)]">Cash Bal</th>
+                    <th className="py-3 text-right text-[var(--mf-text-secondary)]">Float Bal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-[var(--mf-border)] text-[var(--mf-text-primary)]">
                   {transactions.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-slate-400 text-xs font-semibold">
+                      <td colSpan={8} className="py-8 text-center text-[var(--mf-text-secondary)] text-xs font-semibold">
                         No transactions matches the filtered criteria.
                       </td>
                     </tr>
                   ) : (
                     transactions.map(tx => (
-                      <tr key={tx.transaction_id} className="hover:bg-slate-50/50">
-                        <td className="py-3 text-slate-500 font-mono text-[10px]">
+                      <tr key={tx.transaction_id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 text-[var(--mf-text-secondary)] font-mono text-[10px]">
                           {new Date(tx.timestamp).toLocaleString(undefined, {
                             month: 'short',
                             day: 'numeric',
@@ -199,27 +204,27 @@ const Transactions: React.FC = () => {
                             second: '2-digit'
                           })}
                         </td>
-                        <td className="py-3 font-semibold capitalize text-slate-800">{tx.transaction_type}</td>
-                        <td className="py-3 font-mono text-slate-500">
+                        <td className="py-3 font-semibold capitalize">{tx.transaction_type}</td>
+                        <td className="py-3 font-mono text-[var(--mf-text-secondary)]">
                           {tx.customer_id ? `#${tx.customer_id}` : 'Agent Balance Adjust'}
                         </td>
                         <td className="py-3">
                           <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                            tx.direction === 'inflow' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                            tx.direction === 'inflow' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
                           }`}>
                             {tx.direction}
                           </span>
                         </td>
-                        <td className="py-3 text-right font-bold text-slate-900">
+                        <td className="py-3 text-right font-bold">
                           GH₵{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="py-3 text-right font-medium text-emerald-600">
+                        <td className="py-3 text-right font-semibold text-emerald-500">
                           GH₵{tx.commission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="py-3 text-right text-slate-400 font-mono">
+                        <td className="py-3 text-right text-[var(--mf-text-secondary)] font-mono">
                           GH₵{tx.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="py-3 text-right text-slate-400 font-mono">
+                        <td className="py-3 text-right text-[var(--mf-text-secondary)] font-mono">
                           GH₵{tx.float_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -231,31 +236,31 @@ const Transactions: React.FC = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs">
-                <span className="text-[10px] font-bold text-slate-400">
+              <div className="flex items-center justify-between pt-4 border-t border-[var(--mf-border)] text-xs">
+                <span className="text-[10px] font-bold text-[var(--mf-text-secondary)]">
                   Showing page {page} of {totalPages} ({totalCount} transactions found)
                 </span>
                 <div className="flex space-x-1.5">
-                  <button
+                  <GlassButton
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="p-2 border border-slate-200 rounded-lg bg-white text-slate-650 hover:bg-slate-50 transition disabled:opacity-40"
+                    className="p-2 h-8 w-8"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
+                  </GlassButton>
+                  <GlassButton
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="p-2 border border-slate-200 rounded-lg bg-white text-slate-655 hover:bg-slate-50 transition disabled:opacity-40"
+                    className="p-2 h-8 w-8"
                   >
                     <ChevronRight className="h-4 w-4" />
-                  </button>
+                  </GlassButton>
                 </div>
               </div>
             )}
           </div>
         )}
-      </div>
+      </GlassPanel>
     </div>
   );
 };
