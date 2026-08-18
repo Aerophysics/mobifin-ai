@@ -32,7 +32,7 @@ class Agent(Base):
     # Onboarding extensions
     full_name = Column(String, nullable=True)
     business_name = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
+    phone = Column(String, unique=True, index=True, nullable=True)
     region = Column(String, nullable=True)
     agent_type = Column(String, nullable=True)
     status = Column(String, default="active")

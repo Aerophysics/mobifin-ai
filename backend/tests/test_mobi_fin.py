@@ -325,3 +325,61 @@ def test_notification_read_unread_flow(db_session):
     mark_notification_as_read(notification_id=notif.notification_id, current_user=MockUser(), db=db_session)
     assert notif.read is True
 
+
+def test_agent_onboarding_name_duplication_and_phone_conflict(db_session):
+    """Verify that multiple agents can have the same full name but duplicate phone is rejected with 409"""
+    # 1. Create first agent (Reginald Amoah, phone: 0241111111)
+    req1 = AgentOnboardingRequest(
+        username="reginald_1",
+        password="password123",
+        full_name="Reginald Amoah",
+        business_name="Reginald Mobile Money",
+        phone="0241111111",
+        region="Greater Accra",
+        location="Greater Accra - Central Accra",
+        agent_type="Retailer",
+        starting_cash=2000.0,
+        starting_float=4000.0
+    )
+    res1 = onboard_agent(req1, db=db_session)
+    assert res1["agent_id"] > 0
+    assert res1["full_name"] == "Reginald Amoah"
+    assert res1["phone"] == "0241111111"
+
+    # 2. Create second agent with same name but different phone/username (Reginald Amoah, phone: 0202222222)
+    req2 = AgentOnboardingRequest(
+        username="reginald_2",
+        password="password123",
+        full_name="Reginald Amoah",
+        business_name="Amoah Mobile Services",
+        phone="0202222222",
+        region="Greater Accra",
+        location="Greater Accra - Central Accra",
+        agent_type="Retailer",
+        starting_cash=3000.0,
+        starting_float=5000.0
+    )
+    res2 = onboard_agent(req2, db=db_session)
+    assert res2["agent_id"] > 0
+    assert res2["agent_id"] != res1["agent_id"]
+    assert res2["full_name"] == "Reginald Amoah"
+    assert res2["phone"] == "0202222222"
+
+    # 3. Attempt third agent with same phone as first (Kwame Mensah, phone: 0241111111)
+    req3 = AgentOnboardingRequest(
+        username="kwame_conflict",
+        password="password123",
+        full_name="Kwame Mensah",
+        business_name="Kwame Mobile",
+        phone="0241111111", # Duplicate phone!
+        region="Greater Accra",
+        location="Greater Accra - Central Accra",
+        agent_type="Retailer",
+        starting_cash=1000.0,
+        starting_float=2000.0
+    )
+    with pytest.raises(HTTPException) as exc_info:
+        onboard_agent(req3, db=db_session)
+    assert exc_info.value.status_code == 409
+    assert "registered with this phone number" in exc_info.value.detail
+

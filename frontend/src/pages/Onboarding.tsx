@@ -508,37 +508,31 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLand
             
             <div className="space-y-2">
               <h3 className="font-extrabold text-xl text-white">
-                Your MobiFin workspace is ready.
+                Agent Profile Created
               </h3>
               <p className="text-xs text-white/70 leading-relaxed">
-                Your business intelligence dashboard is now active.
+                Your MobiFin workspace is ready.
               </p>
             </div>
 
             <GlassCard className="space-y-3 text-xs p-4 bg-white/5 border-white/10 text-white text-left">
               <div className="flex justify-between border-b border-white/10 pb-2 mb-2">
-                <span className="text-white/70 font-semibold">Registered Agent Profile:</span>
-                <span className="font-mono text-emerald-450 font-bold uppercase tracking-wider">Active</span>
+                <span className="text-white/70 font-semibold">Agent ID:</span>
+                <span className="font-mono text-emerald-450 font-bold uppercase tracking-wider">
+                  {onboardedUser?.agent_id ? `MOB-AG-${String(onboardedUser.agent_id).padStart(4, '0')}` : 'MOB-AG-XXXX'}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Agent Name:</span>
+                <span className="text-white/70">Name:</span>
                 <span className="font-bold text-white">{formData.full_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Shop Name:</span>
+                <span className="text-white/70">Business:</span>
                 <span className="font-bold text-white">{formData.business_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Cash Balance:</span>
-                <span className="font-bold text-white">GH₵{formData.starting_cash.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/70">E-Float Balance:</span>
-                <span className="font-bold text-white">GH₵{formData.starting_float.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-white/70">Business Health Score:</span>
-                <span className="font-bold text-emerald-400">75% (Good)</span>
+                <span className="text-white/70">Phone:</span>
+                <span className="font-bold text-white">{formData.phone}</span>
               </div>
             </GlassCard>
 

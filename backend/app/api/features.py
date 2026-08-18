@@ -94,6 +94,14 @@ def onboard_agent(req: AgentOnboardingRequest, db: Session = Depends(get_db)):
             detail="Username already registered. Please choose another one."
         )
 
+    # Validate phone uniqueness
+    existing_phone = db.query(Agent).filter(Agent.phone == req.phone).first()
+    if existing_phone:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account is already registered with this phone number. Please sign in or use a different number."
+        )
+
     # 1. Create Agent
     new_agent = Agent(
         name=req.business_name,
