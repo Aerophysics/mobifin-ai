@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, ShieldCheck, UserCheck, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import ApiService from '../services/api';
 import { GlassPanel } from '../components/glass/GlassPanel';
@@ -28,6 +28,40 @@ const GHANAIAN_LOCATIONS = [
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onBackToLanding }) => {
   const [step, setStep] = useState<number>(1);
+
+  // Dynamic scroll unlock hook for the wizard steps
+  useEffect(() => {
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevHtmlHeight = document.documentElement.style.height;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyHeight = document.body.style.height;
+
+    document.documentElement.style.overflow = 'auto';
+    document.documentElement.style.height = 'auto';
+    document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+
+    const rootEl = document.getElementById('root');
+    let prevRootOverflow = '';
+    let prevRootHeight = '';
+    if (rootEl) {
+      prevRootOverflow = rootEl.style.overflow;
+      prevRootHeight = rootEl.style.height;
+      rootEl.style.overflow = 'visible';
+      rootEl.style.height = 'auto';
+    }
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow || 'hidden';
+      document.documentElement.style.height = prevHtmlHeight || '100%';
+      document.body.style.overflow = prevBodyOverflow || 'hidden';
+      document.body.style.height = prevBodyHeight || '100%';
+      if (rootEl) {
+        rootEl.style.overflow = prevRootOverflow || 'hidden';
+        rootEl.style.height = prevRootHeight || '100%';
+      }
+    };
+  }, []);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
