@@ -123,7 +123,7 @@ const AIInsights: React.FC = () => {
                     <div className="pt-2 flex items-center space-x-6 text-xs">
                       <div>
                         <span className="text-[9px] text-slate-400 block uppercase font-bold">Transfer Amount</span>
-                        <span className="font-bold text-slate-850">GH₵{recs.recommendation.recommended_amount.toLocaleString()}</span>
+                        <span className="font-bold text-slate-850">GH₵{recs.recommendation.recommended_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       {recs.recommendation.recommended_time && (
                         <div>

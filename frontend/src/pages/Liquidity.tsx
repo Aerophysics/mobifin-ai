@@ -130,7 +130,7 @@ const Liquidity: React.FC = () => {
                   <GlassCard className="p-3">
                     <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Recommended Amount</span>
                     <span className="text-sm font-extrabold text-[var(--mf-text-primary)] mt-1 block">
-                      GH₵{rec.recommended_amount?.toLocaleString()}
+                      GH₵{rec.recommended_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </GlassCard>
                   <GlassCard className="p-3">
@@ -198,12 +198,12 @@ const Liquidity: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-[10px]">
                       <span className="text-[var(--mf-text-secondary)]">Projected Demand</span>
-                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{sc.stressed_demand.toLocaleString()}</span>
+                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{sc.stressed_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between text-[10px]">
                       <span className="text-[var(--mf-text-secondary)]">Shortfall Gaps</span>
                       <span className={`font-bold ${isCritical ? 'text-rose-500' : 'text-[var(--mf-text-primary)]'}`}>
-                        GH₵{sc.projected_shortfall.toLocaleString()}
+                        GH₵{sc.projected_shortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </GlassCard>

@@ -271,7 +271,7 @@ export const CustomerIntelligence: React.FC = () => {
                     <p className="text-[10px] text-[var(--mf-text-secondary)] font-semibold mt-1">{r.product_name}</p>
                     <div className="flex justify-between items-center mt-2.5 pt-1.5 border-t border-[var(--mf-border)] text-[9px] text-[var(--mf-text-secondary)]">
                       <span>Term: {r.requested_term} Days</span>
-                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{r.requested_amount.toLocaleString()}</span>
+                      <span className="font-bold text-[var(--mf-text-primary)]">GH₵{r.requested_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </GlassCard>
                 );
@@ -539,7 +539,7 @@ export const CustomerIntelligence: React.FC = () => {
                       </h4>
                     </div>
                     <p className="text-[10px] text-[var(--mf-text-secondary)] leading-relaxed">
-                      Financing request for <strong>GH₵{activeRequest.requested_amount.toLocaleString()}</strong> ({activeRequest.product_name}) is currently in review. The alternative assessment generates indicative guidelines and does NOT guarantee immediate credit disbursement.
+                      Financing request for <strong>GH₵{activeRequest.requested_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> ({activeRequest.product_name}) is currently in review. The alternative assessment generates indicative guidelines and does NOT guarantee immediate credit disbursement.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white/5 p-3 rounded-xl border border-white/5 text-[10px]">
                       <div>
@@ -690,7 +690,7 @@ export const CustomerIntelligence: React.FC = () => {
             <div className="bg-white/5 border border-[var(--mf-border)] rounded-xl p-3 text-[10px] space-y-1">
               <div className="flex justify-between">
                 <span className="text-[var(--mf-text-secondary)]">Indicative Credit Capacity:</span>
-                <span className="font-bold text-[var(--mf-text-primary)]">GH₵{assessment?.indicative_credit_capacity?.toLocaleString()}</span>
+                <span className="font-bold text-[var(--mf-text-primary)]">GH₵{assessment?.indicative_credit_capacity?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[var(--mf-text-secondary)]">Repayment Probability:</span>

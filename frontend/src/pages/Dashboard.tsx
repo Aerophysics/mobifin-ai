@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
             </div>
             <p className="text-[11px] text-[var(--mf-text-secondary)] mt-1 leading-normal">
               Expected e-float demand tomorrow morning is projected to exceed availability. 
-              <strong> Rebalance GH₵{rec.recommended_amount?.toLocaleString()}</strong> before <strong>{rec.recommended_time}</strong> to prevent stockouts.
+              <strong> Rebalance GH₵{rec.recommended_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong> before <strong>{rec.recommended_time}</strong> to prevent stockouts.
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
               Next Demand Peak
             </span>
             <span className="text-xl font-bold text-[var(--mf-text-primary)] mt-1 flex items-center">
-              GH₵{liquidity?.expected_float_demand ? liquidity.expected_float_demand.toLocaleString() : '11,400'}
+              GH₵{liquidity?.expected_float_demand ? liquidity.expected_float_demand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '11,400.00'}
             </span>
           </div>
         </div>
@@ -216,7 +216,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-xl font-extrabold text-[var(--mf-text-primary)]">
-                    Rebalance GH₵{rec.recommended_amount?.toLocaleString()}
+                    Rebalance GH₵{rec.recommended_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </h4>
                   <p className="text-[11px] text-[var(--mf-text-secondary)]">
                     before <strong className="text-[var(--mf-text-primary)]">{rec.recommended_time}</strong>
@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="border-t border-white/5 my-1.5" />
                   <p className="text-[10px] text-[var(--mf-text-secondary)] leading-normal">
-                    <strong>Reason:</strong> Expected e-float demand tomorrow morning exceeds current float by GH₵{shortfall.toLocaleString()}.
+                    <strong>Reason:</strong> Expected e-float demand tomorrow morning exceeds current float by GH₵{shortfall.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.
                   </p>
                 </div>
               </div>
