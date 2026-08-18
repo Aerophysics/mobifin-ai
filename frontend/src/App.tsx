@@ -16,6 +16,7 @@ import DemoManagement from './pages/DemoManagement';
 import Settings from './pages/Settings';
 import AIInsights from './pages/AIInsights';
 import { Onboarding } from './pages/Onboarding';
+import { AddBusinessLocation } from './pages/AddBusinessLocation';
 import { Sparkles, ShieldAlert } from 'lucide-react';
 // @ts-ignore
 import Grainient from './components/Grainient';
@@ -52,7 +53,8 @@ const PAGE_PERMISSIONS: Record<string, ('AGENT' | 'FINANCIAL_INSTITUTION' | 'ADM
   explorer: ['ADMIN'],
   'demo-mgmt': ['ADMIN'],
   settings: ['AGENT', 'FINANCIAL_INSTITUTION', 'ADMIN'],
-  'ai-insights': ['AGENT']
+  'ai-insights': ['AGENT'],
+  'add-business': ['AGENT', 'ADMIN']
 };
 
 const App: React.FC = () => {
@@ -197,9 +199,16 @@ const App: React.FC = () => {
       case 'demo-mgmt':
         return <DemoManagement />;
       case 'settings':
-        return <Settings />;
+        return <Settings currentUser={currentUser} setActivePage={setActivePage} />;
       case 'ai-insights':
         return <AIInsights />;
+      case 'add-business':
+        return (
+          <AddBusinessLocation 
+            onComplete={() => setActivePage('dashboard')} 
+            onBack={() => setActivePage('dashboard')} 
+          />
+        );
       default:
         return <Dashboard />;
     }

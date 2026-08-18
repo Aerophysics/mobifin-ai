@@ -6,10 +6,20 @@ from typing import List, Optional
 from backend.app.database.connection import get_db
 from backend.app.models.db_models import Agent, User, Transaction, Customer, CreditAssessment, FinancingRequest, Notification, Anomaly, Forecast
 from backend.app.api.auth import get_current_user, RoleChecker, get_password_hash
+from backend.app.schemas.schemas import AgentResponse
 
 router = APIRouter(prefix="", tags=["MobiFin Core Features"])
 
 # --- SCHEMAS ---
+class BusinessLocationCreateRequest(BaseModel):
+    business_name: str
+    region: str
+    city: str
+    specific_location: str
+    agent_type: str
+    starting_cash: float
+    starting_float: float
+
 class AgentOnboardingRequest(BaseModel):
     username: str
     password: str
@@ -127,9 +137,15 @@ def onboard_agent(req: AgentOnboardingRequest, db: Session = Depends(get_db)):
         username=req.username,
         password_hash=password_hash,
         role="AGENT",
-        agent_id=new_agent.agent_id
+        agent_id=new_agent.agent_id,
+        full_name=req.full_name,
+        phone_number=req.phone
     )
     db.add(new_user)
+    db.flush()  # Populates user_id
+
+    # Link agent owner_id to user
+    new_agent.owner_id = new_user.user_id
     db.commit()
     db.refresh(new_agent)
 
@@ -515,5 +531,119 @@ def check_and_generate_demo_alerts(agent_id: int, db: Session):
     for a in alerts:
         db.add(a)
     db.commit()
+
+@router.post("/onboarding/business", response_model=AgentResponse)
+def create_business_location(
+    req: BusinessLocationCreateRequest,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden. Only Agents or Admins can register business locations.")
+    
+    import time
+    unique_phone = f"LOC-PH-{int(time.time() * 1000)}"
+    
+    new_loc = Agent(
+        name=req.business_name,
+        location=f"{req.region} - {req.city}",
+        business_age=1,
+        operating_hours="08:00 - 18:00",
+        cash_balance=req.starting_cash,
+        float_balance=req.starting_float,
+        commission_rate=0.015,
+        full_name=current_user.full_name,
+        business_name=req.business_name,
+        phone=unique_phone,
+        region=req.region,
+        agent_type=req.agent_type,
+        city=req.city,
+        specific_location=req.specific_location,
+        owner_id=current_user.user_id,
+        status="active"
+    )
+    db.add(new_loc)
+    db.flush()
+    
+    welcome_alert = Notification(
+        agent_id=new_loc.agent_id,
+        type="SYSTEM",
+        severity="Low",
+        title="Business Location Added Successfully",
+        message=f"Your new location '{req.business_name}' in {req.city} has been added to your MobiFin workspace.",
+        created_at=datetime.utcnow(),
+        read=False
+    )
+    db.add(welcome_alert)
+    
+    # Switch active location to the new one
+    current_user.agent_id = new_loc.agent_id
+    db.commit()
+    db.refresh(new_loc)
+    return new_loc
+
+@router.get("/onboarding/businesses", response_model=List[AgentResponse])
+def list_my_business_locations(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden. Only Agents or Admins can list business locations.")
+        
+    locations = db.query(Agent).filter(Agent.owner_id == current_user.user_id).all()
+    
+    # Fallback to auto-associate Kwame's Centre or active location if not owned yet
+    if not locations and current_user.agent_id:
+        active = db.query(Agent).filter(Agent.agent_id == current_user.agent_id).first()
+        if active:
+            active.owner_id = current_user.user_id
+            db.commit()
+            locations = [active]
+            
+    return locations
+
+@router.post("/onboarding/active-location/{agent_id}", response_model=AgentResponse)
+def set_active_location(
+    agent_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    loc = db.query(Agent).filter(Agent.agent_id == agent_id).first()
+    if not loc:
+        raise HTTPException(status_code=404, detail="Business location not found.")
+        
+    if loc.owner_id != current_user.user_id and current_user.role != "ADMIN":
+        if current_user.agent_id == agent_id:
+            loc.owner_id = current_user.user_id
+        else:
+            raise HTTPException(status_code=403, detail="Forbidden. You do not own this business location.")
+            
+    current_user.agent_id = agent_id
+    db.commit()
+    return loc
+
+@router.post("/onboarding/business-status/{agent_id}", response_model=AgentResponse)
+def set_business_location_status(
+    agent_id: int,
+    status: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    loc = db.query(Agent).filter(Agent.agent_id == agent_id).first()
+    if not loc:
+        raise HTTPException(status_code=404, detail="Business location not found.")
+        
+    if loc.owner_id != current_user.user_id and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    loc.status = status
+    db.commit()
+    return loc
 
 from datetime import timedelta

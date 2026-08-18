@@ -45,6 +45,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return localStorage.getItem('mobifin_theme') === 'dark';
   });
 
+  const [locations, setLocations] = useState<any[]>([]);
+  const [activeLocation, setActiveLocation] = useState<any>(null);
+  const [switcherOpen, setSwitcherOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (currentUser?.role === 'AGENT') {
+      ApiService.request<any[]>('/onboarding/businesses')
+        .then(res => {
+          setLocations(res);
+          const active = res.find((l: any) => l.agent_id === currentUser.agent_id);
+          if (active) {
+            setActiveLocation(active);
+          }
+        })
+        .catch(err => console.error("Error loading locations:", err));
+    }
+  }, [currentUser]);
+
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifOpen, setNotifOpen] = useState<boolean>(false);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -536,6 +554,67 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </p>
             </div>
           </div>
+
+          {/* Location switcher */}
+          {currentUser?.role === 'AGENT' && (
+            <div className="relative">
+              <button
+                onClick={() => setSwitcherOpen(!switcherOpen)}
+                className="flex items-center space-x-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-3 py-1.5 text-xs text-slate-950 dark:text-white font-bold cursor-pointer hover:bg-slate-200 dark:hover:bg-white/10 transition-all select-none"
+              >
+                <span>{activeLocation ? `${activeLocation.name} — ${activeLocation.city || activeLocation.region || 'Accra'}` : 'Kwame Centre — Accra'}</span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              
+              {switcherOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setSwitcherOpen(false)} />
+                  <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-55 py-2 animate-fadeIn text-xs text-slate-950 dark:text-white backdrop-blur-xl">
+                    <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-white/5 mb-1">
+                      Switch Location
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {locations.map((loc) => {
+                        const isActive = loc.agent_id === currentUser.agent_id;
+                        return (
+                          <button
+                            key={loc.agent_id}
+                            onClick={async () => {
+                              try {
+                                await ApiService.request(`/onboarding/active-location/${loc.agent_id}`, { method: 'POST' });
+                                setSwitcherOpen(false);
+                                window.location.reload();
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between transition cursor-pointer border-none bg-transparent"
+                          >
+                            <div className="flex flex-col text-slate-950 dark:text-white">
+                              <span className="font-bold">{loc.name}</span>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400">{loc.city || loc.location}</span>
+                            </div>
+                            {isActive && <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="border-t border-slate-200 dark:border-white/5 mt-1 pt-1 px-1">
+                      <button
+                        onClick={() => {
+                          setSwitcherOpen(false);
+                          setActivePage('add-business');
+                        }}
+                        className="w-full text-center py-2 px-3 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold transition cursor-pointer border-none bg-transparent"
+                      >
+                        + Add Business Location
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center space-x-2 md:space-x-4">
             {/* Theme Toggle Button */}

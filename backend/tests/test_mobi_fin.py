@@ -383,3 +383,72 @@ def test_agent_onboarding_name_duplication_and_phone_conflict(db_session):
     assert exc_info.value.status_code == 409
     assert "registered with this phone number" in exc_info.value.detail
 
+
+def test_agent_multi_location_creation_and_switching(db_session):
+    """Verify multi-location creation, listings, switching active context, and distinct parameters"""
+    from backend.app.models.db_models import User, Agent
+    from backend.app.api.features import (
+        create_business_location, list_my_business_locations, 
+        set_active_location, BusinessLocationCreateRequest
+    )
+
+    # 1. Create a user
+    user = User(
+        username="reginald_multi",
+        password_hash="pwdhash",
+        role="AGENT",
+        full_name="Reginald Amoah",
+        phone_number="0241113333",
+        status="active"
+    )
+    db_session.add(user)
+    db_session.flush()
+
+    # 2. Create Accra Location
+    req1 = BusinessLocationCreateRequest(
+        business_name="Reginald Mobile Money",
+        region="Greater Accra",
+        city="Accra",
+        specific_location="Accra Central",
+        agent_type="Retailer",
+        starting_cash=4850.0,
+        starting_float=7200.0
+    )
+    loc1 = create_business_location(req1, current_user=user, db=db_session)
+    assert loc1.agent_id > 0
+    assert loc1.name == "Reginald Mobile Money"
+    assert loc1.location == "Greater Accra - Accra"
+    assert loc1.cash_balance == 4850.0
+    assert loc1.float_balance == 7200.0
+    assert loc1.owner_id == user.user_id
+    assert user.agent_id == loc1.agent_id  # Should auto-set active
+
+    # 3. Create Kumasi Location (same name, different region/city/starting balances)
+    req2 = BusinessLocationCreateRequest(
+        business_name="Reginald Mobile Money",
+        region="Ashanti",
+        city="Kumasi",
+        specific_location="Adum Market",
+        agent_type="Retailer",
+        starting_cash=8100.0,
+        starting_float=5600.0
+    )
+    loc2 = create_business_location(req2, current_user=user, db=db_session)
+    assert loc2.agent_id > 0
+    assert loc2.agent_id != loc1.agent_id
+    assert loc2.name == "Reginald Mobile Money"
+    assert loc2.location == "Ashanti - Kumasi"
+    assert loc2.cash_balance == 8100.0
+    assert loc2.float_balance == 5600.0
+    assert loc2.owner_id == user.user_id
+    assert user.agent_id == loc2.agent_id  # Should switch active to Kumasi
+
+    # 4. List owned business locations
+    my_locations = list_my_business_locations(current_user=user, db=db_session)
+    assert len(my_locations) == 2
+
+    # 5. Switch active location back to Accra
+    switched_loc = set_active_location(agent_id=loc1.agent_id, current_user=user, db=db_session)
+    assert switched_loc.agent_id == loc1.agent_id
+    assert user.agent_id == loc1.agent_id
+

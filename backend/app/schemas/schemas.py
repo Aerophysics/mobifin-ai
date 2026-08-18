@@ -18,7 +18,6 @@ class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[str] = None
 
-# --- AGENT ---
 class AgentResponse(BaseModel):
     agent_id: int
     name: str
@@ -29,6 +28,17 @@ class AgentResponse(BaseModel):
     float_balance: float
     commission_rate: float
     created_at: datetime
+    
+    full_name: Optional[str] = None
+    business_name: Optional[str] = None
+    phone: Optional[str] = None
+    region: Optional[str] = None
+    agent_type: Optional[str] = None
+    status: Optional[str] = None
+    
+    city: Optional[str] = None
+    specific_location: Optional[str] = None
+    owner_id: Optional[int] = None
     
     class Config:
         from_attributes = True

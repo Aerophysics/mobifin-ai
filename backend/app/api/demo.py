@@ -180,14 +180,42 @@ def seed_demo_data(db: Session = Depends(get_db)):
         db.add(new_profile)
         db.commit()
 
-        users = [
-            User(username="kwame", password_hash=get_password_hash("kwame123"), role="AGENT", agent_id=1),
-            User(username="yaaba", password_hash=get_password_hash("yaaba123"), role="AGENT", agent_id=6),
-            User(username="forms_capital", password_hash=get_password_hash("forms123"), role="FINANCIAL_INSTITUTION"),
-            User(username="admin", password_hash=get_password_hash("admin123"), role="ADMIN")
-        ]
-        for u in users:
-            db.add(u)
+        kwame_user = User(
+            username="kwame",
+            password_hash=get_password_hash("kwame123"),
+            role="AGENT",
+            agent_id=1,
+            full_name="Kwame Mensah",
+            phone_number="0241112221",
+            status="active"
+        )
+        yaaba_user = User(
+            username="yaaba",
+            password_hash=get_password_hash("yaaba123"),
+            role="AGENT",
+            agent_id=6,
+            full_name="Yaaba Mensah",
+            phone_number="0241112222",
+            status="active"
+        )
+        forms_user = User(username="forms_capital", password_hash=get_password_hash("forms123"), role="FINANCIAL_INSTITUTION")
+        admin_user = User(username="admin", password_hash=get_password_hash("admin123"), role="ADMIN")
+
+        db.add(kwame_user)
+        db.add(yaaba_user)
+        db.add(forms_user)
+        db.add(admin_user)
+        db.flush()
+
+        # Link owner_id
+        kwame_agent = db.query(Agent).filter(Agent.agent_id == 1).first()
+        if kwame_agent:
+            kwame_agent.owner_id = kwame_user.user_id
+
+        yaaba_agent_db = db.query(Agent).filter(Agent.agent_id == 6).first()
+        if yaaba_agent_db:
+            yaaba_agent_db.owner_id = yaaba_user.user_id
+
         db.commit()
 
         # Seed a pending financing request for Customer #1048

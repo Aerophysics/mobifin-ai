@@ -11,9 +11,19 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False)  # AGENT, FINANCIAL_INSTITUTION, ADMIN
-    agent_id = Column(Integer, ForeignKey("agents.agent_id"), nullable=True)
+    agent_id = Column(Integer, ForeignKey("agents.agent_id", use_alter=True, name="fk_user_active_agent"), nullable=True)
     
-    agent = relationship("Agent", back_populates="user")
+    # Account level fields
+    full_name = Column(String, nullable=True)
+    phone_number = Column(String, unique=True, index=True, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    status = Column(String, default="active")
+    
+    # Selected/Active location relationship
+    active_location = relationship("Agent", foreign_keys=[agent_id], post_update=True)
+    
+    # All business locations owned by this user
+    business_locations = relationship("Agent", foreign_keys="[Agent.owner_id]", back_populates="owner")
 
 # --- RAW DATA TABLES ---
 class Agent(Base):
@@ -37,7 +47,13 @@ class Agent(Base):
     agent_type = Column(String, nullable=True)
     status = Column(String, default="active")
     
-    user = relationship("User", back_populates="agent", uselist=False)
+    # Multi-Location fields
+    city = Column(String, nullable=True)
+    specific_location = Column(String, nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.user_id", name="fk_agent_owner"), nullable=True)
+    
+    owner = relationship("User", foreign_keys=[owner_id], back_populates="business_locations")
+    
     transactions = relationship("Transaction", back_populates="agent")
     daily_metrics = relationship("AgentDailyMetrics", back_populates="agent")
     forecasts = relationship("Forecast", back_populates="agent")

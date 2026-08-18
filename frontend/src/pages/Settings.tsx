@@ -1,13 +1,35 @@
-import React, { useState } from 'react';
-import { User, Shield, Bell, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Shield, Bell, Check, Users } from 'lucide-react';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
 import { GlassButton } from '../components/glass/GlassButton';
 import { GlassBadge } from '../components/glass/GlassBadge';
+import ApiService from '../services/api';
 
-const Settings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications'>('profile');
+interface SettingsProps {
+  currentUser?: any;
+  setActivePage?: (page: string) => void;
+}
+
+const Settings: React.FC<SettingsProps> = ({ currentUser, setActivePage }) => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'businesses'>('profile');
   const [success, setSuccess] = useState<boolean>(false);
+  const [locations, setLocations] = useState<any[]>([]);
+
+  const fetchLocations = async () => {
+    if (currentUser?.role === 'AGENT') {
+      try {
+        const res = await ApiService.request<any[]>('/onboarding/businesses');
+        setLocations(res);
+      } catch (err) {
+        console.error("Failed to load locations inside settings:", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchLocations();
+  }, [currentUser]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +81,19 @@ const Settings: React.FC = () => {
             <Bell className="h-4 w-4" />
             <span>Notifications</span>
           </button>
+          {currentUser?.role === 'AGENT' && (
+            <button
+              onClick={() => setActiveTab('businesses')}
+              className={`flex-shrink-0 flex items-center space-x-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl text-left transition border-none cursor-pointer ${
+                activeTab === 'businesses'
+                  ? 'bg-[var(--mf-accent)] text-white'
+                  : 'text-[var(--mf-text-secondary)] hover:bg-white/5 hover:text-[var(--mf-text-primary)] bg-transparent'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>My Businesses</span>
+            </button>
+          )}
         </div>
 
         {/* Configurations Form */}
@@ -151,6 +186,76 @@ const Settings: React.FC = () => {
                   </div>
                   <input type="checkbox" defaultChecked className="h-4 w-4 accent-[var(--mf-accent)]" />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'businesses' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-[var(--mf-border)] pb-2.5">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[var(--mf-text-primary)]">My Business Locations</h4>
+                <GlassButton
+                  variant="primary"
+                  onClick={() => setActivePage && setActivePage('add-business')}
+                  className="px-3 py-1.5 font-bold text-[10px] uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 border-none text-white"
+                >
+                  + Add Business Location
+                </GlassButton>
+              </div>
+
+              <div className="space-y-4">
+                {locations.map((loc) => {
+                  const isActive = loc.agent_id === currentUser?.agent_id;
+                  const isDeactivated = loc.status === 'inactive';
+                  return (
+                    <GlassCard key={loc.agent_id} className="p-4 space-y-3 text-white">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-sm text-white">{loc.name}</span>
+                            {isActive && <GlassBadge variant="success">Active Workspace</GlassBadge>}
+                            {isDeactivated && <GlassBadge variant="neutral">Deactivated</GlassBadge>}
+                          </div>
+                          <span className="text-xs text-[var(--mf-text-secondary)] mt-0.5 block">{loc.location}</span>
+                          <span className="text-[10px] font-mono text-[var(--mf-text-secondary)] block mt-1">ID: MOB-LOC-{String(loc.agent_id).padStart(4, '0')}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {!isActive && !isDeactivated && (
+                            <GlassButton
+                              onClick={async () => {
+                                try {
+                                  await ApiService.request(`/onboarding/active-location/${loc.agent_id}`, { method: 'POST' });
+                                  window.location.reload();
+                                } catch (err) {
+                                  console.error(err);
+                                }
+                              }}
+                              className="px-2.5 py-1.5 text-[10px] font-bold border-white/10 text-white hover:bg-white/10"
+                            >
+                              Activate
+                            </GlassButton>
+                          )}
+                          <GlassButton
+                            onClick={async () => {
+                              try {
+                                const newStatus = isDeactivated ? 'active' : 'inactive';
+                                await ApiService.request(`/onboarding/business-status/${loc.agent_id}?status=${newStatus}`, { method: 'POST' });
+                                fetchLocations();
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }}
+                            className={`px-2.5 py-1.5 text-[10px] font-bold border-none text-white ${
+                              isDeactivated ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-rose-600 hover:bg-rose-500'
+                            }`}
+                          >
+                            {isDeactivated ? 'Activate' : 'Deactivate'}
+                          </GlassButton>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  );
+                })}
               </div>
             </div>
           )}
