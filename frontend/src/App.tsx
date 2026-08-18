@@ -178,7 +178,7 @@ const App: React.FC = () => {
 
     switch (activePage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard setActivePage={setActivePage} />;
       case 'admin-dashboard':
         return <AdminDashboard />;
       case 'transactions':

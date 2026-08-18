@@ -595,3 +595,52 @@ def test_trusted_liquidity_sources_management(db_session):
     deactivated = toggle_trusted_source_status(src.source_id, "inactive", current_user=user, db=db_session)
     assert deactivated.status == "inactive"
 
+
+from backend.app.api.credit import get_portfolio_summary
+
+def test_portfolio_summary_endpoint(db_session):
+    """Verify that portfolio summary calculations are correct and return consented count, eligible count, risk distribution, etc."""
+    # Seed a consenting eligible customer
+    customer1 = Customer(
+        display_name="Consenting Customer",
+        consent_status=True,
+        consent_timestamp=datetime.utcnow()
+    )
+    db_session.add(customer1)
+    db_session.commit()
+    
+    cid1 = customer1.customer_id
+
+    # Seed transaction history (90+ days of history, 30+ transactions)
+    for i in range(35):
+        t = Transaction(
+            transaction_id=1000 + i,
+            agent_id=1,
+            customer_id=cid1,
+            amount=200.0,
+            transaction_type="deposit",
+            direction="inflow",
+            cash_balance=1000.0,
+            float_balance=1000.0,
+            location="Accra",
+            timestamp=datetime.utcnow() - timedelta(days=i*3)
+        )
+        db_session.add(t)
+    db_session.commit()
+
+    # Seed a non-consenting customer
+    customer2 = Customer(
+        display_name="Non Consenting Customer",
+        consent_status=False
+    )
+    db_session.add(customer2)
+    db_session.commit()
+
+    summary = get_portfolio_summary(current_user=None, db=db_session)
+    assert summary["consented_customers"] == 1
+    assert summary["credit_ready_customers"] == 1
+    assert summary["average_credit_score"] >= 300
+    assert len(summary["risk_distribution"]) > 0
+    assert summary["pipeline"]["consent_required"] == 1
+    assert summary["pipeline"]["assessed"] == 1
+

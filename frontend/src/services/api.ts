@@ -178,6 +178,10 @@ class ApiService {
     return this.request<any>(`/credit/readiness/${customerId}`);
   }
 
+  static async getPortfolioSummary(): Promise<any> {
+    return this.request<any>('/credit/portfolio-summary');
+  }
+
   // --- ANOMALIES ---
   static async listAnomalies(agentId?: number): Promise<Anomaly[]> {
     const query = agentId ? `?agent_id=${agentId}` : '';
