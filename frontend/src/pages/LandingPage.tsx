@@ -154,12 +154,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
                 {/* Hero CTA Structure with Hierarchy Gating */}
                 <div className="flex flex-col items-center justify-center gap-4 mt-10 w-full max-w-lg">
                   {/* Primary CTA */}
-                  <button onClick={onSignUpClick} className="group relative inline-flex appearance-none items-center py-3.5 select-none transition-colors justify-center text-white min-h-[46px] px-10 border-none bg-transparent cursor-pointer w-full sm:w-80 shadow-md">
-                    <span className="absolute inset-0 rounded-full transition-all group-hover:scale-[0.98] origin-center bg-forest group-hover:bg-[#203415]"></span>
-                    <span className="text-[15px] font-bold relative z-10 flex items-center justify-center space-x-1.5">
-                      <span>Get Started as an Agent</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
+                  <button 
+                    onClick={onSignUpClick} 
+                    className="group relative inline-flex items-center py-3 select-none justify-center text-white min-h-[46px] px-10 bg-forest hover:bg-[#203415] hover:scale-[0.98] transition-all cursor-pointer w-full sm:w-80 shadow-md rounded-full border-none font-bold text-[15px] space-x-1.5"
+                  >
+                    <span>Get Started as an Agent</span>
+                    <ArrowRight className="h-4 w-4" />
                   </button>
                   
                   {/* Secondary & Tertiary CTAs */}

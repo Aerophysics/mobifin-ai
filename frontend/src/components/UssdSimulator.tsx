@@ -4,7 +4,11 @@ import ApiService from '../services/api';
 import { GlassPanel } from './glass/GlassPanel';
 import { GlassButton } from './glass/GlassButton';
 
-export const UssdSimulator: React.FC = () => {
+interface UssdSimulatorProps {
+  handleRoleSwitch?: (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => Promise<void>;
+}
+
+export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }) => {
   const [requests, setRequests] = useState<any[]>([]);
   const [inputVal, setInputVal] = useState<string>('');
   const [activeReq, setActiveReq] = useState<any | null>(null);
@@ -111,10 +115,10 @@ export const UssdSimulator: React.FC = () => {
       {isMinimized ? (
         <button
           onClick={() => setIsMinimized(false)}
-          className="bg-emerald-650 hover:bg-emerald-500 text-white rounded-full p-3.5 shadow-2xl flex items-center space-x-2 border border-white/10 transition"
+          className="bg-emerald-650 hover:bg-emerald-500 text-white rounded-full p-3.5 shadow-2xl flex items-center space-x-2 border border-white/10 transition cursor-pointer"
         >
           <Smartphone className="h-5 w-5 animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">USSD Consent Simulator</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider font-mono">USSD Consent Simulator</span>
           {requests.length > 0 && (
             <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping absolute top-0.5 right-0.5" />
           )}
@@ -124,12 +128,12 @@ export const UssdSimulator: React.FC = () => {
           <div className="flex justify-between items-center border-b border-white/10 pb-2">
             <div className="flex items-center space-x-1.5">
               <Smartphone className="h-4.5 w-4.5 text-emerald-400" />
-              <span className="text-[9px] font-bold text-sky-400 uppercase tracking-widest">DEMO USSD SIMULATION</span>
+              <span className="text-[9px] font-bold text-sky-400 uppercase tracking-widest font-mono">DEMO USSD SIMULATION</span>
             </div>
             <div className="flex items-center space-x-2">
               <button 
                 onClick={fetchRequests} 
-                className="text-white/40 hover:text-white transition border-none bg-transparent"
+                className="text-white/40 hover:text-white transition border-none bg-transparent cursor-pointer"
                 title="Refresh requests"
               >
                 <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
@@ -143,9 +147,35 @@ export const UssdSimulator: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-[10px] text-emerald-400 min-h-[140px] whitespace-pre-wrap leading-relaxed select-text font-mono">
-            {simulatedScreen}
-          </div>
+          {screenState === 'success' && activeReq ? (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-[10px] text-emerald-400 min-h-[140px] space-y-2 font-mono">
+              <div className="text-white font-bold border-b border-white/10 pb-1 text-center text-[10.5px]">
+                CONSENT GRANTED
+              </div>
+              <div className="space-y-1 pt-1 text-[9.5px]">
+                <div className="flex justify-between">
+                  <span className="text-white/45">Customer:</span>
+                  <span className="text-white font-semibold">{activeReq.customer_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/45">Institution:</span>
+                  <span className="text-white font-semibold">Forms Capital</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/45">Access:</span>
+                  <span className="text-emerald-400 font-semibold">Profile Authorized</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/45">Method:</span>
+                  <span className="text-white font-semibold">USSD</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-[10px] text-emerald-400 min-h-[140px] whitespace-pre-wrap leading-relaxed select-text font-mono">
+              {simulatedScreen}
+            </div>
+          )}
 
           {screenState === 'prompt' && activeReq && (
             <form onSubmit={handleResponseSubmit} className="flex space-x-2">
@@ -166,7 +196,19 @@ export const UssdSimulator: React.FC = () => {
           )}
 
           {screenState === 'success' && (
-            <div className="flex space-x-2">
+            <div className="flex flex-col gap-2 w-full">
+              {handleRoleSwitch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRoleSwitch('FINANCIAL_INSTITUTION');
+                    setIsMinimized(true);
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 border-none text-white rounded-lg py-2 font-bold text-[10px] uppercase tracking-wider text-center cursor-pointer transition-colors shadow-sm"
+                >
+                  View in Forms Capital
+                </button>
+              )}
               <GlassButton 
                 onClick={handleRevoke}
                 className="w-full py-1.5 font-bold text-[9px] border-rose-500/20 text-rose-300 hover:bg-rose-500/10 uppercase tracking-wider"

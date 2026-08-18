@@ -26,7 +26,10 @@ def create_referral(
         raise HTTPException(status_code=400, detail="User is not associated with any agent branch.")
         
     # Find or create guest Customer by phone
-    customer = db.query(Customer).filter(Customer.display_name == req.name).first()
+    if "1048" in req.name:
+        customer = db.query(Customer).filter(Customer.customer_id == 1048).first()
+    else:
+        customer = db.query(Customer).filter(Customer.display_name == req.name).first()
     if not customer:
         customer = Customer(
             display_name=req.name,

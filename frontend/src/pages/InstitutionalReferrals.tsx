@@ -196,6 +196,49 @@ export const InstitutionalReferrals: React.FC = () => {
                   <GlassBadge variant="success">Consent Active</GlassBadge>
                 </div>
 
+                {/* Consent Audit Trail Section */}
+                <div className="bg-white/2 border border-white/5 p-4 rounded-2xl space-y-2.5">
+                  <span className="text-[9px] font-bold text-sky-400 uppercase tracking-widest block border-b border-white/5 pb-1.5 font-mono">
+                    Consent Audit Trail
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-[10.5px]">
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Customer:</span>
+                      <span className="font-bold text-white">{profileData.display_name}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Referrer Agent:</span>
+                      <span className="font-bold text-white">{selectedRef.agent_name}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Institution:</span>
+                      <span className="font-bold text-white">Forms Capital</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Requested Amount:</span>
+                      <span className="font-bold text-emerald-400">GH₵{selectedRef.requested_amount?.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Consent Status:</span>
+                      <span className="font-bold text-emerald-400">{selectedRef.consent_status}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1">
+                      <span className="text-white/40">Consent Method:</span>
+                      <span className="font-bold text-white">USSD</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/2 pb-1 md:col-span-2">
+                      <span className="text-white/40">Consent Expiry:</span>
+                      <span className="font-bold text-white">{new Date(profileData.consent_expiry).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between md:col-span-2">
+                      <span className="text-white/40">Assessment:</span>
+                      <span className={`font-bold ${profileData.is_ready_for_credit ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {profileData.is_ready_for_credit ? 'READY' : 'NOT YET AVAILABLE'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Eligibility Gate checks */}
                 <div className="space-y-2 bg-white/2 border border-white/5 p-3 rounded-2xl">
                   <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest block mb-1">Credit Eligibility Parameters</span>

@@ -27,6 +27,7 @@ interface DashboardLayoutProps {
   setActivePage: (page: string) => void;
   currentUser: UserProfile | null;
   setCurrentUser: (user: UserProfile | null) => void;
+  handleRoleSwitch: (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => Promise<void>;
   children: React.ReactNode;
 }
 
@@ -35,6 +36,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   setActivePage,
   currentUser,
   setCurrentUser,
+  handleRoleSwitch,
   children
 }) => {
   const [dbStatus, setDbStatus] = useState<string>('Detecting DB...');
@@ -140,35 +142,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
-  const handleRoleSwitch = async (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => {
-    let username = 'admin';
-    let password = 'admin123';
-    
-    if (role === 'AGENT') {
-      username = 'kwame';
-      password = 'kwame123';
-    } else if (role === 'FINANCIAL_INSTITUTION') {
-      username = 'forms_capital';
-      password = 'forms123';
-    }
-    
-    try {
-      await ApiService.login(username, password);
-      const profile = ApiService.getCurrentUser();
-      setCurrentUser(profile);
-      setDropdownOpen(false);
-      
-      if (role === 'AGENT') {
-        setActivePage('dashboard');
-      } else if (role === 'FINANCIAL_INSTITUTION') {
-        setActivePage('dashboard');
-      } else {
-        setActivePage('admin-dashboard');
-      }
-    } catch (e: any) {
-      alert(`Role switch login failed. Make sure database is seeded! Error: ${e.message}`);
-    }
-  };
+
 
   const handleLogout = () => {
     ApiService.logout();
@@ -746,21 +720,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
                   <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-[#0c1c09] border border-slate-250 dark:border-[#1e3a12] rounded-lg shadow-sm z-50 py-1 animate-fadeIn">
                     <button
-                      onClick={() => handleRoleSwitch('AGENT')}
+                      onClick={() => { setDropdownOpen(false); handleRoleSwitch('AGENT'); }}
                       className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <User className="h-3.5 w-3.5 text-slate-400" />
                       <span>Agent — Kwame</span>
                     </button>
                     <button
-                      onClick={() => handleRoleSwitch('FINANCIAL_INSTITUTION')}
+                      onClick={() => { setDropdownOpen(false); handleRoleSwitch('FINANCIAL_INSTITUTION'); }}
                       className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                       <span>FI — Forms Capital</span>
                     </button>
                     <button
-                      onClick={() => handleRoleSwitch('ADMIN')}
+                      onClick={() => { setDropdownOpen(false); handleRoleSwitch('ADMIN'); }}
                       className="w-full text-left px-3 py-2 text-[10px] font-semibold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition flex items-center space-x-1.5 cursor-pointer"
                     >
                       <Activity className="h-3.5 w-3.5 text-slate-400" />

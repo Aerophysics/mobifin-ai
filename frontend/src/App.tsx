@@ -170,6 +170,35 @@ const App: React.FC = () => {
     }
   };
 
+  const handleRoleSwitch = async (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => {
+    let username = 'admin';
+    let password = 'admin123';
+    
+    if (role === 'AGENT') {
+      username = 'kwame';
+      password = 'kwame123';
+    } else if (role === 'FINANCIAL_INSTITUTION') {
+      username = 'forms_capital';
+      password = 'forms123';
+    }
+    
+    try {
+      await ApiService.login(username, password);
+      const profile = ApiService.getCurrentUser();
+      setCurrentUser(profile);
+      
+      if (role === 'AGENT') {
+        setActivePage('dashboard');
+      } else if (role === 'FINANCIAL_INSTITUTION') {
+        setActivePage('dashboard');
+      } else {
+        setActivePage('admin-dashboard');
+      }
+    } catch (e: any) {
+      alert(`Role switch login failed. Make sure database is seeded! Error: ${e.message}`);
+    }
+  };
+
   // Render active page with permission gating
   const renderPage = () => {
     if (!currentUser) return null;
@@ -181,7 +210,7 @@ const App: React.FC = () => {
 
     switch (activePage) {
       case 'dashboard':
-        return <Dashboard setActivePage={setActivePage} />;
+        return <Dashboard setActivePage={setActivePage} currentUser={currentUser} />;
       case 'admin-dashboard':
         return <AdminDashboard />;
       case 'transactions':
@@ -218,7 +247,7 @@ const App: React.FC = () => {
           />
         );
       default:
-        return <Dashboard />;
+        return <Dashboard currentUser={currentUser} />;
     }
   };
 
@@ -402,10 +431,11 @@ const App: React.FC = () => {
         setActivePage={setActivePage}
         currentUser={currentUser}
         setCurrentUser={setCurrentUser}
+        handleRoleSwitch={handleRoleSwitch}
       >
         {renderPage()}
       </DashboardLayout>
-      <UssdSimulator />
+      <UssdSimulator handleRoleSwitch={handleRoleSwitch} />
     </>
   );
 };
