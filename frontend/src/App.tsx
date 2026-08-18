@@ -16,6 +16,7 @@ import DemoManagement from './pages/DemoManagement';
 import Settings from './pages/Settings';
 import AIInsights from './pages/AIInsights';
 import { Onboarding } from './pages/Onboarding';
+import { TrustedSources } from './pages/TrustedSources';
 import { AddBusinessLocation } from './pages/AddBusinessLocation';
 import { Sparkles, ShieldAlert } from 'lucide-react';
 // @ts-ignore
@@ -185,7 +186,7 @@ const App: React.FC = () => {
       case 'ledger':
         return <Ledger />;
       case 'liquidity':
-        return <Liquidity />;
+        return <Liquidity setActivePage={setActivePage} />;
       case 'analytics':
         return <BusinessAnalytics />;
       case 'credit':
@@ -200,6 +201,8 @@ const App: React.FC = () => {
         return <DemoManagement />;
       case 'settings':
         return <Settings currentUser={currentUser} setActivePage={setActivePage} />;
+      case 'trusted-sources':
+        return <TrustedSources setActivePage={setActivePage} />;
       case 'ai-insights':
         return <AIInsights />;
       case 'add-business':

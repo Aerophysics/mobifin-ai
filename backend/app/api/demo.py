@@ -4,7 +4,7 @@ from backend.app.database.connection import get_db
 from backend.app.models.db_models import (
     User, Agent, Customer, Transaction, Loan, 
     CustomerFinancialProfile, AgentDailyMetrics, 
-    Anomaly, Forecast, Recommendation, FinancingRequest, Notification
+    Anomaly, Forecast, Recommendation, FinancingRequest, Notification, TrustedSource
 )
 from backend.app.ml.data_generator import SyntheticDataGenerator
 from backend.app.ml.inference import MLInference
@@ -216,6 +216,29 @@ def seed_demo_data(db: Session = Depends(get_db)):
         if yaaba_agent_db:
             yaaba_agent_db.owner_id = yaaba_user.user_id
 
+        # Seed Kwame Mensah's trusted liquidity sources
+        ts1 = TrustedSource(
+            user_id=kwame_user.user_id,
+            agent_id=1,
+            name="Kwame Mensah",
+            phone="+233 24 111 2222",
+            location="Accra Central",
+            type="Trusted Individual",
+            notes="Long-time partner in Accra Central market.",
+            status="active"
+        )
+        ts2 = TrustedSource(
+            user_id=kwame_user.user_id,
+            agent_id=1,
+            name="Circle Super Agent",
+            phone="+233 55 333 4444",
+            location="Circle",
+            type="Super Agent",
+            notes="Main supplier for bulk digital float exchanges.",
+            status="active"
+        )
+        db.add(ts1)
+        db.add(ts2)
         db.commit()
 
         # Seed a pending financing request for Customer #1048

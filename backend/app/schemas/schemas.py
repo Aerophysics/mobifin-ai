@@ -129,6 +129,13 @@ class RecommendationResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class TrustedSourceMinResponse(BaseModel):
+    name: str
+    phone: str
+    location: str
+    type: str
+    notes: Optional[str] = None
+
 class LiquidityRecommendationEngineResponse(BaseModel):
     expected_float_demand: float
     current_float: float
@@ -141,6 +148,8 @@ class LiquidityRecommendationEngineResponse(BaseModel):
     reserve_violated: Optional[bool] = False
     minimum_cash_reserve: Optional[float] = 1000.0
     forecast_confidence: Optional[str] = "Strong historical pattern"
+    trusted_sources_count: Optional[int] = 0
+    trusted_sources: Optional[List[TrustedSourceMinResponse]] = []
 
 class LiquidityStressTestResponse(BaseModel):
     stress_level: str  # +10%, +20%, +30%
@@ -184,3 +193,25 @@ class ModelPerformanceResponse(BaseModel):
     credit_model: Optional[Dict[str, Any]] = None
     demand_model: Optional[Dict[str, Any]] = None
     anomaly_model: Optional[Dict[str, Any]] = None
+
+class TrustedSourceCreate(BaseModel):
+    name: str
+    phone: str
+    location: str
+    type: str
+    notes: Optional[str] = None
+    agent_id: Optional[int] = None
+
+class TrustedSourceResponse(BaseModel):
+    source_id: int
+    user_id: int
+    agent_id: Optional[int] = None
+    name: str
+    phone: str
+    location: str
+    type: str
+    notes: Optional[str] = None
+    status: str
+
+    class Config:
+        from_attributes = True

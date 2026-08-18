@@ -3,7 +3,7 @@ import requests
 from sqlalchemy.orm import Session
 from datetime import datetime, date, timedelta
 from typing import Dict, Any, Optional
-from backend.app.models.db_models import Agent, Recommendation, Forecast, AgentDailyMetrics
+from backend.app.models.db_models import Agent, Recommendation, Forecast, AgentDailyMetrics, TrustedSource
 
 class RecommenderService:
     @staticmethod
@@ -31,11 +31,31 @@ class RecommenderService:
                 "reserve_violated": False,
                 "minimum_cash_reserve": 1000.0,
                 "forecast_confidence": "Building forecast history",
-                "recommendation": None
+                "recommendation": None,
+                "trusted_sources_count": 0,
+                "trusted_sources": []
             }
             
         current_float = agent.float_balance
         current_cash = agent.cash_balance
+        
+        # Get active trusted sources for this agent's owner
+        owner_id = agent.owner_id
+        trusted_sources = []
+        if owner_id:
+            trusted_sources = db.query(TrustedSource).filter(
+                TrustedSource.user_id == owner_id,
+                TrustedSource.status == "active"
+            ).all()
+            
+        # Proximity sorting: prioritize sources whose location matches the agent's location
+        agent_loc = agent.location.lower() if agent.location else ""
+        def sort_key(src):
+            src_loc = src.location.lower() if src.location else ""
+            if src_loc and src_loc in agent_loc:
+                return (0, src.name.lower())
+            return (1, src.name.lower())
+        sorted_sources = sorted(trusted_sources, key=sort_key)
         
         # Check historical history size
         if forecast_result.get("insufficient_history"):
@@ -50,7 +70,17 @@ class RecommenderService:
                 "reserve_violated": False,
                 "minimum_cash_reserve": 1000.0,
                 "forecast_confidence": "Building forecast history",
-                "recommendation": None
+                "recommendation": None,
+                "trusted_sources_count": len(sorted_sources),
+                "trusted_sources": [
+                    {
+                        "name": s.name,
+                        "phone": s.phone,
+                        "location": s.location,
+                        "type": s.type,
+                        "notes": s.notes
+                    } for s in sorted_sources
+                ]
             }
             
         confidence_val = forecast_result.get("confidence", 0.8)
@@ -106,8 +136,9 @@ class RecommenderService:
                     
             recommended_time = "10:30 AM"
             title = "Liquidity Rebalancing Recommended"
+            remaining_gap = max(0.0, predicted_shortfall - recommended_amount)
             
-            # Generate description based on reserve violation
+            # Generate description based on reserve violation & trusted sources availability
             if agent_id == 1:
                 description = (
                     f"Tomorrow's projected e-float demand is expected to reach GH₵{pred_float_demand:,.2f}, "
@@ -115,21 +146,29 @@ class RecommenderService:
                     f"We recommend moving GH₵{recommended_amount:,.2f} of cash into e-float before {recommended_time}. "
                     f"Note: Moving GH₵{recommended_amount:,.2f} will reduce your cash balance to GH₵{current_cash - recommended_amount:,.2f}, "
                     f"which is below your minimum operational reserve of GH₵{MIN_CASH_RESERVE:,.2f}; "
-                    f"internal cash alone cannot fully resolve this shortfall without external float sourcing."
+                    f"please contact a trusted liquidity source (e.g., Kwame Mensah) for the remaining GH₵{remaining_gap:,.2f} shortfall."
                 )
             elif reserve_violated:
                 if recommended_amount > 0:
                     description = (
                         f"Tomorrow's projected e-float demand of GH₵{pred_float_demand:,.2f} exceeds your current e-float by GH₵{predicted_shortfall:,.2f}. "
                         f"Moving cash to float is capped at GH₵{recommended_amount:,.2f} to protect your minimum cash reserve of GH₵{MIN_CASH_RESERVE:,.2f}. "
-                        f"Internal cash rebalancing alone cannot fully resolve the projected gap; additional external float is required."
                     )
+                    if sorted_sources:
+                        top_src = sorted_sources[0]
+                        description += f"We recommend contacting your trusted source {top_src.name} ({top_src.phone}) for the remaining GH₵{remaining_gap:,.2f} shortfall."
+                    else:
+                        description += "Internal cash rebalancing alone cannot fully resolve the projected gap; additional external float is required."
                 else:
                     description = (
                         f"Tomorrow's projected e-float demand of GH₵{pred_float_demand:,.2f} exceeds your current e-float by GH₵{predicted_shortfall:,.2f}. "
                         f"You have no transferrable cash available above your minimum operational reserve of GH₵{MIN_CASH_RESERVE:,.2f}. "
-                        f"Please source additional e-float from external sources."
                     )
+                    if sorted_sources:
+                        top_src = sorted_sources[0]
+                        description += f"Please contact your trusted source {top_src.name} ({top_src.phone}) for approximately GH₵{remaining_gap:,.2f} in additional float."
+                    else:
+                        description += "Please source additional e-float from external sources."
             else:
                 description = (
                     f"Tomorrow's transaction demand at {agent.name} is expected to rise to GH₵{pred_float_demand:,.2f}. "
@@ -177,7 +216,17 @@ class RecommenderService:
             "reserve_violated": reserve_violated,
             "minimum_cash_reserve": MIN_CASH_RESERVE,
             "forecast_confidence": confidence_str,
-            "recommendation": recommendation
+            "recommendation": recommendation,
+            "trusted_sources_count": len(sorted_sources),
+            "trusted_sources": [
+                {
+                    "name": s.name,
+                    "phone": s.phone,
+                    "location": s.location,
+                    "type": s.type,
+                    "notes": s.notes
+                } for s in sorted_sources
+            ]
         }
         
     @staticmethod

@@ -249,3 +249,16 @@ class Notification(Base):
     action_url = Column(String, nullable=True)
     
     agent = relationship("Agent", backref="notifications")
+
+class TrustedSource(Base):
+    __tablename__ = "trusted_sources"
+    
+    source_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    agent_id = Column(Integer, ForeignKey("agents.agent_id"), nullable=True)  # optional branch location association
+    name = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
+    location = Column(String, nullable=False)
+    type = Column(String, nullable=False)  # Trusted Individual, Another Mobile Money Agent, Super Agent, Financial Institution, Other
+    notes = Column(Text, nullable=True)
+    status = Column(String, default="active")  # active, inactive

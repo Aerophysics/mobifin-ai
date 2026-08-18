@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 from datetime import datetime, date
 from typing import List, Optional
 from backend.app.database.connection import get_db
-from backend.app.models.db_models import Agent, User, Transaction, Customer, CreditAssessment, FinancingRequest, Notification, Anomaly, Forecast
+from backend.app.models.db_models import Agent, User, Transaction, Customer, CreditAssessment, FinancingRequest, Notification, Anomaly, Forecast, TrustedSource
 from backend.app.api.auth import get_current_user, RoleChecker, get_password_hash
-from backend.app.schemas.schemas import AgentResponse
+from backend.app.schemas.schemas import AgentResponse, TrustedSourceCreate, TrustedSourceResponse
 
 router = APIRouter(prefix="", tags=["MobiFin Core Features"])
 
@@ -654,5 +654,91 @@ def set_business_location_status(
     loc.status = status
     db.commit()
     return loc
+
+# --- TRUSTED LIQUIDITY SOURCES API ---
+
+@router.post("/trusted-sources", response_model=TrustedSourceResponse)
+def create_trusted_source(
+    req: TrustedSourceCreate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    new_src = TrustedSource(
+        user_id=current_user.user_id,
+        agent_id=req.agent_id,
+        name=req.name,
+        phone=req.phone,
+        location=req.location,
+        type=req.type,
+        notes=req.notes,
+        status="active"
+    )
+    db.add(new_src)
+    db.commit()
+    db.refresh(new_src)
+    return new_src
+
+@router.get("/trusted-sources", response_model=List[TrustedSourceResponse])
+def list_trusted_sources(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    # Return all sources saved by the user
+    return db.query(TrustedSource).filter(TrustedSource.user_id == current_user.user_id).all()
+
+@router.put("/trusted-sources/{source_id}", response_model=TrustedSourceResponse)
+def edit_trusted_source(
+    source_id: int,
+    req: TrustedSourceCreate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    src = db.query(TrustedSource).filter(
+        TrustedSource.source_id == source_id,
+        TrustedSource.user_id == current_user.user_id
+    ).first()
+    if not src:
+        raise HTTPException(status_code=404, detail="Trusted source not found.")
+        
+    src.name = req.name
+    src.phone = req.phone
+    src.location = req.location
+    src.type = req.type
+    src.notes = req.notes
+    src.agent_id = req.agent_id
+    db.commit()
+    db.refresh(src)
+    return src
+
+@router.post("/trusted-sources/{source_id}/status", response_model=TrustedSourceResponse)
+def toggle_trusted_source_status(
+    source_id: int,
+    status: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role not in ["AGENT", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+        
+    src = db.query(TrustedSource).filter(
+        TrustedSource.source_id == source_id,
+        TrustedSource.user_id == current_user.user_id
+    ).first()
+    if not src:
+        raise HTTPException(status_code=404, detail="Trusted source not found.")
+        
+    src.status = status
+    db.commit()
+    db.refresh(src)
+    return src
 
 from datetime import timedelta

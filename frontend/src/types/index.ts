@@ -112,6 +112,8 @@ export interface LiquidityRecommendations {
   reserve_violated?: boolean;
   minimum_cash_reserve?: number;
   forecast_confidence?: string;
+  trusted_sources_count?: number;
+  trusted_sources?: any[];
 }
 
 export interface StressTestScenario {

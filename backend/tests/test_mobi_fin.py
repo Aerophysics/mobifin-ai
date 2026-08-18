@@ -534,3 +534,64 @@ def test_liquidity_intelligence_deep_audit(db_session):
     assert rec_new["predicted_shortfall"] == 0.0
     assert rec_new["recommendation"] is None
 
+
+from backend.app.api.features import (
+    create_trusted_source, list_trusted_sources, edit_trusted_source, toggle_trusted_source_status,
+    TrustedSourceCreate
+)
+
+def test_trusted_liquidity_sources_management(db_session):
+    """Verify CRUD endpoints for managing Trusted Liquidity Sources"""
+    # Create a mock user
+    user = User(
+        user_id=100,
+        username="reginald_user",
+        password_hash="...",
+        role="AGENT"
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # 1. Create a trusted source
+    req = TrustedSourceCreate(
+        name="Reginald Accra Partner",
+        phone="+233 24 999 8888",
+        location="Accra Central",
+        type="Trusted Individual",
+        notes="Helps with bulk cash rebalancing",
+        agent_id=1
+    )
+    src = create_trusted_source(req, current_user=user, db=db_session)
+    assert src.source_id > 0
+    assert src.name == "Reginald Accra Partner"
+    assert src.phone == "+233 24 999 8888"
+    assert src.location == "Accra Central"
+    assert src.type == "Trusted Individual"
+    assert src.notes == "Helps with bulk cash rebalancing"
+    assert src.status == "active"
+
+    # 2. List trusted sources
+    sources = list_trusted_sources(current_user=user, db=db_session)
+    assert len(sources) == 1
+    assert sources[0].source_id == src.source_id
+
+    # 3. Edit trusted source
+    edit_req = TrustedSourceCreate(
+        name="Reginald Accra Partner Updated",
+        phone="+233 24 999 8889",
+        location="Accra New Town",
+        type="Super Agent",
+        notes="Updated notes",
+        agent_id=1
+    )
+    edited = edit_trusted_source(src.source_id, edit_req, current_user=user, db=db_session)
+    assert edited.name == "Reginald Accra Partner Updated"
+    assert edited.phone == "+233 24 999 8889"
+    assert edited.location == "Accra New Town"
+    assert edited.type == "Super Agent"
+    assert edited.notes == "Updated notes"
+
+    # 4. Toggle status to inactive
+    deactivated = toggle_trusted_source_status(src.source_id, "inactive", current_user=user, db=db_session)
+    assert deactivated.status == "inactive"
+

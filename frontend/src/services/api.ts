@@ -243,6 +243,31 @@ class ApiService {
   static async getSystemStatus(): Promise<any> {
     return this.request<any>('/status');
   }
+
+  // --- TRUSTED LIQUIDITY SOURCES ---
+  static async getTrustedSources(): Promise<any[]> {
+    return this.request<any[]>('/trusted-sources');
+  }
+
+  static async createTrustedSource(data: any): Promise<any> {
+    return this.request<any>('/trusted-sources', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async updateTrustedSource(id: number, data: any): Promise<any> {
+    return this.request<any>(`/trusted-sources/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async toggleTrustedSourceStatus(id: number, status: string): Promise<any> {
+    return this.request<any>(`/trusted-sources/${id}/status?status=${status}`, {
+      method: 'POST',
+    });
+  }
 }
 
 export default ApiService;

@@ -193,6 +193,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             { name: 'Transactions', icon: Receipt, page: 'transactions' },
             { name: 'Ledger', icon: BookOpen, page: 'ledger' },
             { name: 'Liquidity', icon: Droplet, page: 'liquidity' },
+            { name: 'Liquidity Network', icon: Users, page: 'trusted-sources' },
             { name: 'Business Analytics', icon: LineChart, page: 'analytics' }
           ]
         },
