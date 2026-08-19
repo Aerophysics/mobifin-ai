@@ -1,4 +1,4 @@
-# Data Dictionary - MobiFin AI
+# Data Dictionary - MobiFin
 
 This document defines the schema structures for database tables and Pydantic models.
 

@@ -542,7 +542,7 @@ const App: React.FC = () => {
                     <div className="bg-teal-400 text-slate-950 rounded-xl font-black flex items-center justify-center transition-transform hover:scale-105 duration-300 login-logo">
                       M
                     </div>
-                    <h1 className="text-white tracking-wide leading-none login-title">MobiFin AI</h1>
+                    <h1 className="text-white tracking-wide leading-none login-title">MobiFin</h1>
                     <p className="font-normal text-white/85 leading-normal login-subtitle">
                       AI Financial Intelligence & Alternative Credit Intelligence
                     </p>
@@ -658,7 +658,7 @@ const App: React.FC = () => {
           <div className="w-full max-w-2xl bg-slate-900 border border-red-500/30 p-6 rounded-2xl font-sans text-slate-100 shadow-2xl space-y-4">
             <div className="flex items-center space-x-2.5 text-red-500 font-bold">
               <span className="text-xl">⚠</span>
-              <span>MobiFin AI — Runtime Diagnostics Panel</span>
+              <span>MobiFin — Runtime Diagnostics Panel</span>
             </div>
             <div className="bg-red-950/40 p-4 rounded-xl border border-red-900/30 space-y-3">
               <div>

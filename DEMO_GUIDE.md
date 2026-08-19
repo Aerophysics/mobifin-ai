@@ -1,6 +1,6 @@
-# Interactive Demo Guide - MobiFin AI
+# Interactive Demo Guide - MobiFin
 
-This guide provides a step-by-step presentation script to demonstrate MobiFin AI's core capabilities (SEE → PREDICT → ACT → ACCESS) during a live hackathon pitch or testing session.
+This guide provides a step-by-step presentation script to demonstrate MobiFin's core capabilities (SEE → PREDICT → ACT → ACCESS) during a live hackathon pitch or testing session.
 
 ---
 

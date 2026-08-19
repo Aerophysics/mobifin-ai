@@ -212,7 +212,7 @@ class ApiService {
     // Notifications
     if (cleanUrl === '/notifications') {
       return [
-        { notification_id: 1, message: "Welcome to MobiFin AI Platform!", is_read: false, created_at: new Date().toISOString() }
+        { notification_id: 1, message: "Welcome to MobiFin Platform!", is_read: false, created_at: new Date().toISOString() }
       ] as any;
     }
 

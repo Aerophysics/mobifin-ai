@@ -1,6 +1,6 @@
-# System Architecture - MobiFin AI
+# System Architecture - MobiFin
 
-This document outlines the software design, folder structure, data flow, and role-based boundaries of the MobiFin AI prototype.
+This document outlines the software design, folder structure, data flow, and role-based boundaries of the MobiFin prototype.
 
 ---
 

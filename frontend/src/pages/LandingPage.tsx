@@ -98,12 +98,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
           <div className="px-6 lg:px-8 h-full">
             <div className="flex h-full items-center justify-between w-full">
               <div className="flex-1 flex items-center space-x-3.5">
-                <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="MobiFin AI Home" className="flex items-center space-x-2.5 text-forest cursor-pointer pl-2">
+                <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="MobiFin Home" className="flex items-center space-x-2.5 text-forest cursor-pointer pl-2">
                   <div className="bg-forest text-white p-1.5 rounded font-black text-sm flex items-center justify-center h-7 w-7">
                     M
                   </div>
                   <span className="font-bold text-2xl tracking-tighter text-forest">
-                    MobiFin AI
+                    MobiFin
                   </span>
                 </a>
               </div>
@@ -499,7 +499,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
               Bridging the gap between activity and capital.
             </h2>
             <p className="text-lg md:text-xl text-slate-700 font-medium leading-relaxed max-w-2xl mx-auto">
-              MobiFin AI decodes transactional data in real-time, delivering predictive insights, alternative credit scoring, and automated liquidity recommendations.
+              MobiFin decodes transactional data in real-time, delivering predictive insights, alternative credit scoring, and automated liquidity recommendations.
             </p>
           </div>
         </section>

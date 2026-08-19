@@ -323,7 +323,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     if (role === 'ADMIN') {
       switch (activePage) {
-        case 'admin-dashboard': return 'Monitor MobiFin AI platform health.';
+        case 'admin-dashboard': return 'Monitor MobiFin platform health.';
         case 'performance': return 'Monitor predictive model performance and validation.';
         case 'explorer': return 'Inspect the underlying platform dataset.';
         case 'demo-mgmt': return 'Generative sandbox environment manager.';
@@ -425,7 +425,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               M
             </div>
             <span className="font-bold text-xl tracking-tighter text-white">
-              MobiFin AI
+              MobiFin
             </span>
           </div>
           {/* Mobile close button inside sidebar drawer */}

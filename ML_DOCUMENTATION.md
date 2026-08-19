@@ -1,6 +1,6 @@
-# Machine Learning Documentation - MobiFin AI
+# Machine Learning Documentation - MobiFin
 
-This document details the ML features, pipelines, data leakage controls, scoring scales, and explanation frameworks of MobiFin AI.
+This document details the ML features, pipelines, data leakage controls, scoring scales, and explanation frameworks of MobiFin.
 
 ---
 

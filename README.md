@@ -1,8 +1,8 @@
-# MobiFin AI
+# MobiFin
 
 > **Tagline:** Turn transactions into intelligence. Turn intelligence into opportunity.
 
-MobiFin AI is an AI-powered financial intelligence and alternative credit assessment platform for mobile money agents and financial institutions in developing markets like Ghana. It is designed to solve two core challenges:
+MobiFin is an AI-powered financial intelligence and alternative credit assessment platform for mobile money agents and financial institutions in developing markets like Ghana. It is designed to solve two core challenges:
 1. **Agent Liquidity Stockouts:** Preventing mobile money agents from running out of cash or electronic float by forecasting demand and generating rebalancing suggestions.
 2. **Alternative Credit for the Underbanked:** Building opt-in, demographically-neutral financial profiles for customers using transactional behavioral indicators to score creditworthiness without conventional credit history.
 
@@ -76,7 +76,7 @@ Open your browser at `http://localhost:5173`.
 ---
 
 ## Demo Presets (Deterministic Scenario)
-MobiFin AI is seeded with Kwame's Centre and Customer #1048. Click the **"Reset Demo Data"** button on the bottom sidebar to initialize the databases, then select a role in the header to switch perspectives:
+MobiFin is seeded with Kwame's Centre and Customer #1048. Click the **"Reset Demo Data"** button on the bottom sidebar to initialize the databases, then select a role in the header to switch perspectives:
 
 1. **Agent (Kwame's Centre):** See Kwame's operational health dashboard (~87/100 Health Score, ~GH₵4,850 Cash, ~GH₵7,200 Float). Inspect the **Liquidity Demand** tab to observe tomorrow's predicted peak demand of ~GH₵11,400, warning of a shortfall, and the recommendation to rebalance GH₵4,000 before 10:30 AM.
 2. **Financial Institution (Forms Capital):** Switch to this role to view **Customer Intelligence**. Search **Customer #1048** to view their consented credit profile. Observe their Alternative Credit Score in the mid/high 700s, repayment probability ~90%+, and the exact model feature contributions under **"Factors influencing this assessment."**

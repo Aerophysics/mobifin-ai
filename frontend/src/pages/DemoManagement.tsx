@@ -48,14 +48,14 @@ const DemoManagement: React.FC = () => {
           </h4>
           <div className="text-xs text-[var(--mf-text-secondary)] space-y-3 leading-relaxed">
             <p>
-              The MobiFin AI sandbox is running in self-contained demonstration mode. Model parameters, inference results (XGBoost forecasting and alternative credit scoring), and baseline transaction tables are pre-populated.
+              The MobiFin sandbox is running in self-contained demonstration mode. Model parameters, inference results (XGBoost forecasting and alternative credit scoring), and baseline transaction tables are pre-populated.
             </p>
             <p>
               Underlying database tables are partitioned dynamically. Security boundaries are actively enforced, preventing credit scoring leakage to agents while allowing underwriters access to alternative financial profiles.
             </p>
           </div>
           <div className="text-[9px] text-[var(--mf-text-secondary)] pt-4 border-t border-[var(--mf-border)] uppercase tracking-widest font-bold">
-            MobiFin AI operator utility
+            MobiFin operator utility
           </div>
         </GlassPanel>
       </div>

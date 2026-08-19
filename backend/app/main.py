@@ -9,7 +9,7 @@ from backend.app.api import (
 )
 
 app = FastAPI(
-    title="MobiFin AI API",
+    title="MobiFin API",
     description="AI-powered financial intelligence and alternative credit platform for mobile money agents",
     version="1.0.0"
 )

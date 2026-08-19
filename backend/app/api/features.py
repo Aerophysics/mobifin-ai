@@ -164,7 +164,7 @@ def onboard_agent(req: AgentOnboardingRequest, db: Session = Depends(get_db)):
         type="SYSTEM",
         severity="Low",
         title="Account Onboarding Successful",
-        message=f"Welcome {req.full_name} to MobiFin AI! Your alternative credit score, business health, and liquidity forecaster engines are ready.",
+        message=f"Welcome {req.full_name} to MobiFin! Your alternative credit score, business health, and liquidity forecaster engines are ready.",
         created_at=datetime.utcnow(),
         read=False
     )

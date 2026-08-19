@@ -58,7 +58,7 @@ const ConsentFlow: React.FC = () => {
           <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--mf-text-primary)]">Responsible Customer Credit Profiling</h3>
         </div>
         <p className="text-xs text-[var(--mf-text-secondary)] leading-relaxed">
-          MobiFin AI utilizes customer mobile-money transaction behavior as alternative financial data to construct financial profiles. 
+          MobiFin utilizes customer mobile-money transaction behavior as alternative financial data to construct financial profiles. 
           This profiling is <strong>strictly opt-in</strong>. Transaction records are only evaluated for credit maturity or scores 
           once explicit consent is actively recorded. Customers have the right to revoke consent at any time, instantly locking access 
           to their credit scoring intelligence.
