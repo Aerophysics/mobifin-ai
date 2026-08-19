@@ -411,7 +411,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Sidebar - Fix height & scroll internally */}
       <aside className={`
-        flex flex-col h-full overflow-hidden transition-all duration-300 z-10
+        flex flex-col h-full overflow-hidden transition-all duration-300
         fixed inset-y-0 left-0 z-40 w-[260px] lg:static lg:h-full lg:w-[260px] lg:z-auto
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         bg-[#17280e]/95 text-white border-r border-[#243e16] lg:border-white/10 lg:rounded-[24px] lg:shadow-xl lg:backdrop-blur-xl
