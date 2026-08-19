@@ -8,6 +8,14 @@ import {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 class ApiService {
+  public static isDemoMode(): boolean {
+    return localStorage.getItem('mobifin_demo_mode') === 'true';
+  }
+
+  public static setDemoMode(val: boolean): void {
+    localStorage.setItem('mobifin_demo_mode', val ? 'true' : 'false');
+  }
+
   private static getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -19,10 +27,370 @@ class ApiService {
     return headers;
   }
 
+  private static handleDemoRequest<T>(endpoint: string, options: RequestInit): T {
+    const cleanUrl = endpoint.split('?')[0];
+    const params = new URLSearchParams(endpoint.includes('?') ? endpoint.split('?')[1] : '');
+    
+    // Auth Login
+    if (cleanUrl === '/auth/login') {
+      const body = JSON.parse(options.body as string || '{}');
+      const username = body.username || 'kwame';
+      let role = 'AGENT';
+      let agent_id = 1;
+      if (username === 'forms_capital') {
+        role = 'FINANCIAL_INSTITUTION';
+        agent_id = null as any;
+      } else if (username === 'admin') {
+        role = 'ADMIN';
+        agent_id = null as any;
+      }
+      return {
+        access_token: 'demo_token_xyz',
+        token_type: 'bearer',
+        role: role,
+        username: username,
+        agent_id: agent_id
+      } as any;
+    }
+    
+    // Status
+    if (cleanUrl === '/status') {
+      return {
+        status: "healthy",
+        database: "SQLite Fallback (Demo Mode)",
+        sqlite_active: true,
+        timestamp: new Date().toISOString()
+      } as any;
+    }
+    
+    // Agents me
+    if (cleanUrl === '/agents/me') {
+      return {
+        agent_id: 1,
+        name: "Kwame's Mobile Money Centre (Demo)",
+        location: "Greater Accra",
+        business_age: 12,
+        operating_hours: "08:00 - 18:00",
+        cash_balance: 4850.0,
+        float_balance: 7200.0,
+        commission_rate: 0.015,
+        city: "Accra",
+        specific_location: "Central Market"
+      } as any;
+    }
+
+    // Health
+    if (cleanUrl === '/analytics/health') {
+      return {
+        business_health_score: 87,
+        status: "stable"
+      } as any;
+    }
+
+    // Recommendations
+    if (cleanUrl === '/liquidity/recommendations') {
+      return {
+        predicted_shortfall: 4200.0,
+        warning_level: "High",
+        recommendation: {
+          recommended_amount: 4000.0,
+          recommended_time: "10:30 AM"
+        },
+        trusted_sources_count: 2
+      } as any;
+    }
+
+    // Stress test
+    if (cleanUrl === '/liquidity/stress-test') {
+      return [
+        { scenario: 'Baseline (Default)', projected_shortfall: 4200.0, risk_level: 'High', recommendation: 'Fund e-float early' },
+        { scenario: 'Demand Spike (+10%)', projected_shortfall: 5300.0, risk_level: 'Critical', recommendation: 'Execute prompt rebalance' },
+        { scenario: 'Demand Surge (+20%)', projected_shortfall: 6400.0, risk_level: 'Critical', recommendation: 'Immediate rebalance required' }
+      ] as any;
+    }
+
+    // Daily metric / Ledger
+    if (cleanUrl === '/ledger/daily') {
+      return {
+        date: params.get('date_str') || new Date().toISOString().split('T')[0],
+        starting_cash: 5000.0,
+        starting_float: 7000.0,
+        ending_cash: 4850.0,
+        ending_float: 7200.0,
+        total_volume: 18450.0,
+        reconciliation_status: "MATCHED"
+      } as any;
+    }
+
+    // Transactions
+    if (cleanUrl === '/transactions') {
+      return {
+        transactions: [
+          { transaction_id: 101, timestamp: new Date(Date.now() - 3600000).toISOString(), transaction_type: "deposit", amount: 150.0, direction: "inflow", cash_balance: 4850.0, float_balance: 7200.0, location: "Accra" },
+          { transaction_id: 102, timestamp: new Date(Date.now() - 7200000).toISOString(), transaction_type: "withdrawal", amount: 200.0, direction: "outflow", cash_balance: 4700.0, float_balance: 7400.0, location: "Accra" },
+          { transaction_id: 103, timestamp: new Date(Date.now() - 14400000).toISOString(), transaction_type: "deposit", amount: 500.0, direction: "inflow", cash_balance: 4900.0, float_balance: 7200.0, location: "Accra" }
+        ],
+        total_count: 3
+      } as any;
+    }
+
+    // Anomalies
+    if (cleanUrl === '/anomalies') {
+      return [] as any;
+    }
+
+    // Notifications
+    if (cleanUrl === '/notifications') {
+      return [
+        { notification_id: 1, message: "Welcome to MobiFin AI Platform!", is_read: false, created_at: new Date().toISOString() }
+      ] as any;
+    }
+
+    // Referrals (POST & GET)
+    let referrals = JSON.parse(localStorage.getItem('mobifin_demo_referrals') || '[]');
+    if (referrals.length === 0) {
+      referrals = [
+        {
+          referral_id: 101,
+          agent_id: 1,
+          customer_id: 1048,
+          institution_id: 60,
+          requested_amount: 5000.0,
+          purpose: "Shop inventory restock",
+          status: "CONSENT_REQUESTED",
+          consent_status: "AWAITING_CONSENT",
+          created_at: new Date().toISOString(),
+          consent_requested_at: new Date().toISOString(),
+          application_status: "PENDING",
+          customer_name: "Customer #1048",
+          agent_name: "Kwame's Mobile Money Centre (Demo)"
+        }
+      ];
+      localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+    }
+
+    if (cleanUrl === '/referrals') {
+      if (options.method === 'POST') {
+        const body = JSON.parse(options.body as string || '{}');
+        const is1048 = body.name?.includes('1048');
+        const newRef = {
+          referral_id: Date.now(),
+          agent_id: 1,
+          customer_id: is1048 ? 1048 : Date.now() + 10,
+          institution_id: body.institution_id || 60,
+          requested_amount: body.requested_amount || 5000.0,
+          purpose: body.purpose || 'Business funding',
+          status: 'CONSENT_REQUESTED',
+          consent_status: 'AWAITING_CONSENT',
+          created_at: new Date().toISOString(),
+          consent_requested_at: new Date().toISOString(),
+          application_status: 'PENDING',
+          customer_name: body.name || 'New Customer',
+          agent_name: "Kwame's Mobile Money Centre (Demo)"
+        };
+        referrals.push(newRef);
+        localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+        setTimeout(() => window.dispatchEvent(new Event('ussd_update')), 200);
+        return newRef as any;
+      }
+      return referrals as any;
+    }
+
+    // USSD pending
+    if (cleanUrl === '/ussd/pending-requests') {
+      return referrals
+        .filter((r: any) => r.consent_status === 'AWAITING_CONSENT')
+        .map((r: any) => ({
+          referral_id: r.referral_id,
+          requested_amount: r.requested_amount,
+          customer_name: r.customer_name
+        })) as any;
+    }
+
+    // USSD respond
+    if (cleanUrl === '/ussd/consent-respond') {
+      const referralId = parseInt(params.get('referral_id') || '0');
+      const selection = parseInt(params.get('selection') || '0');
+      referrals = referrals.map((r: any) => {
+        if (r.referral_id === referralId) {
+          if (selection === 1) {
+            return {
+              ...r,
+              consent_status: 'CONSENT_ACTIVE',
+              status: 'CONSENT_GRANTED',
+              consent_responded_at: new Date().toISOString(),
+              consent_expiry: new Date(Date.now() + 90*24*3600*1000).toISOString()
+            };
+          } else {
+            return {
+              ...r,
+              consent_status: 'CONSENT_DECLINED',
+              status: 'CONSENT_DECLINED',
+              consent_responded_at: new Date().toISOString()
+            };
+          }
+        }
+        return r;
+      });
+      localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+      setTimeout(() => window.dispatchEvent(new Event('ussd_update')), 200);
+      return { message: "USSD handled successfully." } as any;
+    }
+
+    // USSD revoke
+    if (cleanUrl === '/ussd/consent-revoke') {
+      const referralId = parseInt(params.get('referral_id') || '0');
+      referrals = referrals.map((r: any) => {
+        if (r.referral_id === referralId) {
+          return {
+            ...r,
+            consent_status: 'CONSENT_REVOKED',
+            status: 'CANCELLED'
+          };
+        }
+        return r;
+      });
+      localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+      setTimeout(() => window.dispatchEvent(new Event('ussd_update')), 200);
+      return { message: "USSD revoked successfully." } as any;
+    }
+
+    // FI referrals
+    if (cleanUrl === '/institution/referrals') {
+      return referrals as any;
+    }
+
+    // FI Profile
+    if (cleanUrl.startsWith('/institution/referral/') && cleanUrl.endsWith('/profile')) {
+      const parts = cleanUrl.split('/');
+      const referralId = parseInt(parts[3] || '0');
+      const ref = referrals.find((r: any) => r.referral_id === referralId);
+      if (!ref || ref.consent_status !== 'CONSENT_ACTIVE') {
+        throw new Error('Customer consent is required before financial information can be accessed.');
+      }
+      
+      const is1048 = ref.customer_id === 1048;
+      if (is1048) {
+        return {
+          display_name: "Customer #1048",
+          consent_status: "CONSENT_ACTIVE",
+          consent_expiry: ref.consent_expiry || new Date(Date.now() + 90*24*3600*1000).toISOString(),
+          history_days: 95,
+          transaction_count: 35,
+          is_ready_for_credit: true,
+          financial_readiness_score: 94,
+          assessment: {
+            credit_score: 764,
+            repayment_probability: 0.91,
+            default_probability: 0.09,
+            risk_category: "Low Risk",
+            indicative_credit_capacity: 7500.0,
+            factors: [
+              { feature: "Savings Behavior Score", value: 0.35 },
+              { feature: "Inflow Outflow Ratio", value: 0.25 },
+              { feature: "Cashflow Volatility", value: -0.15 }
+            ]
+          }
+        } as any;
+      } else {
+        return {
+          display_name: ref.customer_name || "New Customer",
+          consent_status: "CONSENT_ACTIVE",
+          consent_expiry: ref.consent_expiry || new Date(Date.now() + 90*24*3600*1000).toISOString(),
+          history_days: 45,
+          transaction_count: 18,
+          is_ready_for_credit: false,
+          financial_readiness_score: 55,
+          assessment: null
+        } as any;
+      }
+    }
+
+    // FI decision
+    if (cleanUrl.startsWith('/institution/referral/') && cleanUrl.endsWith('/decision')) {
+      const parts = cleanUrl.split('/');
+      const referralId = parseInt(parts[3] || '0');
+      const decision = params.get('decision') || 'APPROVED';
+      referrals = referrals.map((r: any) => {
+        if (r.referral_id === referralId) {
+          return {
+            ...r,
+            application_status: decision,
+            status: decision
+          };
+        }
+        return r;
+      });
+      localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+      return { message: "Decision registered." } as any;
+    }
+
+    // FI portfolio summary
+    if (cleanUrl === '/credit/portfolio-summary') {
+      const activeCount = referrals.filter((r: any) => r.consent_status === 'CONSENT_ACTIVE').length;
+      const readyCount = referrals.filter((r: any) => r.consent_status === 'CONSENT_ACTIVE' && r.customer_id === 1048).length;
+      return {
+        consented_customers: activeCount,
+        credit_ready_customers: readyCount,
+        average_credit_score: 764,
+        indicative_credit_capacity: readyCount * 7500.0,
+        pipeline: { building_history: activeCount - readyCount, consent_required: referrals.length - activeCount, credit_ready: readyCount, assessed: readyCount },
+        risk_distribution: [
+          { category: "Low", count: readyCount, percentage: readyCount > 0 ? 100 : 0 },
+          { category: "Moderate-Low", count: 0, percentage: 0 },
+          { category: "Moderate-High", count: 0, percentage: 0 },
+          { category: "High", count: 0, percentage: 0 }
+        ],
+        recent_events: readyCount > 0 ? [
+          { customer_id: 1048, event_type: "Alternative credit assessment completed", score: 764, risk: "Low", capacity: 7500.0 }
+        ] : []
+      } as any;
+    }
+
+    // Explorer
+    if (cleanUrl === '/models/explorer') {
+      return {
+        agent_count: 1,
+        customer_count: referrals.length,
+        transaction_count: 124,
+        consented_customer_count: referrals.filter((r: any) => r.consent_status === 'CONSENT_ACTIVE').length,
+        sufficient_history_count: referrals.filter((r: any) => r.customer_id === 1048 && r.consent_status === 'CONSENT_ACTIVE').length,
+        db_type: "SQLite Fallback (Demo Mode)"
+      } as any;
+    }
+
+    // Models performance
+    if (cleanUrl === '/models/performance') {
+      return {
+        roc_auc: 0.925,
+        f1_score: 0.887,
+        mae: 180.4,
+        rmse: 245.2,
+        contamination: 0.02
+      } as any;
+    }
+    
+    // Seed
+    if (cleanUrl === '/demo/seed') {
+      localStorage.removeItem('mobifin_demo_referrals');
+      return { message: "Demo data reset successfully." } as any;
+    }
+
+    return {} as any;
+  }
+
   public static async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    if (this.isDemoMode()) {
+      return this.handleDemoRequest<T>(endpoint, options);
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 second API timeout
+
     const url = `${API_BASE_URL}${endpoint}`;
     const defaultOptions = {
       ...options,
+      signal: controller.signal,
       headers: {
         ...this.getHeaders(),
         ...options.headers,
@@ -31,12 +399,13 @@ class ApiService {
 
     try {
       const response = await fetch(url, defaultOptions);
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         let errorDetail = 'API Error';
         try {
           const errBody = await response.json();
-          errorDetail = errBody.detail || errorDetail;
+          errorDetail = errBody.detail || errBody.message || errorDetail;
         } catch {
           // ignore parsing error
         }
@@ -45,7 +414,17 @@ class ApiService {
       
       return await response.json() as T;
     } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error(`API request failed on ${endpoint}:`, error);
+
+      if (error.name === 'AbortError') {
+        throw new Error("Unable to reach MobiFin services. Request timed out.");
+      }
+      
+      const msg = error.message || '';
+      if (msg.includes('fetch') || msg.includes('Load failed') || msg.includes('NetworkError') || error.name === 'TypeError') {
+        throw new Error("We couldn't connect to MobiFin services. Please check your connection and try again.");
+      }
       throw error;
     }
   }

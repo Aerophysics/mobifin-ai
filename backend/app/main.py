@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.database.connection import is_sqlite_active
@@ -14,10 +15,17 @@ app = FastAPI(
 )
 
 # Set up CORS middleware for Vite frontend
+frontend_url = os.getenv("FRONTEND_URL", "*")
+if frontend_url and frontend_url != "*":
+    origins = [x.strip() for x in frontend_url.split(",")]
+    origins.extend(["http://localhost:5173", "http://127.0.0.1:5173"])
+else:
+    origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For hackathon portability; restrict in production
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=True if "*" not in origins else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -37,21 +45,21 @@ app.include_router(models.router, prefix="/api")
 app.include_router(features.router, prefix="/api")
 app.include_router(credit_referrals.router, prefix="/api")
 
+from datetime import datetime
+
+@app.get("/health")
+def get_health():
+    """Simple production-safe health check endpoint"""
+    env = os.getenv("ENVIRONMENT", "production")
+    return {
+        "status": "ok",
+        "service": "MobiFin API",
+        "environment": env
+    }
+
 @app.get("/api/status")
 def get_system_status():
     """Checks overall backend health and active database type"""
-    db_mode = "SQLite Fallback" if is_sqlite_active() else "PostgreSQL (Canonical)"
-    return {
-        "status": "healthy",
-        "database": db_mode,
-        "sqlite_active": is_sqlite_active(),
-        "timestamp": datetime.utcnow().isoformat() if 'datetime' in globals() else None
-    }
-
-# Quick import fix for status timestamp
-from datetime import datetime
-@app.get("/api/status")
-def get_system_status():
     db_mode = "SQLite Fallback" if is_sqlite_active() else "PostgreSQL (Canonical)"
     return {
         "status": "healthy",
