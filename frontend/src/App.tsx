@@ -74,22 +74,64 @@ const App: React.FC = () => {
   const [networkErrorMsg, setNetworkErrorMsg] = useState<string | null>(null);
   const [lastAttemptParams, setLastAttemptParams] = useState<any | null>(null);
 
-  // Synchronize browser history and views (router-less navigation mapping)
+  // Unify history routing popstate and initial mounting checks
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
+      const sessionUser = ApiService.getCurrentUser();
+
       if (path === '/onboarding/agent') {
-        if (!currentUser) {
+        if (sessionUser) {
+          const dashboardPath = sessionUser.role === 'AGENT' ? '/agent/dashboard' : sessionUser.role === 'FINANCIAL_INSTITUTION' ? '/institution/dashboard' : '/admin/dashboard';
+          window.history.replaceState({}, '', dashboardPath);
+          setCurrentUser(sessionUser);
+          setActivePage(sessionUser.role === 'ADMIN' ? 'admin-dashboard' : 'dashboard');
+        } else {
           setViewMode('onboarding');
+          setCurrentUser(null);
         }
       } else if (path === '/login') {
-        if (!currentUser) {
+        if (sessionUser) {
+          const dashboardPath = sessionUser.role === 'AGENT' ? '/agent/dashboard' : sessionUser.role === 'FINANCIAL_INSTITUTION' ? '/institution/dashboard' : '/admin/dashboard';
+          window.history.replaceState({}, '', dashboardPath);
+          setCurrentUser(sessionUser);
+          setActivePage(sessionUser.role === 'ADMIN' ? 'admin-dashboard' : 'dashboard');
+        } else {
           setViewMode('login');
+          setCurrentUser(null);
+        }
+      } else if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard') {
+        if (sessionUser) {
+          const isAgentPath = sessionUser.role === 'AGENT' && path === '/agent/dashboard';
+          const isFiPath = sessionUser.role === 'FINANCIAL_INSTITUTION' && path === '/institution/dashboard';
+          const isAdminPath = sessionUser.role === 'ADMIN' && path === '/admin/dashboard';
+
+          if (isAgentPath || isFiPath || isAdminPath) {
+            setCurrentUser(sessionUser);
+            setActivePage(sessionUser.role === 'ADMIN' ? 'admin-dashboard' : 'dashboard');
+          } else {
+            // Mismatch, redirect to correct role path
+            const dashboardPath = sessionUser.role === 'AGENT' ? '/agent/dashboard' : sessionUser.role === 'FINANCIAL_INSTITUTION' ? '/institution/dashboard' : '/admin/dashboard';
+            window.history.replaceState({}, '', dashboardPath);
+            setCurrentUser(sessionUser);
+            setActivePage(sessionUser.role === 'ADMIN' ? 'admin-dashboard' : 'dashboard');
+          }
+        } else {
+          // No session, redirect to login
+          window.history.replaceState({}, '', '/login');
+          setViewMode('login');
+          setCurrentUser(null);
         }
       } else {
-        if (!currentUser) {
-          setViewMode('landing');
-        }
+        // Root path "/" or unknown
+        setViewMode('landing');
+        setCurrentUser(null);
+        
+        // Remove AUTHENTICATION SESSION tokens from localStorage on root entry
+        localStorage.removeItem('mobifin_token');
+        localStorage.removeItem('mobifin_role');
+        localStorage.removeItem('mobifin_username');
+        localStorage.removeItem('mobifin_agent_id');
       }
     };
 
@@ -97,21 +139,18 @@ const App: React.FC = () => {
     handlePopState(); // Initial check on mount
 
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentUser]);
+  }, []);
 
+  // Sync route path to root "/" when user logging out or currentUser goes null on dashboard
   useEffect(() => {
-    const user = ApiService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      if (user.role === 'AGENT') {
-        setActivePage('dashboard');
-      } else if (user.role === 'FINANCIAL_INSTITUTION') {
-        setActivePage('dashboard');
-      } else {
-        setActivePage('admin-dashboard');
+    if (!currentUser) {
+      const path = window.location.pathname;
+      if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard' || path === '/login') {
+        window.history.pushState({}, '', '/');
+        setViewMode('landing');
       }
     }
-  }, []);
+  }, [currentUser]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,10 +168,13 @@ const App: React.FC = () => {
       
       if (user) {
         if (user.role === 'AGENT') {
+          window.history.pushState({}, '', '/agent/dashboard');
           setActivePage('dashboard');
         } else if (user.role === 'FINANCIAL_INSTITUTION') {
+          window.history.pushState({}, '', '/institution/dashboard');
           setActivePage('dashboard');
         } else {
+          window.history.pushState({}, '', '/admin/dashboard');
           setActivePage('admin-dashboard');
         }
       }
@@ -208,10 +250,13 @@ const App: React.FC = () => {
     
     if (user) {
       if (user.role === 'AGENT') {
+        window.history.pushState({}, '', '/agent/dashboard');
         setActivePage('dashboard');
       } else if (user.role === 'FINANCIAL_INSTITUTION') {
+        window.history.pushState({}, '', '/institution/dashboard');
         setActivePage('dashboard');
       } else {
+        window.history.pushState({}, '', '/admin/dashboard');
         setActivePage('admin-dashboard');
       }
     }
@@ -249,10 +294,13 @@ const App: React.FC = () => {
       setCurrentUser(profile);
 
       if (role === 'AGENT') {
+        window.history.pushState({}, '', '/agent/dashboard');
         setActivePage('dashboard');
       } else if (role === 'FINANCIAL_INSTITUTION') {
+        window.history.pushState({}, '', '/institution/dashboard');
         setActivePage('dashboard');
       } else {
+        window.history.pushState({}, '', '/admin/dashboard');
         setActivePage('admin-dashboard');
       }
       return;
@@ -276,10 +324,13 @@ const App: React.FC = () => {
       setCurrentUser(profile);
       
       if (role === 'AGENT') {
+        window.history.pushState({}, '', '/agent/dashboard');
         setActivePage('dashboard');
       } else if (role === 'FINANCIAL_INSTITUTION') {
+        window.history.pushState({}, '', '/institution/dashboard');
         setActivePage('dashboard');
       } else {
+        window.history.pushState({}, '', '/admin/dashboard');
         setActivePage('admin-dashboard');
       }
     } catch (e: any) {
