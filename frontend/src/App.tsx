@@ -199,10 +199,13 @@ const App: React.FC = () => {
   // Sync route path to root "/" when user logging out or currentUser goes null on dashboard
   useEffect(() => {
     if (!currentUser) {
-      const path = window.location.pathname;
-      if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard' || path === '/login') {
-        window.history.pushState({}, '', '/');
-        setViewMode('landing');
+      const sessionUser = ApiService.getCurrentUser();
+      if (!sessionUser) {
+        const path = window.location.pathname;
+        if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard' || path === '/login') {
+          window.history.pushState({}, '', '/');
+          setViewMode('landing');
+        }
       }
     }
   }, [currentUser]);

@@ -196,9 +196,9 @@ class ApiService {
     if (cleanUrl === '/transactions') {
       return {
         transactions: [
-          { transaction_id: 101, timestamp: new Date(Date.now() - 3600000).toISOString(), transaction_type: "deposit", amount: 150.0, direction: "inflow", cash_balance: 4850.0, float_balance: 7200.0, location: "Accra" },
-          { transaction_id: 102, timestamp: new Date(Date.now() - 7200000).toISOString(), transaction_type: "withdrawal", amount: 200.0, direction: "outflow", cash_balance: 4700.0, float_balance: 7400.0, location: "Accra" },
-          { transaction_id: 103, timestamp: new Date(Date.now() - 14400000).toISOString(), transaction_type: "deposit", amount: 500.0, direction: "inflow", cash_balance: 4900.0, float_balance: 7200.0, location: "Accra" }
+          { transaction_id: 101, timestamp: new Date(Date.now() - 3600000).toISOString(), transaction_type: "deposit", amount: 150.0, direction: "inflow", cash_balance: 4850.0, float_balance: 7200.0, commission: 2.25, location: "Accra" },
+          { transaction_id: 102, timestamp: new Date(Date.now() - 7200000).toISOString(), transaction_type: "withdrawal", amount: 200.0, direction: "outflow", cash_balance: 4700.0, float_balance: 7400.0, commission: 3.00, location: "Accra" },
+          { transaction_id: 103, timestamp: new Date(Date.now() - 14400000).toISOString(), transaction_type: "deposit", amount: 500.0, direction: "inflow", cash_balance: 4900.0, float_balance: 7200.0, commission: 7.50, location: "Accra" }
         ],
         total_count: 3
       } as any;
