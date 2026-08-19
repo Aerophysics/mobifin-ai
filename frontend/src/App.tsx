@@ -69,6 +69,21 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'landing' | 'login' | 'onboarding'>('landing');
+  const [isSeeding, setIsSeeding] = useState<boolean>(false);
+  const [seedStatus, setSeedStatus] = useState<string | null>(null);
+
+  const handleSeedDemo = async () => {
+    setIsSeeding(true);
+    setSeedStatus('Seeding demo database...');
+    try {
+      await ApiService.seedDemoData();
+      setSeedStatus('Database seeded successfully! Try logging in now.');
+    } catch (e: any) {
+      setSeedStatus(`Seeding failed: ${e.message}`);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   // Synchronize browser history and views (router-less navigation mapping)
   useEffect(() => {
@@ -414,6 +429,20 @@ const App: React.FC = () => {
                     >
                       System Operator (Admin)
                     </button>
+                    
+                    <button
+                      onClick={handleSeedDemo}
+                      disabled={isSeeding || isLoggingIn}
+                      className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:border-emerald-500/30 transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn uppercase tracking-wider font-bold text-[9.5px] border border-emerald-500/20 mt-2.5 py-2.5 rounded-lg w-full"
+                    >
+                      {isSeeding ? 'Seeding Database...' : 'Seed / Reset Demo Database'}
+                    </button>
+                    
+                    {seedStatus && (
+                      <p className="text-[10px] text-emerald-400 mt-1.5 font-mono text-center animate-pulse">
+                        {seedStatus}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
