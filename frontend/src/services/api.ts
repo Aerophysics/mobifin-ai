@@ -67,7 +67,7 @@ class ApiService {
     if (cleanUrl === '/agents/me') {
       return {
         agent_id: 1,
-        name: "Kwame's Mobile Money Centre (Demo)",
+        name: "Kwame's Mobile Money Centre",
         location: "Greater Accra",
         business_age: 12,
         operating_hours: "08:00 - 18:00",
@@ -76,6 +76,59 @@ class ApiService {
         commission_rate: 0.015,
         city: "Accra",
         specific_location: "Central Market"
+      } as any;
+    }
+
+    // Forecasts
+    if (cleanUrl === '/forecasts') {
+      return {
+        forecast_id: 1,
+        agent_id: 1,
+        target_date: new Date(Date.now() + 24*3600*1000).toISOString().split('T')[0],
+        predicted_cash_demand: 8200.0,
+        predicted_float_demand: 11400.0,
+        historical_average_cash: 7500.0,
+        historical_average_float: 9000.0,
+        confidence_interval_low_cash: 7200.0,
+        confidence_interval_high_cash: 9200.0,
+        confidence_interval_low_float: 10400.0,
+        confidence_interval_high_float: 12400.0,
+        model_version: "v1.2.0",
+        created_at: new Date().toISOString()
+      } as any;
+    }
+
+    // Customers list
+    if (cleanUrl === '/customers') {
+      const refs = JSON.parse(localStorage.getItem('mobifin_demo_referrals') || '[]');
+      const is1048Consented = refs.some((r: any) => r.customer_id === 1048 && r.consent_status === 'CONSENT_ACTIVE');
+      return [
+        {
+          customer_id: 1048,
+          display_name: "Customer #1048",
+          phone: "0541234567",
+          location: "Accra Central",
+          type: "retail",
+          notes: "Regular agent customer",
+          status: "active",
+          consent_status: is1048Consented
+        }
+      ] as any;
+    }
+
+    // Customer details
+    if (cleanUrl.startsWith('/customers/')) {
+      const refs = JSON.parse(localStorage.getItem('mobifin_demo_referrals') || '[]');
+      const is1048Consented = refs.some((r: any) => r.customer_id === 1048 && r.consent_status === 'CONSENT_ACTIVE');
+      return {
+        customer_id: 1048,
+        display_name: "Customer #1048",
+        phone: "0541234567",
+        location: "Accra Central",
+        type: "retail",
+        notes: "Regular agent customer",
+        status: "active",
+        consent_status: is1048Consented
       } as any;
     }
 
@@ -163,7 +216,7 @@ class ApiService {
           consent_requested_at: new Date().toISOString(),
           application_status: "PENDING",
           customer_name: "Customer #1048",
-          agent_name: "Kwame's Mobile Money Centre (Demo)"
+          agent_name: "Kwame's Mobile Money Centre"
         }
       ];
       localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
@@ -186,7 +239,7 @@ class ApiService {
           consent_requested_at: new Date().toISOString(),
           application_status: 'PENDING',
           customer_name: body.name || 'New Customer',
-          agent_name: "Kwame's Mobile Money Centre (Demo)"
+          agent_name: "Kwame's Mobile Money Centre"
         };
         referrals.push(newRef);
         localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));

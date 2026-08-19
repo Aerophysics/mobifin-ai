@@ -240,7 +240,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {
           title: 'System',
           items: [
-            { name: 'Demo Management', icon: Wrench, page: 'demo-mgmt' },
             { name: 'Settings', icon: SettingsIcon, page: 'settings' }
           ]
         }
@@ -603,10 +602,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           )}
 
           <div className="flex items-center space-x-2 md:space-x-4">
-            {ApiService.isDemoMode() && (
-              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 select-none" title="Using offline local synthetic data due to unstable backend connection.">
+            {ApiService.isDemoMode() ? (
+              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase bg-amber-550/10 border border-amber-500/20 text-amber-400 select-none" title="Using offline local synthetic data due to unstable backend connection.">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span>Demo Mode (Offline)</span>
+                <span>DEMO MODE</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 select-none" title="Successfully connected to MobiFin FastAPI backend services.">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>CONNECTED</span>
               </span>
             )}
             {/* Theme Toggle Button */}

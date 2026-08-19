@@ -9,8 +9,6 @@ import { DataExplorerMetrics } from '../types';
 const DataExplorer: React.FC = () => {
   const [metrics, setMetrics] = useState<DataExplorerMetrics | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSeeding, setIsSeeding] = useState<boolean>(false);
-  const [seedSuccess, setSeedSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     fetchMetrics();
@@ -25,21 +23,6 @@ const DataExplorer: React.FC = () => {
       console.error(e);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const triggerSeed = async () => {
-    setIsSeeding(true);
-    setSeedSuccess(false);
-    try {
-      await ApiService.seedDemoData();
-      setSeedSuccess(true);
-      setTimeout(() => setSeedSuccess(false), 4000);
-      await fetchMetrics();
-    } catch (err: any) {
-      alert(`Database seeding failed: ${err.message}`);
-    } finally {
-      setIsSeeding(false);
     }
   };
 
@@ -101,7 +84,7 @@ const DataExplorer: React.FC = () => {
 
       {/* Consent Statistics Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="premium-card bg-white lg:col-span-2 space-y-6">
+        <div className="premium-card bg-white lg:col-span-3 space-y-6">
           <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center">
             <ShieldCheck className="h-4.5 w-4.5 text-teal-655 mr-1.5" />
             Customer Consent Opt-in Metrics
@@ -142,36 +125,6 @@ const DataExplorer: React.FC = () => {
                 Alternative Credit Score modeling is restricted to consenting profiles meeting the 90-day history and 30-transaction thresholds.
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* Database administration & Seeding controls */}
-        <div className="premium-card bg-white flex flex-col justify-between">
-          <div className="space-y-3">
-            <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3">
-              Database Seeder Controls
-            </h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Triggers the generation of our longitudinal transaction generator, seeding Kwame's Mobile Money Centre and Customer #1048.
-            </p>
-          </div>
-
-          <div className="pt-4 space-y-2">
-            <button
-              onClick={triggerSeed}
-              disabled={isSeeding}
-              className="w-full flex items-center justify-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${isSeeding ? 'animate-spin' : ''}`} />
-              <span>{isSeeding ? 'Seeding Sandbox DB...' : 'Reset & Re-Seed Database'}</span>
-            </button>
-            
-            {seedSuccess && (
-              <div className="bg-emerald-50 text-emerald-800 border border-emerald-100 text-[10px] p-2.5 rounded-lg flex items-center space-x-1.5 animate-pulse">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                <span>Demo environment loaded successfully.</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
