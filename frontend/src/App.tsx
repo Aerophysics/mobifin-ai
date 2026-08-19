@@ -81,6 +81,17 @@ const App: React.FC = () => {
   // Catch any unhandled runtime exceptions or promise rejections globally
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
+      const isExtension = 
+        event.filename?.includes('chrome-extension') || 
+        event.message?.includes('MetaMask') || 
+        event.error?.stack?.includes('chrome-extension') ||
+        (event.filename && !event.filename.includes(window.location.host) && !event.filename.includes('localhost') && !event.filename.includes('127.0.0.1'));
+      
+      if (isExtension) {
+        console.warn("Ignored extension runtime error:", event.message);
+        return;
+      }
+
       setRuntimeError({
         message: event.message,
         stack: event.error?.stack,
@@ -90,9 +101,22 @@ const App: React.FC = () => {
     };
 
     const handleRejection = (event: PromiseRejectionEvent) => {
+      const reasonStr = event.reason?.message || String(event.reason);
+      const stackStr = event.reason?.stack || '';
+      
+      const isExtension = 
+        reasonStr.includes('MetaMask') || 
+        stackStr.includes('chrome-extension') ||
+        reasonStr.includes('extensions');
+
+      if (isExtension) {
+        console.warn("Ignored extension promise rejection:", reasonStr);
+        return;
+      }
+
       setRuntimeError({
-        message: event.reason?.message || String(event.reason),
-        stack: event.reason?.stack
+        message: reasonStr,
+        stack: stackStr
       });
     };
 
