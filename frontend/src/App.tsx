@@ -644,7 +644,9 @@ const App: React.FC = () => {
             {renderPage()}
           </ErrorBoundary>
         </DashboardLayout>
-        <UssdSimulator handleRoleSwitch={handleRoleSwitch} />
+        {currentUser?.role === 'AGENT' && activePage === 'referrals' && (
+          <UssdSimulator handleRoleSwitch={handleRoleSwitch} />
+        )}
       </>
     );
   };
