@@ -168,9 +168,9 @@ class ApiService {
     // Stress test
     if (cleanUrl === '/liquidity/stress-test') {
       return [
-        { scenario: 'Baseline (Default)', projected_shortfall: 4200.0, risk_level: 'High', recommendation: 'Fund e-float early' },
-        { scenario: 'Demand Spike (+10%)', projected_shortfall: 5300.0, risk_level: 'Critical', recommendation: 'Execute prompt rebalance' },
-        { scenario: 'Demand Surge (+20%)', projected_shortfall: 6400.0, risk_level: 'Critical', recommendation: 'Immediate rebalance required' }
+        { stress_level: 'Baseline (+10% Surge)', multiplier: 1.1, original_demand: 9000.0, stressed_demand: 9900.0, current_holdings: 7200.0, projected_shortfall: 2700.0, risk_status: 'Elevated' },
+        { stress_level: 'Demand Spike (+20% Surge)', multiplier: 1.2, original_demand: 9000.0, stressed_demand: 10800.0, current_holdings: 7200.0, projected_shortfall: 3600.0, risk_status: 'Critical' },
+        { stress_level: 'Demand Surge (+35% Peak)', multiplier: 1.35, original_demand: 9000.0, stressed_demand: 12150.0, current_holdings: 7200.0, projected_shortfall: 4950.0, risk_status: 'Critical' }
       ] as any;
     }
 
