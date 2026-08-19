@@ -365,6 +365,7 @@ const App: React.FC = () => {
           {/* Back to Home floating action button */}
           {viewMode !== 'onboarding' && (
             <button
+              type="button"
               onClick={() => {
                 window.history.pushState({}, '', '/');
                 setViewMode('landing');
@@ -488,6 +489,7 @@ const App: React.FC = () => {
                     </span>
                     <div className="login-demo-list">
                       <button
+                        type="button"
                         onClick={() => handlePresetLogin('kwame')}
                         disabled={isLoggingIn}
                         className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
@@ -495,6 +497,7 @@ const App: React.FC = () => {
                         Agent — Kwame Centre
                       </button>
                       <button
+                        type="button"
                         onClick={() => handlePresetLogin('forms')}
                         disabled={isLoggingIn}
                         className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
@@ -502,6 +505,7 @@ const App: React.FC = () => {
                         Financial Institution — Forms Capital
                       </button>
                       <button
+                        type="button"
                         onClick={() => handlePresetLogin('admin')}
                         disabled={isLoggingIn}
                         className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
@@ -559,6 +563,7 @@ const App: React.FC = () => {
 
               <div className="flex flex-col gap-2 pt-2">
                 <button
+                  type="button"
                   onClick={async () => {
                     setNetworkErrorMsg(null);
                     if (lastAttemptParams) {
@@ -594,6 +599,7 @@ const App: React.FC = () => {
                 </button>
                 
                 <button
+                  type="button"
                   onClick={async () => {
                     setNetworkErrorMsg(null);
                     ApiService.setDemoMode(true);
