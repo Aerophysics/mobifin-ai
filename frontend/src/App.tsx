@@ -117,6 +117,9 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!usernameInput || !passwordInput) return;
     
+    // Explicitly disable local demo mode for real manual login attempts
+    ApiService.setDemoMode(false);
+    
     setIsLoggingIn(true);
     setLoginError(null);
     try {
@@ -146,45 +149,116 @@ const App: React.FC = () => {
   };
 
   const handlePresetLogin = async (userPreset: 'kwame' | 'forms' | 'admin') => {
-    let u = 'kwame';
-    let p = 'kwame123';
-    if (userPreset === 'forms') {
-      u = 'forms_capital';
-      p = 'forms123';
-    } else if (userPreset === 'admin') {
-      u = 'admin';
-      p = 'admin123';
-    }
-
     setIsLoggingIn(true);
     setLoginError(null);
-    try {
-      await ApiService.login(u, p);
-      const user = ApiService.getCurrentUser();
-      setCurrentUser(user);
-      
-      if (user) {
-        if (user.role === 'AGENT') {
-          setActivePage('dashboard');
-        } else if (user.role === 'FINANCIAL_INSTITUTION') {
-          setActivePage('dashboard');
-        } else {
-          setActivePage('admin-dashboard');
-        }
-      }
-    } catch (err: any) {
-      if (err.message && (err.message.includes('connect') || err.message.includes('reach') || err.message.includes('failed') || err.message.includes('Failed') || err.message.includes('Load failed'))) {
-        setNetworkErrorMsg(err.message);
-        setLastAttemptParams({ type: 'preset', preset: userPreset });
-      } else {
-        setLoginError(err.message || 'Login failed. Seed database first.');
-      }
-    } finally {
-      setIsLoggingIn(false);
+
+    // 1. Instantly toggle client-side Demo Mode
+    ApiService.setDemoMode(true);
+
+    let role = 'AGENT';
+    let username = 'kwame';
+    let agent_id = '1';
+
+    if (userPreset === 'forms') {
+      role = 'FINANCIAL_INSTITUTION';
+      username = 'forms_capital';
+      agent_id = '';
+    } else if (userPreset === 'admin') {
+      role = 'ADMIN';
+      username = 'admin';
+      agent_id = '';
     }
+
+    // 2. Initialize local storage registers
+    localStorage.setItem('mobifin_token', `demo_token_${userPreset}`);
+    localStorage.setItem('mobifin_role', role);
+    localStorage.setItem('mobifin_username', username);
+    if (agent_id) {
+      localStorage.setItem('mobifin_agent_id', agent_id);
+    } else {
+      localStorage.removeItem('mobifin_agent_id');
+    }
+
+    // 3. Pre-seed offline referrals list if it does not exist
+    let referrals = JSON.parse(localStorage.getItem('mobifin_demo_referrals') || '[]');
+    if (referrals.length === 0) {
+      referrals = [
+        {
+          referral_id: 101,
+          agent_id: 1,
+          customer_id: 1048,
+          institution_id: 60,
+          requested_amount: 5000.0,
+          purpose: "Shop inventory restock",
+          status: "CONSENT_REQUESTED",
+          consent_status: "AWAITING_CONSENT",
+          created_at: new Date().toISOString(),
+          consent_requested_at: new Date().toISOString(),
+          application_status: "PENDING",
+          customer_name: "Customer #1048",
+          agent_name: "Kwame's Mobile Money Centre"
+        }
+      ];
+      localStorage.setItem('mobifin_demo_referrals', JSON.stringify(referrals));
+    }
+
+    // 4. Update session profile and redirect instantly
+    const user = ApiService.getCurrentUser();
+    setCurrentUser(user);
+    
+    if (user) {
+      if (user.role === 'AGENT') {
+        setActivePage('dashboard');
+      } else if (user.role === 'FINANCIAL_INSTITUTION') {
+        setActivePage('dashboard');
+      } else {
+        setActivePage('admin-dashboard');
+      }
+    }
+    
+    setIsLoggingIn(false);
   };
 
   const handleRoleSwitch = async (role: 'AGENT' | 'FINANCIAL_INSTITUTION' | 'ADMIN') => {
+    // If in demo mode, execute role switch locally in 0ms without hitting APIs
+    if (ApiService.isDemoMode()) {
+      let username = 'admin';
+      let agent_id = '';
+      let preset = 'admin';
+
+      if (role === 'AGENT') {
+        username = 'kwame';
+        agent_id = '1';
+        preset = 'kwame';
+      } else if (role === 'FINANCIAL_INSTITUTION') {
+        username = 'forms_capital';
+        agent_id = '';
+        preset = 'forms';
+      }
+
+      localStorage.setItem('mobifin_token', `demo_token_${preset}`);
+      localStorage.setItem('mobifin_role', role);
+      localStorage.setItem('mobifin_username', username);
+      if (agent_id) {
+        localStorage.setItem('mobifin_agent_id', agent_id);
+      } else {
+        localStorage.removeItem('mobifin_agent_id');
+      }
+
+      const profile = ApiService.getCurrentUser();
+      setCurrentUser(profile);
+
+      if (role === 'AGENT') {
+        setActivePage('dashboard');
+      } else if (role === 'FINANCIAL_INSTITUTION') {
+        setActivePage('dashboard');
+      } else {
+        setActivePage('admin-dashboard');
+      }
+      return;
+    }
+
+    // Online Mode role switcher (calls real backend api for authentication)
     let username = 'admin';
     let password = 'admin123';
     
