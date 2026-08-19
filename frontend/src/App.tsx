@@ -76,6 +76,34 @@ const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<'landing' | 'login' | 'onboarding'>('landing');
   const [networkErrorMsg, setNetworkErrorMsg] = useState<string | null>(null);
   const [lastAttemptParams, setLastAttemptParams] = useState<any | null>(null);
+  const [runtimeError, setRuntimeError] = useState<{ message: string; stack?: string; filename?: string; lineno?: number } | null>(null);
+
+  // Catch any unhandled runtime exceptions or promise rejections globally
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      setRuntimeError({
+        message: event.message,
+        stack: event.error?.stack,
+        filename: event.filename,
+        lineno: event.lineno
+      });
+    };
+
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      setRuntimeError({
+        message: event.reason?.message || String(event.reason),
+        stack: event.reason?.stack
+      });
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, []);
 
   // Unify history routing popstate and initial mounting checks
   useEffect(() => {
@@ -596,7 +624,52 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      {renderAuthOrDashboard()}
+      {runtimeError ? (
+        <div className="w-full min-h-screen bg-slate-950 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-slate-900 border border-red-500/30 p-6 rounded-2xl font-sans text-slate-100 shadow-2xl space-y-4">
+            <div className="flex items-center space-x-2.5 text-red-500 font-bold">
+              <span className="text-xl">⚠</span>
+              <span>MobiFin AI — Runtime Diagnostics Panel</span>
+            </div>
+            <div className="bg-red-950/40 p-4 rounded-xl border border-red-900/30 space-y-3">
+              <div>
+                <span className="text-[10px] text-red-400 font-bold uppercase block">Error Message</span>
+                <p className="text-xs text-white font-semibold">{runtimeError.message}</p>
+              </div>
+              {runtimeError.filename && (
+                <div>
+                  <span className="text-[10px] text-red-400 font-bold uppercase block">File & Line</span>
+                  <p className="text-xs text-white font-mono">{runtimeError.filename}:{runtimeError.lineno}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-[10px] text-red-400 font-bold uppercase block">Current URL Path</span>
+                <p className="text-xs text-white font-mono">{window.location.pathname}</p>
+              </div>
+              {runtimeError.stack && (
+                <div>
+                  <span className="text-[10px] text-red-400 font-bold uppercase block">Stack Trace</span>
+                  <pre className="text-[10px] text-slate-350 overflow-x-auto whitespace-pre-wrap font-mono max-h-60 mt-1 bg-black/40 p-2 rounded">
+                    {runtimeError.stack}
+                  </pre>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRuntimeError(null);
+                  window.location.href = '/';
+                }}
+                className="bg-slate-800 hover:bg-slate-700 border-none text-white rounded-lg px-4 py-2 font-bold text-xs cursor-pointer transition-colors"
+              >
+                Reset Session
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : renderAuthOrDashboard()}
       
       {networkErrorMsg && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
