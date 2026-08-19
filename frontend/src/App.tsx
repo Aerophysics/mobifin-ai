@@ -27,6 +27,7 @@ import Grainient from './components/Grainient';
 // @ts-ignore
 import BorderGlow from './components/BorderGlow';
 import LandingPage from './pages/LandingPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 
 
@@ -60,7 +61,9 @@ const PAGE_PERMISSIONS: Record<string, string[]> = {
   'demo-mgmt': ['ADMIN'],
   settings: ['AGENT', 'FINANCIAL_INSTITUTION', 'ADMIN'],
   'ai-insights': ['AGENT'],
-  'add-business': ['AGENT', 'ADMIN']
+  'add-business': ['AGENT', 'ADMIN'],
+  'trusted-sources': ['AGENT'],
+  referrals: ['AGENT', 'FINANCIAL_INSTITUTION']
 };
 
 const App: React.FC = () => {
@@ -582,7 +585,9 @@ const App: React.FC = () => {
           setCurrentUser={setCurrentUser}
           handleRoleSwitch={handleRoleSwitch}
         >
-          {renderPage()}
+          <ErrorBoundary>
+            {renderPage()}
+          </ErrorBoundary>
         </DashboardLayout>
         <UssdSimulator handleRoleSwitch={handleRoleSwitch} />
       </>
@@ -590,7 +595,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
+    <ErrorBoundary>
       {renderAuthOrDashboard()}
       
       {networkErrorMsg && (
@@ -673,7 +678,7 @@ const App: React.FC = () => {
           </BorderGlow>
         </div>
       )}
-    </>
+    </ErrorBoundary>
   );
 };
 

@@ -135,8 +135,20 @@ class ApiService {
     // Health
     if (cleanUrl === '/analytics/health') {
       return {
+        agent_id: 1,
         business_health_score: 87,
-        status: "stable"
+        metrics: {
+          commission_consistency: 92,
+          volume_growth: 15,
+          liquidity_stability: 85,
+          anomaly_penalty: 0,
+          recent_volume: 45000.0,
+          recent_commission: 675.0
+        },
+        insights: [
+          "Strong float turnaround ratio observed over past 30 days.",
+          "Reconciliations match baseline agent logs with zero discrepancies."
+        ]
       } as any;
     }
 
@@ -166,12 +178,17 @@ class ApiService {
     if (cleanUrl === '/ledger/daily') {
       return {
         date: params.get('date_str') || new Date().toISOString().split('T')[0],
-        starting_cash: 5000.0,
-        starting_float: 7000.0,
-        ending_cash: 4850.0,
-        ending_float: 7200.0,
-        total_volume: 18450.0,
-        reconciliation_status: "MATCHED"
+        opening_cash: 5000.0,
+        opening_float: 7000.0,
+        cash_in: 12000.0,
+        cash_out: 12200.0,
+        commission: 50.0,
+        closing_cash: 4850.0,
+        closing_float: 7200.0,
+        float_in: 5000.0,
+        float_out: 4800.0,
+        reconciliation_status: "Balanced",
+        transactions_count: 24
       } as any;
     }
 
@@ -415,14 +432,82 @@ class ApiService {
     // Models performance
     if (cleanUrl === '/models/performance') {
       return {
-        roc_auc: 0.925,
-        f1_score: 0.887,
-        mae: 180.4,
-        rmse: 245.2,
-        contamination: 0.02
+        credit_model: {
+          name: "Alternative Credit XGBoost Underwriter",
+          version: "v2.1.4",
+          metrics: {
+            roc_auc: 0.925,
+            f1_score: 0.887,
+            precision: 0.892,
+            recall: 0.882
+          }
+        },
+        demand_model: {
+          name: "XGBoost Float Demand Predictor",
+          version: "v1.2.0",
+          metrics: {
+            mae: 180.4,
+            rmse: 245.2,
+            baseline_mae: 220.5
+          }
+        },
+        anomaly_model: {
+          name: "Isolation Forest Transaction Auditor",
+          version: "v0.9.1",
+          metrics: {
+            contamination: 0.02,
+            precision: 0.950,
+            recall: 0.910
+          }
+        }
       } as any;
     }
     
+    // Onboarding businesses
+    if (cleanUrl === '/onboarding/businesses') {
+      return [
+        {
+          agent_id: 1,
+          business_name: "Kwame's Mobile Money Centre",
+          owner_name: "Kwame Centre",
+          phone: "0541234567",
+          location: "Greater Accra",
+          city: "Accra",
+          specific_location: "Central Market",
+          business_age: 12,
+          operating_hours: "08:00 - 18:00"
+        }
+      ] as any;
+    }
+
+    // Trusted Liquidity Sources
+    if (cleanUrl === '/trusted-sources') {
+      return [
+        {
+          source_id: 1,
+          user_id: 1,
+          agent_id: 1,
+          name: "Kofi Super Agent",
+          phone: "0244112233",
+          location: "Accra Central",
+          type: "Super Agent",
+          notes: "Primary liquidity partner",
+          status: "Active"
+        },
+        {
+          source_id: 2,
+          user_id: 1,
+          agent_id: 1,
+          name: "Ama Financial Services",
+          phone: "0209988776",
+          location: "Accra Plaza",
+          type: "Financial Institution",
+          notes: "Secondary emergency float channel",
+          status: "Active"
+        }
+      ] as any;
+    }
+
     // Seed
     if (cleanUrl === '/demo/seed') {
       localStorage.removeItem('mobifin_demo_referrals');
