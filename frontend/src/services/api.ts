@@ -508,9 +508,145 @@ class ApiService {
       ] as any;
     }
 
+    // Financial Services Products
+    if (cleanUrl === '/financial-services/products') {
+      return [
+        {
+          product_name: "Working Capital Facility",
+          description: "Flexible credit line to replenish e-float or support short-term business operations.",
+          range: "GH₵1,000 - GH₵10,000",
+          eligibility: "Consented, score 650+"
+        },
+        {
+          product_name: "Agent Liquidity Facility",
+          description: "Specialized cash/float matching advance to cover peak demand stockouts.",
+          range: "GH₵2,000 - GH₵15,000",
+          eligibility: "Consented, score 700+"
+        },
+        {
+          product_name: "Micro Business Loan",
+          description: "Term loan for small business expansion and equipment financing.",
+          range: "GH₵5,000 - GH₵25,000",
+          eligibility: "Consented, score 600+"
+        }
+      ] as any;
+    }
+
+    // Financing Requests GET & POST
+    let financingReqs = JSON.parse(localStorage.getItem('mobifin_demo_financing_requests') || '[]');
+    if (financingReqs.length === 0) {
+      financingReqs = [
+        {
+          request_id: 1,
+          customer_id: 1048,
+          customer_name: "Customer #1048",
+          product_name: "Micro-Retail Business Capital",
+          requested_amount: 5000.0,
+          requested_term: 30,
+          purpose: "Restocking center inventories and retail supplies",
+          status: "PENDING_INSTITUTIONAL_REVIEW",
+          created_at: new Date().toISOString()
+        }
+      ];
+      localStorage.setItem('mobifin_demo_financing_requests', JSON.stringify(financingReqs));
+    }
+
+    if (cleanUrl === '/financing/requests') {
+      return financingReqs as any;
+    }
+
+    if (cleanUrl === '/financing/request') {
+      if (options.method === 'POST') {
+        const body = JSON.parse(options.body as string || '{}');
+        const newReq = {
+          request_id: Date.now(),
+          customer_id: body.customer_id || 1048,
+          customer_name: body.customer_id === 1048 ? "Customer #1048" : "New Customer",
+          product_name: body.product_name || "Business Loan",
+          requested_amount: body.requested_amount || 5000.0,
+          requested_term: body.requested_term || 30,
+          purpose: body.purpose || "Business growth",
+          status: "PENDING_INSTITUTIONAL_REVIEW",
+          created_at: new Date().toISOString()
+        };
+        financingReqs.push(newReq);
+        localStorage.setItem('mobifin_demo_financing_requests', JSON.stringify(financingReqs));
+        return newReq as any;
+      }
+    }
+
+    // Credit assessment
+    if (cleanUrl.startsWith('/credit/assessment/')) {
+      const parts = cleanUrl.split('/');
+      const customerId = parseInt(parts[3] || '0');
+      
+      const refs = JSON.parse(localStorage.getItem('mobifin_demo_referrals') || '[]');
+      const ref = refs.find((r: any) => r.customer_id === customerId);
+      const isConsented = ref ? ref.consent_status === 'CONSENT_ACTIVE' : false;
+
+      if (isConsented && customerId === 1048) {
+        return {
+          eligible: true,
+          consent_active: true,
+          history_days: 95,
+          transaction_count: 35,
+          financial_readiness_score: 94,
+          credit_score: 764,
+          repayment_probability: 0.91,
+          default_probability: 0.09,
+          risk_category: "Low Risk",
+          indicative_credit_capacity: 7500.0,
+          factors: [
+            { feature: "Savings Behavior Score", value: 0.35 },
+            { feature: "Inflow Outflow Ratio", value: 0.25 },
+            { feature: "Cashflow Volatility", value: -0.15 }
+          ],
+          model_version: "v2.1.4",
+          reason: "Consistent inflows and low volatility",
+          profile: {
+            display_name: "Customer #1048",
+            phone: "0541234567",
+            location: "Accra Central",
+            type: "retail",
+            monthly_inflows: 8500.0,
+            monthly_outflows: 6500.0,
+            savings_ratio: 0.23,
+            volatility: 0.12
+          }
+        } as any;
+      } else {
+        return {
+          eligible: false,
+          consent_active: isConsented,
+          history_days: 45,
+          transaction_count: 18,
+          financial_readiness_score: 55,
+          credit_score: null,
+          repayment_probability: null,
+          default_probability: null,
+          risk_category: null,
+          indicative_credit_capacity: null,
+          factors: null,
+          model_version: "v2.1.4",
+          reason: isConsented ? "Insufficient history (less than 90 days of transactions)" : "Consent is not active",
+          profile: {
+            display_name: ref ? ref.customer_name : "Customer",
+            phone: ref ? ref.phone || "0540000000" : "0540000000",
+            location: "Accra",
+            type: "retail",
+            monthly_inflows: 2500.0,
+            monthly_outflows: 2400.0,
+            savings_ratio: 0.04,
+            volatility: 0.45
+          }
+        } as any;
+      }
+    }
+
     // Seed
     if (cleanUrl === '/demo/seed') {
       localStorage.removeItem('mobifin_demo_referrals');
+      localStorage.removeItem('mobifin_demo_financing_requests');
       return { message: "Demo data reset successfully." } as any;
     }
 
