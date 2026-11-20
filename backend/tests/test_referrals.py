@@ -48,7 +48,7 @@ def test_complete_credit_referrals_workflow(db_session):
     assert "consent is required" in exc_info.value.detail
 
     # 3. Simulate Customer declining consent
-    ussd_respond(ref["referral_id"], selection=2, db=db_session)
+    ussd_respond(ref["referral_id"], selection=2, caller=agent_user, db=db_session)
     ref_db = db_session.query(Referral).filter(Referral.referral_id == ref["referral_id"]).first()
     assert ref_db.consent_status == "CONSENT_DECLINED"
     assert ref_db.status == "CONSENT_DECLINED"
@@ -64,7 +64,7 @@ def test_complete_credit_referrals_workflow(db_session):
     db_session.commit()
 
     # 4. Simulate Customer granting consent via USSD
-    ussd_respond(ref["referral_id"], selection=1, db=db_session)
+    ussd_respond(ref["referral_id"], selection=1, caller=agent_user, db=db_session)
     db_session.refresh(ref_db)
     assert ref_db.consent_status == "CONSENT_ACTIVE"
     assert ref_db.status == "CONSENT_GRANTED"
@@ -111,7 +111,7 @@ def test_complete_credit_referrals_workflow(db_session):
     assert profile_check["assessment"]["credit_score"] == profile_ready["assessment"]["credit_score"]
 
     # 6. Customer revokes consent via USSD
-    ussd_revoke(ref["referral_id"], db=db_session)
+    ussd_revoke(ref["referral_id"], caller=agent_user, db=db_session)
     db_session.refresh(ref_db)
     assert ref_db.consent_status == "CONSENT_REVOKED"
     assert ref_db.status == "CANCELLED"

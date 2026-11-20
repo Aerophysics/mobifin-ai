@@ -222,12 +222,6 @@ def get_daily_ledger(
     start_dt = datetime.combine(query_date, datetime.min.time())
     end_dt = datetime.combine(query_date, datetime.max.time())
     
-    txs = db.query(Transaction).filter(
-        Transaction.agent_id == target_agent_id,
-        Transaction.timestamp >= start_dt,
-        Transaction.timestamp <= end_dt
-    ).order_index = Transaction.timestamp.asc()
-    
     tx_list = db.query(Transaction).filter(
         Transaction.agent_id == target_agent_id,
         Transaction.timestamp >= start_dt,
@@ -443,7 +437,10 @@ def list_notifications(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target_agent_id = current_user.agent_id or 1  # Kwame for demo users without linked agents
+    # Notifications are agent-branch alerts; users without a linked branch have none.
+    target_agent_id = current_user.agent_id
+    if not target_agent_id:
+        return []
     
     # Generate dynamic notifications for demo if they are missing
     check_and_generate_demo_alerts(target_agent_id, db)
@@ -460,7 +457,9 @@ def mark_notification_as_read(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target_agent_id = current_user.agent_id or 1
+    target_agent_id = current_user.agent_id
+    if not target_agent_id:
+        raise HTTPException(status_code=404, detail="Notification not found.")
     notif = db.query(Notification).filter(
         Notification.notification_id == notification_id,
         Notification.agent_id == target_agent_id

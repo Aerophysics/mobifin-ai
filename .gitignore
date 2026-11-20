@@ -22,3 +22,7 @@ frontend/dist/
 .vscode/
 .idea/
 *.log
+
+# Locally generated JWT signing secret
+backend/.jwt_secret
+.jwt_secret

@@ -1,4 +1,6 @@
 import os
+import logging
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,13 +14,40 @@ from backend.app.schemas.schemas import Token, UserLogin
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+logger = logging.getLogger("mobifin.auth")
+
+_SECRET_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".jwt_secret")
+
+
+def _load_jwt_secret() -> str:
+    """
+    Resolve the JWT signing secret.
+    Prefers the JWT_SECRET env var. Without it, a random per-install secret is generated
+    once and persisted to backend/.jwt_secret (gitignored), so no well-known default key
+    can ever be used to forge tokens, while tokens still survive dev reloads/restarts.
+    """
+    env_secret = os.getenv("JWT_SECRET")
+    if env_secret:
+        return env_secret
+    try:
+        fd = os.open(_SECRET_FILE, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(secrets.token_urlsafe(48))
+        logger.warning("JWT_SECRET not set; generated a local signing secret at %s. Set JWT_SECRET in production.", _SECRET_FILE)
+    except FileExistsError:
+        pass
+    with open(_SECRET_FILE) as f:
+        return f.read().strip()
+
+
 # JWT Configuration
-JWT_SECRET = os.getenv("JWT_SECRET", "supersecretjwtsecretkeyshouldbechangedinproduction123!")
+JWT_SECRET = _load_jwt_secret()
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login-oauth")
+optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login-oauth", auto_error=False)
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -55,6 +84,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     return user
+
+def get_optional_user(token: Optional[str] = Depends(optional_oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
+    """Returns the authenticated user, or None when no bearer token was supplied."""
+    if not token:
+        return None
+    return get_current_user(token=token, db=db)
 
 # Helper to enforce roles
 class RoleChecker:

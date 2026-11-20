@@ -11,6 +11,7 @@ import { GlassBadge } from '../components/glass/GlassBadge';
 
 export const Referrals: React.FC = () => {
   const [referrals, setReferrals] = useState<any[]>([]);
+  const [institutions, setInstitutions] = useState<{ user_id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
   // Modal / Form state
@@ -20,7 +21,7 @@ export const Referrals: React.FC = () => {
     name: '',
     requested_amount: '',
     purpose: '',
-    institution_id: 2 // default/mock Forms Capital user id
+    institution_id: 0
   });
   
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -28,7 +29,18 @@ export const Referrals: React.FC = () => {
 
   useEffect(() => {
     fetchReferrals();
+    fetchInstitutions();
   }, []);
+
+  const fetchInstitutions = async () => {
+    try {
+      const res = await ApiService.getInstitutions();
+      setInstitutions(res);
+      setFormData(prev => prev.institution_id ? prev : { ...prev, institution_id: res[0]?.user_id ?? 0 });
+    } catch (e) {
+      console.error('Failed to load lending institutions', e);
+    }
+  };
 
   const fetchReferrals = async () => {
     setIsLoading(true);
@@ -48,7 +60,7 @@ export const Referrals: React.FC = () => {
       name: '',
       requested_amount: '',
       purpose: '',
-      institution_id: 2 // Forms Capital
+      institution_id: institutions[0]?.user_id ?? 0
     });
     setErrorMsg(null);
     setIsOpen(true);
@@ -69,6 +81,10 @@ export const Referrals: React.FC = () => {
     const amt = parseFloat(formData.requested_amount);
     if (isNaN(amt) || amt <= 0) {
       setErrorMsg('Please enter a valid requested loan amount.');
+      return;
+    }
+    if (!formData.institution_id) {
+      setErrorMsg('Please select a lending institution.');
       return;
     }
 
@@ -275,7 +291,12 @@ export const Referrals: React.FC = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, institution_id: parseInt(e.target.value) }))}
                   className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
                 >
-                  <option value={2} className="bg-slate-900 text-white">Forms Capital</option>
+                  {institutions.length === 0 && (
+                    <option value={0} className="bg-slate-900 text-white">No partner institutions available</option>
+                  )}
+                  {institutions.map(inst => (
+                    <option key={inst.user_id} value={inst.user_id} className="bg-slate-900 text-white">{inst.name}</option>
+                  ))}
                 </select>
               </div>
 

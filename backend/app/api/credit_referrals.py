@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+import re
+import secrets
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Set
 from backend.app.database.connection import get_db
 from backend.app.models.db_models import Agent, User, Transaction, Customer, Referral, Loan
-from backend.app.api.auth import get_current_user, RoleChecker
+from backend.app.api.auth import get_current_user, get_optional_user, RoleChecker
 from backend.app.schemas.schemas import ReferralCreate, ReferralResponse, ConsentResponseRequest
 from backend.app.ml.inference import MLInference
 
@@ -12,6 +15,36 @@ router = APIRouter(prefix="", tags=["Customer Credit Referrals"])
 
 agent_only = RoleChecker(["AGENT", "ADMIN"])
 institution_only = RoleChecker(["FINANCIAL_INSTITUTION", "ADMIN"])
+
+LENDING_DECISIONS = {"APPROVED", "REJECTED", "UNDER_REVIEW", "MANUAL_REVIEW"}
+
+# Matches "1048", "#1048", "Customer 1048", "Customer #1048"
+_CUSTOMER_ID_PATTERN = re.compile(r"(?:customer\s*)?#?\s*(\d+)", re.IGNORECASE)
+
+
+def _owned_agent_ids(user: User, db: Session) -> Set[int]:
+    """All agent branch IDs the user operates (active branch plus owned locations)."""
+    ids = {a.agent_id for a in db.query(Agent.agent_id).filter(Agent.owner_id == user.user_id).all()}
+    if user.agent_id:
+        ids.add(user.agent_id)
+    return ids
+
+
+@router.get("/institutions")
+def list_institutions(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Lists partner financial institutions that can receive customer referrals."""
+    institutions = db.query(User).filter(User.role == "FINANCIAL_INSTITUTION").order_by(User.user_id).all()
+    return [
+        {
+            "user_id": u.user_id,
+            "name": u.full_name or u.username.replace("_", " ").title()
+        }
+        for u in institutions
+    ]
+
 
 @router.post("/referrals", response_model=ReferralResponse)
 def create_referral(
@@ -25,10 +58,20 @@ def create_referral(
     if not current_user.agent_id:
         raise HTTPException(status_code=400, detail="User is not associated with any agent branch.")
         
-    # Find or create guest Customer by phone
-    if "1048" in req.name:
-        customer = db.query(Customer).filter(Customer.customer_id == 1048).first()
-    else:
+    institution = db.query(User).filter(
+        User.user_id == req.institution_id,
+        User.role == "FINANCIAL_INSTITUTION"
+    ).first()
+    if not institution:
+        raise HTTPException(status_code=400, detail="Selected lending institution does not exist.")
+
+    # Resolve an existing customer by ID reference ("Customer #1048") or exact display name,
+    # otherwise create a guest customer profile.
+    customer = None
+    id_match = _CUSTOMER_ID_PATTERN.fullmatch(req.name.strip())
+    if id_match:
+        customer = db.query(Customer).filter(Customer.customer_id == int(id_match.group(1))).first()
+    if not customer:
         customer = db.query(Customer).filter(Customer.display_name == req.name).first()
     if not customer:
         customer = Customer(
@@ -199,6 +242,13 @@ def post_lending_decision(
     """
     Financial Institution registers the final loan underwriting decision.
     """
+    decision = (decision or "").upper()
+    if decision not in LENDING_DECISIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid decision. Must be one of: {', '.join(sorted(LENDING_DECISIONS))}."
+        )
+
     ref = db.query(Referral).filter(Referral.referral_id == referral_id).first()
     if not ref:
         raise HTTPException(status_code=404, detail="Referral request not found.")
@@ -218,17 +268,70 @@ def post_lending_decision(
     return ref
 
 # --- DEMO USSD SIMULATION ENDPOINTS ---
+#
+# These simulate the customer's handset responding to a USSD consent prompt.
+# Access rules:
+#   * A real USSD/SMS gateway authenticates with the X-USSD-Gateway-Key header
+#     (matched against the USSD_GATEWAY_KEY env var) and may act on any referral.
+#   * Otherwise a logged-in AGENT may drive the on-screen simulator only for referrals
+#     raised by their own branches; ADMIN may act on any referral.
+#   * Financial institutions can never grant consent on a customer's behalf.
+#
+# Referral consent is scoped to that single referral/institution. It deliberately does
+# not modify the customer's global profiling opt-in (Customer.consent_status).
+
+USSD_GATEWAY = "USSD_GATEWAY"
+
+
+def ussd_caller(
+    x_ussd_gateway_key: Optional[str] = Header(None),
+    current_user: Optional[User] = Depends(get_optional_user)
+):
+    gateway_key = os.getenv("USSD_GATEWAY_KEY")
+    if gateway_key and x_ussd_gateway_key and secrets.compare_digest(x_ussd_gateway_key, gateway_key):
+        return USSD_GATEWAY
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if current_user.role not in ("AGENT", "ADMIN"):
+        raise HTTPException(status_code=403, detail="Only the customer's USSD session can respond to consent requests.")
+    return current_user
+
+
+def _ussd_agent_scope(caller, db: Session) -> Optional[Set[int]]:
+    """None means unrestricted (gateway / admin); otherwise the caller's agent branch IDs."""
+    if caller == USSD_GATEWAY or caller.role == "ADMIN":
+        return None
+    return _owned_agent_ids(caller, db)
+
+
+def _get_ussd_referral(referral_id: int, caller, db: Session) -> Referral:
+    ref = db.query(Referral).filter(Referral.referral_id == referral_id).first()
+    scope = _ussd_agent_scope(caller, db)
+    if not ref or (scope is not None and ref.agent_id not in scope):
+        raise HTTPException(status_code=404, detail="Referral not found.")
+    return ref
+
 
 @router.get("/ussd/pending-requests")
 def ussd_list_pending(
+    caller = Depends(ussd_caller),
     db: Session = Depends(get_db)
 ):
     """
     Simulated USSD Gateway listing active pending consent requests.
     """
-    refs = db.query(Referral).filter(Referral.consent_status == "AWAITING_CONSENT").all()
+    query = db.query(Referral).filter(Referral.consent_status == "AWAITING_CONSENT")
+    scope = _ussd_agent_scope(caller, db)
+    if scope is not None:
+        if not scope:
+            return []
+        query = query.filter(Referral.agent_id.in_(scope))
     results = []
-    for r in refs:
+    for r in query.all():
         cust = db.query(Customer).filter(Customer.customer_id == r.customer_id).first()
         results.append({
             "referral_id": r.referral_id,
@@ -241,54 +344,47 @@ def ussd_list_pending(
 def ussd_respond(
     referral_id: int,
     selection: int,  # 1 = Approve, 2 = Decline
+    caller = Depends(ussd_caller),
     db: Session = Depends(get_db)
 ):
     """
     Simulated customer response via USSD.
     """
-    ref = db.query(Referral).filter(Referral.referral_id == referral_id).first()
-    if not ref:
-        raise HTTPException(status_code=404, detail="Referral not found.")
-        
-    cust = db.query(Customer).filter(Customer.customer_id == ref.customer_id).first()
+    if selection not in (1, 2):
+        raise HTTPException(status_code=400, detail="Invalid selection. Reply 1 to approve or 2 to decline.")
+
+    ref = _get_ussd_referral(referral_id, caller, db)
+    if ref.consent_status != "AWAITING_CONSENT":
+        raise HTTPException(status_code=409, detail="This consent request is no longer awaiting a response.")
     
+    now = datetime.utcnow()
+    ref.consent_responded_at = now
     if selection == 1:
         ref.consent_status = "CONSENT_ACTIVE"
         ref.status = "CONSENT_GRANTED"
-        ref.consent_responded_at = datetime.utcnow()
-        ref.consent_expiry = datetime.utcnow() + timedelta(days=90)
-        if cust:
-            cust.consent_status = True
-            cust.consent_timestamp = datetime.utcnow()
+        ref.consent_expiry = now + timedelta(days=90)
         db.commit()
         return {"message": "Consent granted successfully.", "status": "active"}
-    else:
-        ref.consent_status = "CONSENT_DECLINED"
-        ref.status = "CONSENT_DECLINED"
-        ref.consent_responded_at = datetime.utcnow()
-        if cust:
-            cust.consent_status = False
-        db.commit()
-        return {"message": "Consent declined.", "status": "declined"}
+
+    ref.consent_status = "CONSENT_DECLINED"
+    ref.status = "CONSENT_DECLINED"
+    db.commit()
+    return {"message": "Consent declined.", "status": "declined"}
 
 @router.post("/ussd/consent-revoke")
 def ussd_revoke(
     referral_id: int,
+    caller = Depends(ussd_caller),
     db: Session = Depends(get_db)
 ):
     """
     Simulated customer revoking consent via USSD interface.
     """
-    ref = db.query(Referral).filter(Referral.referral_id == referral_id).first()
-    if not ref:
-        raise HTTPException(status_code=404, detail="Referral not found.")
-        
-    cust = db.query(Customer).filter(Customer.customer_id == ref.customer_id).first()
+    ref = _get_ussd_referral(referral_id, caller, db)
+    if ref.consent_status not in ("CONSENT_ACTIVE", "AWAITING_CONSENT"):
+        raise HTTPException(status_code=409, detail="There is no active consent to revoke for this referral.")
     
     ref.consent_status = "CONSENT_REVOKED"
     ref.status = "CANCELLED"
-    if cust:
-        cust.consent_status = False
-        
     db.commit()
     return {"message": "Consent revoked successfully.", "status": "revoked"}

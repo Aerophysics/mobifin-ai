@@ -645,6 +645,11 @@ class ApiService {
       }
     }
 
+    // Partner lending institutions
+    if (cleanUrl === '/institutions') {
+      return [{ user_id: 60, name: 'Forms Capital' }] as any;
+    }
+
     // Seed
     if (cleanUrl === '/demo/seed') {
       localStorage.removeItem('mobifin_demo_referrals');
@@ -952,6 +957,10 @@ class ApiService {
     return this.request<any>(`/institution/referral/${id}/decision?decision=${decision}`, {
       method: 'POST',
     });
+  }
+
+  static async getInstitutions(): Promise<{ user_id: number; name: string }[]> {
+    return this.request<{ user_id: number; name: string }[]>('/institutions');
   }
 
   static async ussdGetPendingRequests(): Promise<any[]> {

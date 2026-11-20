@@ -12,6 +12,8 @@ const ConsentFlow: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerProfile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
+  // Consent is recorded by the customer's agent or an admin; lenders get a read-only view
+  const canManageConsent = ApiService.getCurrentUser()?.role !== 'FINANCIAL_INSTITUTION';
 
   useEffect(() => {
     fetchCustomers();
@@ -74,7 +76,11 @@ const ConsentFlow: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Customer Consent Directory</h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">Verify or update customer profiling consent statuses</p>
+            <p className="text-[10px] text-[var(--mf-text-secondary)]">
+              {canManageConsent
+                ? 'Verify or update customer profiling consent statuses'
+                : 'Read-only: consent is recorded by the customer through their agent'}
+            </p>
           </div>
           <div className="relative w-full md:w-64">
             <input
@@ -113,6 +119,7 @@ const ConsentFlow: React.FC = () => {
                   {c.consent_timestamp ? new Date(c.consent_timestamp).toLocaleString() : '—'}
                 </td>
                 <td className="py-3 px-2 text-right">
+                  {canManageConsent ? (
                   <GlassButton
                     onClick={() => handleToggleConsent(c.customer_id, c.consent_status)}
                     className="text-[9px] font-extrabold uppercase py-1.5 px-3 tracking-wider"
@@ -120,6 +127,9 @@ const ConsentFlow: React.FC = () => {
                   >
                     {c.consent_status ? 'Revoke Consent' : 'Grant Consent'}
                   </GlassButton>
+                  ) : (
+                    <span className="text-[10px] text-[var(--mf-text-secondary)]">—</span>
+                  )}
                 </td>
               </tr>
             ))}
