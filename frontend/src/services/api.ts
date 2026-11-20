@@ -470,6 +470,7 @@ class ApiService {
       return [
         {
           agent_id: 1,
+          name: "Kwame's Mobile Money Centre",
           business_name: "Kwame's Mobile Money Centre",
           owner_name: "Kwame Centre",
           phone: "0541234567",

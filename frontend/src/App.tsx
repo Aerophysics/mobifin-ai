@@ -202,7 +202,7 @@ const App: React.FC = () => {
       const sessionUser = ApiService.getCurrentUser();
       if (!sessionUser) {
         const path = window.location.pathname;
-        if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard' || path === '/login') {
+        if (path === '/agent/dashboard' || path === '/institution/dashboard' || path === '/admin/dashboard') {
           window.history.pushState({}, '', '/');
           setViewMode('landing');
         }

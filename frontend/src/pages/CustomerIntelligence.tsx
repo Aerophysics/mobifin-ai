@@ -436,8 +436,8 @@ export const CustomerIntelligence: React.FC = () => {
                       {assessment.credit_score} <span className="text-xs text-[var(--mf-text-secondary)] font-medium">/ 850</span>
                     </span>
                     <span className="mt-2.5">
-                      <GlassBadge variant={assessment.risk_category === 'Low' ? 'success' : 'warning'}>
-                        {assessment.risk_category} Risk
+                      <GlassBadge variant={assessment.risk_category?.startsWith('Low') ? 'success' : 'warning'}>
+                        {assessment.risk_category}
                       </GlassBadge>
                     </span>
                   </GlassPanel>
