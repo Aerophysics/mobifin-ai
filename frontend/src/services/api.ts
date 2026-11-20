@@ -437,9 +437,10 @@ class ApiService {
           version: "v2.1.4",
           metrics: {
             roc_auc: 0.925,
-            f1_score: 0.887,
+            f1: 0.887,
             precision: 0.892,
-            recall: 0.882
+            recall: 0.882,
+            confusion_matrix: [[412, 38], [47, 353]]
           }
         },
         demand_model: {
@@ -448,6 +449,7 @@ class ApiService {
           metrics: {
             mae: 180.4,
             rmse: 245.2,
+            mape: 8.3,
             baseline_mae: 220.5
           }
         },
@@ -455,9 +457,9 @@ class ApiService {
           name: "Isolation Forest Transaction Auditor",
           version: "v0.9.1",
           metrics: {
-            contamination: 0.02,
-            precision: 0.950,
-            recall: 0.910
+            anomaly_contamination: 0.02,
+            total_anomalies_detected: 47,
+            mean_score: 0.4832
           }
         }
       } as any;

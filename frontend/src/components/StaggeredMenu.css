@@ -11,7 +11,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   z-index: 40;
   overflow: hidden;
 }
@@ -139,6 +139,7 @@
   flex-direction: column;
   padding: 6em 2em 2em 2em;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 10;
   pointer-events: auto;
   opacity: 0;
@@ -343,14 +344,69 @@
   }
 }
 
-@media (max-width: 640px) {
+/* ── Mobile: ≤767px ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Full-height panel using dynamic viewport height + iOS safe areas */
   .staggered-menu-panel {
     width: 100%;
     left: 0;
     right: 0;
+    height: 100dvh;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    padding-left: 28px;
+    padding-right: 28px;
+    box-sizing: border-box;
   }
 
-  .staggered-menu-wrapper[data-open] .sm-logo-img {
-    filter: invert(100%);
+  /* Compact gap between nav items */
+  .sm-panel-inner {
+    gap: 0;
+  }
+
+  .sm-panel-list {
+    gap: 0;
+  }
+
+  /* Navigation item: clamp between 40px and 52px, no fixed rem */
+  .sm-panel-item {
+    font-size: clamp(40px, 11vw, 52px);
+    letter-spacing: -1px;
+    padding-right: 3.2em;
+    line-height: 1.05;
+    /* Vertical rhythm: ~24px top padding each item */
+    padding-top: 20px;
+  }
+
+  .sm-panel-item:first-child,
+  .sm-panel-itemWrap:first-child .sm-panel-item {
+    padding-top: 0;
+  }
+
+  /* Counter numbers: 18–20px */
+  .sm-panel-list[data-numbering] .sm-panel-item::after {
+    font-size: clamp(16px, 4.5vw, 20px);
+    right: 0.4em;
+    top: 0.15em;
+  }
+
+  /* Header: logo ~26px, button ~22px */
+  .staggered-menu-header {
+    padding: calc(env(safe-area-inset-top, 0px) + 18px) 28px 18px 28px;
+  }
+
+  /* Logo text inherits from inline style; adjust the sm-logo-img if used */
+  .sm-logo-img {
+    height: 26px;
+  }
+
+  /* Toggle button: minimum 44×44px touch target */
+  .sm-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 20px;
   }
 }
