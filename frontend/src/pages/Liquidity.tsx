@@ -227,8 +227,8 @@ const Liquidity: React.FC<LiquidityProps> = ({ setActivePage }) => {
               {/* E-Float Gap */}
               <div className={`p-4 rounded-xl border ${
                 floatShortfall > 0 
-                  ? 'border-amber-500/20 bg-amber-500/5 text-amber-200' 
-                  : 'border-emerald-500/10 bg-emerald-500/5 text-emerald-200'
+                  ? 'border-transparent bg-[var(--mf-warning-soft)] text-[var(--mf-warning-ink)]' 
+                  : 'border-transparent bg-[var(--mf-success-soft)] text-[var(--mf-success-ink)]'
               }`}>
                 <div className="flex justify-between items-start">
                   <div>
@@ -253,8 +253,8 @@ const Liquidity: React.FC<LiquidityProps> = ({ setActivePage }) => {
               {/* Cash Gap */}
               <div className={`p-4 rounded-xl border ${
                 cashShortfall > 0 
-                  ? 'border-rose-500/20 bg-rose-500/5 text-rose-200' 
-                  : 'border-emerald-500/10 bg-emerald-500/5 text-emerald-200'
+                  ? 'border-transparent bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)]' 
+                  : 'border-transparent bg-[var(--mf-success-soft)] text-[var(--mf-success-ink)]'
               }`}>
                 <div className="flex justify-between items-start">
                   <div>

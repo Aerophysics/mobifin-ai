@@ -183,7 +183,9 @@ def get_portfolio_summary(
             
             total_score += score
             total_capacity += capacity
-            risk_counts[risk] = risk_counts.get(risk, 0) + 1
+            # Model labels read "Low Risk", "Moderate-High Risk", ...; bucket them into the chart categories
+            bucket = (risk or "High").replace(" Risk", "").strip()
+            risk_counts[bucket] = risk_counts.get(bucket, 0) + 1
             
             recent_events.append({
                 "customer_id": c.customer_id,

@@ -5,10 +5,11 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
+/** Inner tile, used inside panels for grouped stats and list items. */
 export const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', ...props }) => {
   return (
-    <div 
-      className={`bg-[var(--mf-card-glass)] border border-[var(--mf-border)] rounded-xl p-4 transition-all duration-300 hover:border-white/20 hover:bg-white/5 ${className}`}
+    <div
+      className={`bg-[var(--mf-card-glass)] border border-[var(--mf-border)] rounded-2xl p-4 transition-colors duration-200 hover:border-[var(--mf-border-strong)] ${className}`}
       {...props}
     >
       {children}

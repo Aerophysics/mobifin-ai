@@ -6,27 +6,28 @@ interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
   intensity?: 'primary' | 'secondary' | 'floating';
 }
 
-export const GlassPanel: React.FC<GlassPanelProps> = ({ 
-  children, 
-  className = '', 
+/** Primary surface: a white rounded card on the off-white canvas. */
+export const GlassPanel: React.FC<GlassPanelProps> = ({
+  children,
+  className = '',
   intensity = 'primary',
-  ...props 
+  ...props
 }) => {
   const getIntensityClass = () => {
     switch (intensity) {
       case 'secondary':
-        return 'bg-[var(--mf-card-glass)] border-[var(--mf-border)] shadow-md';
+        return 'bg-[var(--mf-card-glass)] border-[var(--mf-border)]';
       case 'floating':
-        return 'bg-white/15 dark:bg-white/10 border-white/20 dark:border-white/15 shadow-2xl';
+        return 'bg-[var(--mf-surface)] border-[var(--mf-border)] shadow-[var(--mf-shadow-pop)]';
       case 'primary':
       default:
-        return 'bg-[var(--mf-surface-glass)] border-[var(--mf-border)] shadow-lg';
+        return 'bg-[var(--mf-surface)] border-[var(--mf-border)] shadow-[var(--mf-shadow-card)]';
     }
   };
 
   return (
-    <div 
-      className={`backdrop-blur-[20px] saturate-[140%] rounded-[20px] border ${getIntensityClass()} ${className}`}
+    <div
+      className={`rounded-[22px] border text-[var(--mf-text-primary)] ${getIntensityClass()} ${className}`}
       {...props}
     >
       {children}

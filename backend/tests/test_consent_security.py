@@ -204,3 +204,17 @@ def test_gateway_key_authorises_ussd_gateway(client, monkeypatch):
     assert client.get("/api/ussd/pending-requests", headers={"X-USSD-Gateway-Key": "wrong"}).status_code == 401
     resp = client.get("/api/ussd/pending-requests", headers={"X-USSD-Gateway-Key": "test-gateway-key"})
     assert resp.status_code == 200
+
+
+def test_volume_by_month_groups_categories_and_scopes_agent(db_session):
+    from backend.app.api.analytics import get_volume_by_month
+    kwame, yaaba, _, _ = _seed(db_session)
+    db_session.add(Transaction(transaction_id=3, agent_id=1, customer_id=1048, amount=50.0,
+                               transaction_type="airtime", direction="outflow", cash_balance=1000.0,
+                               float_balance=1000.0, location="Accra", timestamp=datetime.utcnow()))
+    db_session.commit()
+    res = get_volume_by_month(agent_id=2, months=6, current_user=kwame, db=db_session)
+    assert res["agent_id"] == 1  # agents are pinned to their own branch
+    month = res["months"][-1]
+    assert month["deposits"] == 100.0 and month["payments"] == 50.0 and month["total"] == 150.0
+    assert res["projection"]["total"] == 150.0

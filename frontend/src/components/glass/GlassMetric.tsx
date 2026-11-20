@@ -1,5 +1,4 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface GlassMetricProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -14,56 +13,47 @@ interface GlassMetricProps extends React.HTMLAttributes<HTMLDivElement> {
   subtitle?: string;
 }
 
+/** KPI card: icon tile + label, large value, then a delta chip and caption. */
 export const GlassMetric: React.FC<GlassMetricProps> = ({
   title,
   value,
   trend,
   icon: Icon,
-  iconColorClass = 'text-[var(--mf-accent)]',
+  iconColorClass = 'text-[var(--mf-text-secondary)]',
   className = '',
   subtitle,
   ...props
 }) => {
   return (
-    <div 
-      className={`backdrop-blur-[20px] saturate-[140%] bg-[var(--mf-surface-glass)] border border-[var(--mf-border)] rounded-[20px] p-5 shadow-lg flex items-center justify-between transition-all duration-300 hover:shadow-xl hover:border-white/20 ${className}`}
+    <div
+      className={`bg-[var(--mf-surface)] border border-[var(--mf-border)] rounded-[22px] p-5 shadow-[var(--mf-shadow-card)] flex flex-col gap-4 ${className}`}
       {...props}
     >
-      <div className="space-y-1.5 overflow-hidden">
-        <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">
-          {title}
-        </span>
-        <span className="text-2xl sm:text-3xl font-bold text-[var(--mf-text-primary)] block tracking-tight truncate">
-          {value}
-        </span>
-        {(trend || subtitle) && (
-          <div className="flex items-center space-x-1.5 mt-1 overflow-hidden">
-            {trend && (
-              <span className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                trend.isPositive 
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                  : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-              }`}>
-                {trend.isPositive ? (
-                  <ArrowUpRight className="h-2.5 w-2.5 mr-0.5" />
-                ) : (
-                  <ArrowDownRight className="h-2.5 w-2.5 mr-0.5" />
-                )}
-                {trend.value}
-              </span>
-            )}
-            {subtitle && (
-              <span className="text-[10px] text-[var(--mf-text-secondary)] truncate">
-                {subtitle}
-              </span>
-            )}
-          </div>
+      <div className="flex items-center gap-3">
+        {Icon && (
+          <span className={`h-10 w-10 rounded-xl border border-[var(--mf-border)] flex items-center justify-center flex-shrink-0 ${iconColorClass}`}>
+            <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+          </span>
         )}
+        <span className="text-[13px] text-[var(--mf-text-secondary)] truncate">{title}</span>
       </div>
-
-      {Icon && (
-        <div className={`h-[44px] w-[44px] rounded-xl flex items-center justify-center flex-shrink-0 bg-white/5 border border-white/10 ${iconColorClass}`}>
-          <Icon className="h-5 w-5" />
+      <span className="mf-display mf-tabular text-[28px] leading-none font-semibold text-[var(--mf-text-primary)] truncate">
+        {value}
+      </span>
+      {(trend || subtitle) && (
+        <div className="flex items-center gap-2 min-w-0">
+          {trend && (
+            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-semibold ${
+              trend.isPositive
+                ? 'bg-[var(--mf-success-soft)] text-[var(--mf-success-ink)]'
+                : 'bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)]'
+            }`}>
+              {trend.value}
+            </span>
+          )}
+          {subtitle && (
+            <span className="text-xs text-[var(--mf-text-secondary)] truncate">{subtitle}</span>
+          )}
         </div>
       )}
     </div>

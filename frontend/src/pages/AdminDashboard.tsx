@@ -1,125 +1,107 @@
 import React, { useEffect, useState } from 'react';
-import { Database, ShieldCheck, Activity, Terminal, Layers } from 'lucide-react';
+import { Users, Store, Receipt, KeyRound, Layers, Server, Database, Wifi, BadgeCheck, PieChart, BrainCircuit, TrendingUp, ShieldAlert } from 'lucide-react';
 import ApiService from '../services/api';
-import { DataExplorerMetrics } from '../types';
+import { DataExplorerMetrics, ModelPerformance } from '../types';
+import { GlassMetric } from '../components/glass/GlassMetric';
+import { SectionCard, AttentionRow, ProgressRow, LoadingBlock } from '../components/dash/DashKit';
+
+const fmt = (v: any, digits = 3) => (typeof v === 'number' ? v.toFixed(digits) : '—');
+
+const ModelRow: React.FC<{ icon: React.ComponentType<any>; name: string; model: any; chips: [string, string][] }> = ({ icon: Icon, name, model, chips }) => (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-4 border-t border-[var(--mf-border)] first:border-t-0">
+    <div className="flex items-center gap-3.5 flex-1 min-w-0">
+      <span className="h-10 w-10 rounded-xl border border-[var(--mf-border)] flex items-center justify-center text-[var(--mf-text-secondary)] flex-shrink-0">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[14px] font-semibold truncate">{name}</span>
+        <span className="block text-[13px] text-[var(--mf-text-secondary)] truncate">
+          {model ? `${model.version || 'v1'}${model.timestamp ? ` · trained ${new Date(model.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}` : 'Not trained'}
+        </span>
+      </span>
+    </div>
+    <div className="flex flex-wrap gap-1.5 sm:justify-end">
+      {model ? chips.map(([k, v]) => (
+        <span key={k} className="text-[12px] px-2 py-1 rounded-md bg-[var(--mf-card-glass)] border border-[var(--mf-border)]">
+          <span className="text-[var(--mf-text-secondary)]">{k}</span> <span className="font-semibold mf-tabular">{v}</span>
+        </span>
+      )) : <span className="text-[12px] px-2 py-1 rounded-md bg-[var(--mf-warning-soft)] text-[var(--mf-warning-ink)] font-semibold">Missing</span>}
+    </div>
+  </div>
+);
 
 const AdminDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<DataExplorerMetrics | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [models, setModels] = useState<ModelPerformance | null>(null);
+  const [status, setStatus] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchMetrics();
+    (async () => {
+      const [m, p, s] = await Promise.all([
+        ApiService.getDataExplorerMetrics().catch(() => null),
+        ApiService.getModelPerformance().catch(() => null),
+        ApiService.getSystemStatus().catch(() => null),
+      ]);
+      setMetrics(m); setModels(p); setStatus(s);
+      setIsLoading(false);
+    })();
   }, []);
 
-  const fetchMetrics = async () => {
-    setIsLoading(true);
-    try {
-      const res = await ApiService.getDataExplorerMetrics();
-      setMetrics(res);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isLoading) return <LoadingBlock />;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
-      </div>
-    );
-  }
+  const customers = metrics?.customer_count || 0;
+  const consented = metrics?.consented_customer_count || 0;
+  const eligible = metrics?.sufficient_history_count || 0;
+  const consentPct = customers ? Math.round((consented / customers) * 100) : 0;
+  const eligiblePct = customers ? Math.round((eligible / customers) * 100) : 0;
+  const cm = models?.credit_model?.metrics || {};
+  const dm = models?.demand_model?.metrics || {};
+  const am = models?.anomaly_model?.metrics || {};
+  const isDemo = ApiService.isDemoMode();
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
-      {/* Telemetry Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Total Agents</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.agent_count || 0}</span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Total Customers</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.customer_count || 0}</span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Total Transactions</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">
-            {metrics?.transaction_count.toLocaleString() || 0}
-          </span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Consented Customers</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.consented_customer_count || 0}</span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider block">Credit-Eligible</span>
-          <span className="text-xl font-bold text-teal-600 block mt-1.5">{metrics?.sufficient_history_count || 0}</span>
-        </div>
+    <div className="space-y-5 animate-fadeIn">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <GlassMetric title="Agent branches" icon={Store} value={(metrics?.agent_count || 0).toLocaleString()} subtitle="Registered locations" />
+        <GlassMetric title="Customers" icon={Users} value={customers.toLocaleString()} subtitle="Anonymised profiles" />
+        <GlassMetric title="Transactions" icon={Receipt} value={(metrics?.transaction_count || 0).toLocaleString()} subtitle="Ingested records" />
+        <GlassMetric title="Consent coverage" icon={KeyRound} value={`${consentPct}%`} trend={{ value: `${consented.toLocaleString()} opted in`, isPositive: true }} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Model Status Register */}
-        <div className="premium-card bg-white space-y-4">
-          <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center">
-            <Layers className="h-4.5 w-4.5 text-teal-605 mr-1.5" />
-            Model Registry Status
-          </h4>
-          <div className="space-y-3.5 text-xs">
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">Alternative Credit scoring Model (XGBoost)</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Active
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">Liquidity Forecast Model (XGBoost Regressor)</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Active
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">Anomaly Detector Model (Isolation Forest)</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Active
-              </span>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-5">
+        <SectionCard title="Model registry" icon={Layers}>
+          <ModelRow
+            icon={BrainCircuit}
+            name="Alternative credit classifier · XGBoost"
+            model={models?.credit_model}
+            chips={[['ROC-AUC', fmt(cm.roc_auc)], ['F1', fmt(cm.f1)], ['Precision', fmt(cm.precision)], ['Recall', fmt(cm.recall)]]}
+          />
+          <ModelRow
+            icon={TrendingUp}
+            name="Liquidity demand forecaster · XGBoost"
+            model={models?.demand_model}
+            chips={[['MAE', typeof dm.mae === 'number' ? `GH₵${Math.round(dm.mae)}` : '—'], ['RMSE', typeof dm.rmse === 'number' ? `GH₵${Math.round(dm.rmse)}` : '—'], ['MAPE', typeof dm.mape === 'number' ? `${dm.mape.toFixed(1)}%` : '—']]}
+          />
+          <ModelRow
+            icon={ShieldAlert}
+            name="Transaction anomaly detector · Isolation Forest"
+            model={models?.anomaly_model}
+            chips={[['Contamination', typeof am.anomaly_contamination === 'number' ? `${Math.round(am.anomaly_contamination * 100)}%` : '—'], ['Flagged', `${am.total_anomalies_detected ?? '—'}`]]}
+          />
+        </SectionCard>
 
-        {/* System Health Status */}
-        <div className="premium-card bg-white space-y-4">
-          <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center">
-            <Terminal className="h-4.5 w-4.5 text-teal-605 mr-1.5" />
-            Infrastructure Status
-          </h4>
-          <div className="space-y-3.5 text-xs">
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">Database Connection</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Connected ({metrics?.db_type})
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">Application API Gateway</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Operational
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-600 font-semibold">ML Model Artifact Storage</span>
-              <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1.5" /> Loaded
-              </span>
-            </div>
-          </div>
-        </div>
+        <SectionCard title="Platform status" icon={Server}>
+          <AttentionRow icon={Wifi} title={isDemo ? 'Offline demo data' : 'Live API'} detail={isDemo ? 'Browser-stored sample data' : 'FastAPI backend reachable'} status={isDemo ? 'Demo' : 'Online'} tone={isDemo ? 'warning' : 'success'} />
+          <AttentionRow icon={Database} title={status?.database || metrics?.db_type || 'Database'} detail={status?.sqlite_active ? 'Local fallback database' : 'Primary database'} status={status?.sqlite_active ? 'Fallback' : 'Connected'} tone={status?.sqlite_active ? 'warning' : 'success'} />
+          <AttentionRow icon={BadgeCheck} title={`${eligible.toLocaleString()} credit-eligible customers`} detail="Consent, 90+ days and 30+ transactions" status={`${eligiblePct}%`} tone="info" />
+        </SectionCard>
       </div>
+
+      <SectionCard title="Data coverage" icon={PieChart}>
+        <ProgressRow label="Consented" value={consentPct} valueText={`${consented.toLocaleString()} of ${customers.toLocaleString()}`} chipText={`${consentPct}%`} tone={consentPct >= 50 ? 'success' : 'warning'} />
+        <ProgressRow label="Credit-eligible" value={eligiblePct} valueText={`${eligible.toLocaleString()} of ${customers.toLocaleString()}`} chipText={`${eligiblePct}%`} tone={eligiblePct >= 30 ? 'success' : 'warning'} />
+      </SectionCard>
     </div>
   );
 };

@@ -6,6 +6,7 @@ interface GlassBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   className?: string;
 }
 
+/** Soft status chip (tinted fill, no border). */
 export const GlassBadge: React.FC<GlassBadgeProps> = ({
   children,
   variant = 'neutral',
@@ -15,22 +16,22 @@ export const GlassBadge: React.FC<GlassBadgeProps> = ({
   const getVariantClass = () => {
     switch (variant) {
       case 'success':
-        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+        return 'bg-[var(--mf-success-soft)] text-[var(--mf-success-ink)]';
       case 'warning':
-        return 'bg-amber-500/10 text-amber-500 border border-amber-500/20';
+        return 'bg-[var(--mf-warning-soft)] text-[var(--mf-warning-ink)]';
       case 'danger':
-        return 'bg-rose-500/10 text-rose-500 border border-rose-500/20';
+        return 'bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)]';
       case 'info':
-        return 'bg-sky-500/10 text-sky-500 border border-sky-500/20';
+        return 'bg-[var(--mf-info-soft)] text-[var(--mf-info-ink)]';
       case 'neutral':
       default:
-        return 'bg-white/5 border border-[var(--mf-border)] text-[var(--mf-text-secondary)]';
+        return 'bg-[var(--mf-card-glass)] text-[var(--mf-text-secondary)] border border-[var(--mf-border)]';
     }
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${getVariantClass()} ${className}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold whitespace-nowrap ${getVariantClass()} ${className}`}
       {...props}
     >
       {children}

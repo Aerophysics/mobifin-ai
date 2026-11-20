@@ -21,9 +21,7 @@ import { AddBusinessLocation } from './pages/AddBusinessLocation';
 import { Referrals } from './pages/Referrals';
 import { InstitutionalReferrals } from './pages/InstitutionalReferrals';
 import { UssdSimulator } from './components/UssdSimulator';
-import { Sparkles, ShieldAlert, AlertCircle } from 'lucide-react';
-// @ts-ignore
-import Grainient from './components/Grainient';
+import { Sparkles, ShieldAlert, AlertCircle, Activity } from 'lucide-react';
 // @ts-ignore
 import BorderGlow from './components/BorderGlow';
 import LandingPage from './pages/LandingPage';
@@ -469,164 +467,143 @@ const App: React.FC = () => {
           />
         );
       }
-      return (
-        <div className="relative w-full min-h-screen min-h-[100dvh] flex items-center justify-center overflow-y-auto font-sans p-4 py-8">
-          {/* Back to Home floating action button */}
-          {viewMode !== 'onboarding' && (
-            <button
-              type="button"
-              onClick={() => {
-                window.history.pushState({}, '', '/');
-                setViewMode('landing');
-              }}
-              className="absolute top-6 left-6 z-20 flex items-center space-x-2 text-white bg-slate-900/40 hover:bg-slate-900/60 px-4 py-2.5 rounded-full border border-white/5 transition-all text-xs font-semibold cursor-pointer shadow-sm backdrop-blur-sm animate-fadeIn"
-            >
-              <span>← Back to Home</span>
-            </button>
-          )}
-          {/* Grainient WebGL Background */}
-          <div className="absolute inset-0 z-0">
-            <Grainient 
-              color1="#8ea978"
-              color2="#223814"
-              color3="#8ea978"
-              timeSpeed={0.15}
-              colorBalance={0}
-              warpStrength={1}
-              warpFrequency={5}
-              warpSpeed={2}
-              warpAmplitude={50}
-              blendAngle={0}
-              blendSoftness={0.05}
-              rotationAmount={500}
-              noiseScale={2}
-              grainAmount={0}
-              grainScale={0.2}
-              grainAnimated={false}
-              contrast={1.5}
-              gamma={1}
-              saturation={1}
-              centerX={0}
-              centerY={0}
-              zoom={0.9}
-            />
-          </div>
+      const backHome = () => {
+        window.history.pushState({}, '', '/');
+        setViewMode('landing');
+      };
 
-          {/* Content render selection: Onboarding or Login */}
-          <div className="z-10 flex items-center justify-center p-4 w-full">
-            {viewMode === 'onboarding' ? (
-              <Onboarding 
+      if (viewMode === 'onboarding') {
+        return (
+          <div className="relative w-full min-h-screen min-h-[100dvh] flex items-center justify-center overflow-y-auto p-4 py-8" style={{ background: '#172a0e' }}>
+            <div className="z-10 flex items-center justify-center p-4 w-full">
+              <Onboarding
                 onComplete={(user) => {
                   window.history.pushState({}, '', '/');
                   setCurrentUser(user);
                   setActivePage('dashboard');
                 }}
-                onBackToLanding={() => {
-                  window.history.pushState({}, '', '/');
-                  setViewMode('landing');
-                }}
+                onBackToLanding={backHome}
               />
-            ) : (
-              <BorderGlow
-                className="w-[calc(100vw-32px)] sm:w-[410px] lg:w-[440px] h-auto"
-                backgroundColor="rgba(10, 15, 24, 0.65)"
-                borderRadius={20}
-                glowColor="160 80 50"
-                colors={['#0d9488', '#0f172a', '#064e3b']}
-                glowIntensity={1.0}
-                edgeSensitivity={20}
-              >
-                <div className="w-full h-auto backdrop-blur-xl flex flex-col text-slate-100 login-inner-card select-none rounded-[20px] border border-white/5">
-                  {/* Logo & Brand Mark */}
-                  <div className="flex flex-col items-center text-center">
-                    <div className="bg-teal-400 text-slate-950 rounded-xl font-black flex items-center justify-center transition-transform hover:scale-105 duration-300 login-logo">
-                      M
-                    </div>
-                    <h1 className="text-white tracking-wide leading-none login-title">MobiFin</h1>
-                    <p className="font-normal text-white/85 leading-normal login-subtitle">
-                      AI Financial Intelligence & Alternative Credit Intelligence
-                    </p>
-                  </div>
-
-                  {/* Form Area */}
-                  <form onSubmit={handleLoginSubmit} className="login-form">
-                    {loginError && (
-                      <div className="bg-red-500/10 text-red-300 text-[12px] p-2.5 rounded-lg border border-red-500/20 font-medium mb-3">
-                        {loginError}
-                      </div>
-                    )}
-                    
-                    <div>
-                      <label className="text-white/80 login-label">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={usernameInput}
-                        onChange={e => setUsernameInput(e.target.value)}
-                        placeholder="Enter your username"
-                        className="bg-slate-900/40 border border-[#8ea978] text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
-                      />
-                    </div>
-
-                    <div className="login-input-group">
-                      <label className="text-white/80 login-label">
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordInput}
-                        onChange={e => setPasswordInput(e.target.value)}
-                        placeholder="••••••••"
-                        className="bg-slate-900/40 border border-white/5 text-white placeholder-slate-500 focus:outline-none focus:border-[#8ea978] focus:ring-1 focus:ring-[#8ea978]/50 transition-all duration-200 login-input login-label-spacing"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isLoggingIn}
-                      className="bg-[#8ea978] hover:bg-[#7d9868] text-slate-950 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-md shadow-[#8ea978]/10 flex items-center justify-center login-btn"
-                    >
-                      {isLoggingIn ? 'Authenticating...' : 'Sign In'}
-                    </button>
-                  </form>
-
-                  {/* Quick Demo Switcher Presets */}
-                  <div className="border-t border-white/5 login-divider-group">
-                    <span className="text-white login-demo-label">
-                      Demo Quick Access
-                    </span>
-                    <div className="login-demo-list">
-                      <button
-                        type="button"
-                        onClick={() => handlePresetLogin('kwame')}
-                        disabled={isLoggingIn}
-                        className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
-                      >
-                        Agent — Kwame Centre
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handlePresetLogin('forms')}
-                        disabled={isLoggingIn}
-                        className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
-                      >
-                        Financial Institution — Forms Capital
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handlePresetLogin('admin')}
-                        disabled={isLoggingIn}
-                        className="bg-white/5 hover:bg-white/10 hover:border-white/10 text-white transition-all duration-200 text-center cursor-pointer flex items-center justify-center login-demo-btn"
-                      >
-                        System Operator (Admin)
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </BorderGlow>
-            )}
+            </div>
           </div>
+        );
+      }
+
+      const presets: [('kwame' | 'forms' | 'admin'), string, string][] = [
+        ['kwame', 'Agent — Kwame Centre', 'Liquidity forecasts, rebalancing, referrals'],
+        ['forms', 'Financial Institution — Forms Capital', 'Explainable credit profiles and applications'],
+        ['admin', 'System Operator (Admin)', 'Model metrics and platform data'],
+      ];
+
+      return (
+        <div className="w-full min-h-screen min-h-[100dvh] overflow-y-auto grid lg:grid-cols-[1.05fr_1fr] bg-white text-[#0b1407]">
+          {/* Story panel */}
+          <aside className="hidden lg:flex relative overflow-hidden flex-col justify-between p-12 xl:p-16" style={{ background: '#172a0e' }}>
+            <button onClick={backHome} className="flex items-center gap-2 bg-transparent border-none cursor-pointer self-start">
+              <span className="h-9 w-9 rounded-lg flex items-center justify-center bg-[#a6e06a]">
+                <Activity className="h-[18px] w-[18px] text-[#172a0e]" strokeWidth={2.5} />
+              </span>
+              <span className="mf-display text-[22px] font-bold tracking-[-0.03em] text-white">MobiFin</span>
+            </button>
+            <div>
+              <span className="mf-mono uppercase tracking-[0.14em] text-[11px] text-[#a6e06a]">► Liquidity & alternative credit</span>
+              <h2 className="mf-display text-white font-semibold leading-[1.04] tracking-[-0.03em] text-[48px] xl:text-[56px] mt-5 max-w-[560px]">
+                Turn transactions into intelligence. <span className="text-[#a6e06a]">Turn intelligence into opportunity.</span>
+              </h2>
+              <div className="mt-10 space-y-3 max-w-[420px]">
+                {[['Tomorrow · E-float demand', 'FORECAST · XGBOOST', 'GH₵11,400', '#a6e06a'], ['Customer #1048 · Consent', 'USSD · APPROVED', 'Active', '#f2c94c']].map(([t, m, a, c]) => (
+                  <div key={t} className="flex items-center gap-3 rounded-[6px] px-3.5 py-2.5 bg-[#0f1c08] border border-white/60 text-white">
+                    <span className="h-8 w-8 rounded-md flex-shrink-0" style={{ background: c }} />
+                    <div className="leading-tight flex-1">
+                      <div className="text-[13px] font-medium">{t}</div>
+                      <div className="mf-mono text-[11px] tracking-wider text-white/60">{m}</div>
+                    </div>
+                    <div className="mf-display text-[17px] font-semibold">{a}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <span className="mf-mono text-[11px] tracking-[0.14em] uppercase text-white/40">No consent, no score</span>
+          </aside>
+
+          {/* Form */}
+          <main className="flex flex-col px-5 sm:px-10 py-8 lg:py-12">
+            <div className="flex items-center justify-between">
+              <button onClick={backHome} className="mf-mono text-[13px] bg-transparent border-none cursor-pointer hover:opacity-60">← Back to home</button>
+              <button onClick={() => { window.history.pushState({}, '', '/onboarding'); setViewMode('onboarding'); }} className="mf-mono text-[13px] h-9 px-3.5 rounded-[6px] bg-[#eef1ec] hover:bg-[#e3e8df] border-none cursor-pointer">Create account</button>
+            </div>
+            <div className="flex-1 flex items-center justify-center py-10">
+              <div className="w-full max-w-[420px]">
+                <div className="lg:hidden flex items-center gap-2 mb-8">
+                  <span className="h-8 w-8 rounded-lg flex items-center justify-center bg-[#172a0e]"><Activity className="h-4 w-4 text-[#a6e06a]" strokeWidth={2.5} /></span>
+                  <span className="mf-display text-[20px] font-bold tracking-[-0.03em] text-[#172a0e]">MobiFin</span>
+                </div>
+                <h1 className="mf-display text-[36px] font-semibold tracking-[-0.03em] leading-tight">Sign in</h1>
+                <p className="text-[15px] text-[#4b5a46] mt-2">Agents, lenders and operators use the same sign-in.</p>
+
+                <form onSubmit={handleLoginSubmit} className="mt-8 space-y-4">
+                  {loginError && (
+                    <div className="bg-[#fbe6e3] text-[#b42318] text-[13px] px-3.5 py-2.5 rounded-lg font-medium">{loginError}</div>
+                  )}
+                  <label className="block">
+                    <span className="text-[13px] font-medium">Username</span>
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={e => setUsernameInput(e.target.value)}
+                      placeholder="e.g. kwame"
+                      autoComplete="username"
+                      className="mt-1.5 w-full h-12 px-4 rounded-xl border border-[#d7e0d2] bg-white text-[15px] placeholder-[#9aa79a] focus:outline-none focus:border-[#0b6b46] focus:ring-4 focus:ring-[#0b6b46]/10 transition"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[13px] font-medium">Password</span>
+                    <input
+                      type="password"
+                      value={passwordInput}
+                      onChange={e => setPasswordInput(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      className="mt-1.5 w-full h-12 px-4 rounded-xl border border-[#d7e0d2] bg-white text-[15px] placeholder-[#9aa79a] focus:outline-none focus:border-[#0b6b46] focus:ring-4 focus:ring-[#0b6b46]/10 transition"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={isLoggingIn}
+                    className="w-full h-12 rounded-xl bg-[#172a0e] hover:bg-[#21391a] text-white text-[15px] font-semibold cursor-pointer disabled:opacity-50 transition-colors"
+                  >
+                    {isLoggingIn ? 'Signing in…' : 'Sign In'}
+                  </button>
+                </form>
+
+                <div className="mt-10">
+                  <div className="flex items-center gap-3">
+                    <span className="mf-mono uppercase tracking-[0.14em] text-[11px] text-[#4b5a46]">► Demo Quick Access</span>
+                    <span className="flex-1 h-px bg-[#e5ebe1]" />
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {presets.map(([key, label, hint]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handlePresetLogin(key)}
+                        disabled={isLoggingIn}
+                        aria-label={label}
+                        className="w-full text-left px-4 py-3 rounded-xl border border-[#e2eadc] bg-[#f7faf5] hover:bg-[#f1f7ec] hover:border-[#cfdcc8] cursor-pointer transition-colors disabled:opacity-50 flex items-center justify-between gap-3"
+                      >
+                        <span>
+                          <span className="block text-[14px] font-semibold">{label}</span>
+                          <span className="block text-[12px] text-[#4b5a46] mt-0.5">{hint}</span>
+                        </span>
+                        <span className="mf-mono text-[13px] text-[#4b5a46]">→</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[12px] text-[#7a8775] mt-3">Quick access uses offline sample data stored in your browser.</p>
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
       );
     }

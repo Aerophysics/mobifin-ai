@@ -5,6 +5,22 @@ import {
   Anomaly, DataExplorerMetrics, ModelPerformance 
 } from '../types';
 
+export interface VolumeMonth {
+  month: string;
+  deposits: number;
+  withdrawals: number;
+  transfers: number;
+  payments: number;
+  total: number;
+  transaction_count: number;
+}
+
+export interface VolumeByMonth {
+  agent_id: number;
+  months: VolumeMonth[];
+  projection: { basis: string; total: number } | null;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 class ApiService {
@@ -106,6 +122,7 @@ class ApiService {
         {
           customer_id: 1048,
           display_name: "Customer #1048",
+          created_at: new Date(Date.now() - 400 * 864e5).toISOString(),
           phone: "0541234567",
           location: "Accra Central",
           type: "retail",
@@ -155,11 +172,26 @@ class ApiService {
     // Recommendations
     if (cleanUrl === '/liquidity/recommendations') {
       return {
+        expected_float_demand: 11400.0,
+        current_float: 7200.0,
         predicted_shortfall: 4200.0,
+        expected_cash_demand: 3100.0,
+        current_cash: 4850.0,
+        predicted_cash_shortfall: 0.0,
+        minimum_cash_reserve: 1000.0,
+        reserve_violated: true,
+        forecast_confidence: "Strong historical pattern",
         warning_level: "High",
         recommendation: {
+          recommendation_id: 1,
+          agent_id: 1,
+          type: "rebalance",
+          severity: "High",
+          title: "Liquidity Rebalancing Recommended",
+          description: "Tomorrow's projected e-float demand is expected to reach GH₵11,400.00, exceeding your current holdings by GH₵4,200.00. We recommend moving GH₵4,000.00 of cash into e-float before 10:30 AM.",
           recommended_amount: 4000.0,
-          recommended_time: "10:30 AM"
+          recommended_time: "10:30 AM",
+          status: "active"
         },
         trusted_sources_count: 2
       } as any;
@@ -168,9 +200,9 @@ class ApiService {
     // Stress test
     if (cleanUrl === '/liquidity/stress-test') {
       return [
-        { stress_level: 'Baseline (+10% Surge)', multiplier: 1.1, original_demand: 9000.0, stressed_demand: 9900.0, current_holdings: 7200.0, projected_shortfall: 2700.0, risk_status: 'Elevated' },
-        { stress_level: 'Demand Spike (+20% Surge)', multiplier: 1.2, original_demand: 9000.0, stressed_demand: 10800.0, current_holdings: 7200.0, projected_shortfall: 3600.0, risk_status: 'Critical' },
-        { stress_level: 'Demand Surge (+35% Peak)', multiplier: 1.35, original_demand: 9000.0, stressed_demand: 12150.0, current_holdings: 7200.0, projected_shortfall: 4950.0, risk_status: 'Critical' }
+        { stress_level: '+10% Demand Surge', multiplier: 1.1, original_demand: 11400.0, stressed_demand: 12540.0, current_holdings: 7200.0, projected_shortfall: 5340.0, risk_status: 'Elevated' },
+        { stress_level: '+20% Demand Surge', multiplier: 1.2, original_demand: 11400.0, stressed_demand: 13680.0, current_holdings: 7200.0, projected_shortfall: 6480.0, risk_status: 'Critical' },
+        { stress_level: '+35% Peak Surge', multiplier: 1.35, original_demand: 11400.0, stressed_demand: 15390.0, current_holdings: 7200.0, projected_shortfall: 8190.0, risk_status: 'Critical' }
       ] as any;
     }
 
@@ -495,7 +527,7 @@ class ApiService {
           location: "Accra Central",
           type: "Super Agent",
           notes: "Primary liquidity partner",
-          status: "Active"
+          status: "active"
         },
         {
           source_id: 2,
@@ -506,7 +538,7 @@ class ApiService {
           location: "Accra Plaza",
           type: "Financial Institution",
           notes: "Secondary emergency float channel",
-          status: "Active"
+          status: "active"
         }
       ] as any;
     }
@@ -644,6 +676,30 @@ class ApiService {
           }
         } as any;
       }
+    }
+
+    // Monthly transaction volume (stacked by category)
+    if (cleanUrl === '/analytics/volume-by-month') {
+      const base = [
+        { deposits: 92400, withdrawals: 23100, transfers: 7400, payments: 16100 },
+        { deposits: 151800, withdrawals: 36900, transfers: 11700, payments: 38800 },
+        { deposits: 215300, withdrawals: 53400, transfers: 16200, payments: 59400 },
+        { deposits: 228900, withdrawals: 52700, transfers: 18100, payments: 79300 },
+        { deposits: 238600, withdrawals: 55200, transfers: 17300, payments: 80900 },
+        { deposits: 246100, withdrawals: 58300, transfers: 19800, payments: 84500 },
+      ];
+      const now = new Date();
+      const months = base.map((b, i) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - (base.length - 1 - i), 1);
+        const total = b.deposits + b.withdrawals + b.transfers + b.payments;
+        return { month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, ...b, total, transaction_count: Math.round(total / 640) };
+      });
+      const last3 = months.slice(-3);
+      return {
+        agent_id: 1,
+        months,
+        projection: { basis: 'Trailing 3-month average', total: Math.round(last3.reduce((a, m) => a + m.total, 0) / 3) }
+      } as any;
     }
 
     // Partner lending institutions
@@ -958,6 +1014,10 @@ class ApiService {
     return this.request<any>(`/institution/referral/${id}/decision?decision=${decision}`, {
       method: 'POST',
     });
+  }
+
+  static async getVolumeByMonth(months = 6): Promise<VolumeByMonth> {
+    return this.request<VolumeByMonth>(`/analytics/volume-by-month?months=${months}`);
   }
 
   static async getInstitutions(): Promise<{ user_id: number; name: string }[]> {

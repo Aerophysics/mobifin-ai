@@ -15,18 +15,18 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   const getVariantClass = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-[var(--mf-accent)] text-white hover:bg-[var(--mf-accent)]/85 shadow-md';
+        return 'mf-solid bg-[var(--mf-accent)] text-white border border-transparent hover:bg-[var(--mf-accent-hover)]';
       case 'danger':
-        return 'bg-rose-500/10 text-rose-500 border border-rose-500/25 hover:bg-rose-500/20';
+        return 'bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)] border border-transparent hover:brightness-95';
       case 'secondary':
       default:
-        return 'bg-white/5 dark:bg-white/5 border border-[var(--mf-border)] text-[var(--mf-text-primary)] hover:bg-white/10 dark:hover:bg-white/10 hover:border-white/20';
+        return 'bg-[var(--mf-surface)] border border-[var(--mf-border-strong)] text-[var(--mf-text-primary)] hover:bg-[var(--mf-card-glass)]';
     }
   };
 
   return (
     <button
-      className={`h-[42px] px-4 font-semibold text-xs rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${getVariantClass()} ${className}`}
+      className={`h-[40px] px-4 font-semibold text-[13px] rounded-full transition-colors duration-200 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${getVariantClass()} ${className}`}
       {...props}
     >
       {children}

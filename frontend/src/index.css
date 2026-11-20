@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark: variants follow the in-app theme toggle (.dark on <html>), not the OS setting */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: #ffffff;
   --color-foreground: #0f172a;
@@ -36,35 +39,82 @@
   --color-forest: #17280e;
   --color-lemongrass: #8ea978;
   
-  --font-sans: "Polar", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root {
-  --mf-background: #ffffff;
+  /* Canvas & surfaces */
+  --mf-background: #eef2ef;
   --mf-surface: #ffffff;
-  --mf-surface-glass: rgba(255, 255, 255, 0.45);
-  --mf-card-glass: rgba(0, 0, 0, 0.02);
-  --mf-border: rgba(0, 0, 0, 0.06);
-  --mf-text-primary: #0f172a;
-  --mf-text-secondary: #475569;
-  --mf-accent: #17280e;
-  --mf-success: #10b981;
-  --mf-warning: #f59e0b;
-  --mf-danger: #ef4444;
+  --mf-surface-glass: #ffffff;
+  --mf-card-glass: #f5f7f5;
+  --mf-border: #e3e9e4;
+  --mf-border-strong: #d3dcd5;
+  /* Text */
+  --mf-text-primary: #0e1a13;
+  --mf-text-secondary: #5f6e65;
+  --mf-text-muted: #8a978f;
+  /* Brand */
+  --mf-accent: #0b6b46;
+  --mf-accent-hover: #095a3b;
+  --mf-accent-soft: #e3f1e8;
+  --mf-accent-ink: #0b6b46;
+  /* Status */
+  --mf-success: #0e8a55;
+  --mf-warning: #c77a0a;
+  --mf-danger: #d23b2e;
+  --mf-success-soft: #e3f3ea;
+  --mf-success-ink: #0b6b46;
+  --mf-warning-soft: #fdf1dc;
+  --mf-warning-ink: #9a5b00;
+  --mf-danger-soft: #fbe6e3;
+  --mf-danger-ink: #b42318;
+  --mf-info-soft: #e6eefb;
+  --mf-info-ink: #1e4fb8;
+  /* Chart series */
+  --mf-chart-1: #0b5e3e;
+  --mf-chart-2: #7fb79a;
+  --mf-chart-3: #c3dfce;
+  --mf-chart-4: #f2c94c;
+  --mf-chart-grid: #e8ede9;
+  --mf-shadow-card: 0 1px 2px rgba(14, 26, 19, 0.04), 0 1px 1px rgba(14, 26, 19, 0.02);
+  --mf-shadow-pop: 0 12px 32px rgba(14, 26, 19, 0.12);
+  --mf-font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mf-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dark {
-  --mf-background: #091406;
-  --mf-surface: #0c1c09;
-  --mf-surface-glass: rgba(20, 35, 12, 0.55);
-  --mf-card-glass: rgba(255, 255, 255, 0.04);
-  --mf-border: rgba(255, 255, 255, 0.09);
-  --mf-text-primary: #f8fafc;
-  --mf-text-secondary: #94a3b8;
-  --mf-accent: #8ea978;
-  --mf-success: #10b981;
-  --mf-warning: #f59e0b;
-  --mf-danger: #ef4444;
+  --mf-background: #0b130e;
+  --mf-surface: #121c16;
+  --mf-surface-glass: #121c16;
+  --mf-card-glass: #18241d;
+  --mf-border: rgba(255, 255, 255, 0.08);
+  --mf-border-strong: rgba(255, 255, 255, 0.14);
+  --mf-text-primary: #eef3ef;
+  --mf-text-secondary: #9aa9a0;
+  --mf-text-muted: #6f7f75;
+  --mf-accent: #2fa86c;
+  --mf-accent-hover: #3fbf7f;
+  --mf-accent-soft: rgba(63, 191, 127, 0.14);
+  --mf-accent-ink: #6fd9a2;
+  --mf-success: #3fbf7f;
+  --mf-warning: #e8b931;
+  --mf-danger: #f0705f;
+  --mf-success-soft: rgba(63, 191, 127, 0.14);
+  --mf-success-ink: #6fd9a2;
+  --mf-warning-soft: rgba(232, 185, 49, 0.14);
+  --mf-warning-ink: #f0c95a;
+  --mf-danger-soft: rgba(240, 112, 95, 0.14);
+  --mf-danger-ink: #f69a8c;
+  --mf-info-soft: rgba(110, 160, 245, 0.14);
+  --mf-info-ink: #9cbdf7;
+  --mf-chart-1: #3fbf7f;
+  --mf-chart-2: #2b7a54;
+  --mf-chart-3: #5e8f75;
+  --mf-chart-4: #e8b931;
+  --mf-chart-grid: rgba(255, 255, 255, 0.06);
+  --mf-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --mf-shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 html, body, #root {
@@ -78,24 +128,30 @@ html, body, #root {
 body {
   background-color: var(--mf-background);
   color: var(--mf-text-primary);
-  font-family: "Polar", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mf-display {
+  font-family: var(--mf-font-display);
+  letter-spacing: -0.02em;
+}
+
+.mf-mono {
+  font-family: var(--mf-font-mono);
+}
+
+.mf-tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 .premium-card {
-  background-color: var(--mf-surface-glass) !important;
+  background-color: var(--mf-surface) !important;
   color: var(--mf-text-primary) !important;
   border: 1px solid var(--mf-border) !important;
-  border-radius: 20px !important;
+  border-radius: 22px !important;
   padding: 1.5rem;
-  backdrop-filter: blur(20px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.premium-card:hover {
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: var(--mf-shadow-card) !important;
 }
 
 /* Scrollbar styling */
@@ -120,23 +176,23 @@ body {
 }
 
 .dark body {
-  background-color: #091406;
-  color: #f8fafc;
+  background-color: var(--mf-background);
+  color: var(--mf-text-primary);
 }
 
 .dark .bg-slate-50,
 .dark .bg-gray-50 {
-  background-color: #091406 !important;
+  background-color: var(--mf-background) !important;
 }
 
 .dark .bg-white {
-  background-color: rgba(20, 35, 12, 0.55) !important;
+  background-color: var(--mf-surface) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.09) !important;
 }
 
 .dark .premium-card {
-  background-color: rgba(20, 35, 12, 0.55) !important;
+  background-color: var(--mf-surface) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.09) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
@@ -182,7 +238,7 @@ body {
 
 /* Fix chart components tooltip background in dark mode System */
 .dark .recharts-default-tooltip {
-  background-color: #0c1c09 !important;
+  background-color: var(--mf-surface) !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 .dark .recharts-tooltip-item {
@@ -455,3 +511,52 @@ button.sidebar-active-btn .glass-icon-front {
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5);
 }
 
+
+
+/* ------------------------------------------------------------------
+   Light-theme compatibility layer
+   Several screens were originally drawn for a dark green backdrop and use
+   text-white / white-alpha utilities directly. Inside the app shell (.mf-main)
+   in light mode, remap those to theme tokens unless they sit on a solid dark
+   fill (primary buttons, accent chips).
+------------------------------------------------------------------- */
+html:not(.dark) .mf-main :is(.text-white, [class*="text-white/"]):not(button):not(button *):not(:is(
+  [class*="bg-emerald-5"], [class*="bg-emerald-6"], [class*="bg-emerald-7"], [class*="bg-emerald-8"], [class*="bg-emerald-9"],
+  [class*="bg-teal-6"], [class*="bg-sky-6"], [class*="bg-rose-6"], [class*="bg-rose-5"], [class*="bg-black"],
+  [class*="bg-[var(--mf-accent)]"], [class*="bg-[#17280e]"], [class*="bg-[#0"], .mf-solid
+) *):not(:is(
+  [class*="bg-emerald-6"], [class*="bg-emerald-7"], [class*="bg-[var(--mf-accent)]"], .mf-solid
+)) {
+  color: var(--mf-text-primary);
+}
+html:not(.dark) .mf-main [class*="text-white/"]:not(button):not(button *):not(.mf-solid *) {
+  color: var(--mf-text-secondary);
+}
+html:not(.dark) .mf-main [class*="border-white"] {
+  border-color: var(--mf-border);
+}
+html:not(.dark) .mf-main :is([class*="bg-white/"], [class*="bg-slate-950/"], [class*="bg-slate-900/"], .bg-slate-900, .bg-slate-950) {
+  background-color: var(--mf-card-glass);
+}
+html:not(.dark) .mf-main :is(input, select, textarea):is([class*="bg-slate-9"], [class*="bg-white/"], [class*="bg-transparent"]) {
+  background-color: var(--mf-surface);
+  color: var(--mf-text-primary);
+  border-color: var(--mf-border-strong);
+}
+html:not(.dark) .mf-main [class*="placeholder-white"]::placeholder {
+  color: var(--mf-text-muted);
+}
+html:not(.dark) .mf-main :is(.text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-450, .text-emerald-500) { color: var(--mf-success-ink); }
+html:not(.dark) .mf-main :is(.text-sky-200, .text-sky-300, .text-sky-400, .text-sky-450, .text-sky-500) { color: var(--mf-info-ink); }
+html:not(.dark) .mf-main :is(.text-amber-200, .text-amber-300, .text-amber-400, .text-amber-500) { color: var(--mf-warning-ink); }
+html:not(.dark) .mf-main :is(.text-rose-200, .text-rose-300, .text-rose-400, .text-rose-500) { color: var(--mf-danger-ink); }
+html:not(.dark) .mf-main :is(.text-teal-400, .text-teal-500) { color: #0f766e; }
+
+/* Recharts tooltip in both themes */
+.recharts-default-tooltip {
+  background-color: var(--mf-surface) !important;
+  border: 1px solid var(--mf-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--mf-shadow-pop);
+  color: var(--mf-text-primary) !important;
+}
