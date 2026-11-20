@@ -38,13 +38,7 @@ const Settings: React.FC<SettingsProps> = ({ currentUser, setActivePage }) => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl animate-fadeIn pb-8">
-      {/* Page Header */}
-      <div>
-        <h3 className="text-xl font-bold text-[var(--mf-text-primary)] tracking-tight">System Settings</h3>
-        <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Manage your account profile, access controls, and notifications.</p>
-      </div>
-
+    <div className="space-y-6 animate-fadeIn pb-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Navigation Tabs */}
         <div className="lg:col-span-1 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-0 lg:space-y-1 pb-3 lg:pb-0 border-b border-[var(--mf-border)] lg:border-none">

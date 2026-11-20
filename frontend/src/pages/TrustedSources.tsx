@@ -144,13 +144,9 @@ export const TrustedSources: React.FC<TrustedSourcesProps> = ({ setActivePage })
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn pb-12 select-none text-white">
+    <div className="space-y-6 animate-fadeIn pb-12 select-none text-white">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-xl font-extrabold text-[var(--mf-text-primary)] tracking-tight">Liquidity Network</h3>
-          <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Manage private, trusted relationships to source physical cash or float when balances get tight.</p>
-        </div>
+      <div className="flex justify-end -mt-2">
         <GlassButton 
           variant="primary" 
           onClick={handleOpenAdd}

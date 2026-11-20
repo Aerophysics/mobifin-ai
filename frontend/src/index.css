@@ -560,3 +560,48 @@ html:not(.dark) .mf-main :is(.text-teal-400, .text-teal-500) { color: #0f766e; }
   box-shadow: var(--mf-shadow-pop);
   color: var(--mf-text-primary) !important;
 }
+
+
+/* ------------------------------------------------------------------
+   Typography normalisation for app screens
+   Older screens use 8–11px uppercase labels. Bring them in line with the
+   overview: sentence-case 13px labels, 18px section titles, 13–14px body.
+------------------------------------------------------------------- */
+.mf-main .uppercase {
+  text-transform: none;
+  letter-spacing: normal;
+}
+/* Section titles: bold uppercase headings/labels at 10px+ that introduce a panel */
+.mf-main :is(h3, h4).uppercase,
+.mf-main span.block.uppercase:is(.tracking-widest):is(.text-\[10px\]),
+.mf-main span.block.uppercase.font-bold:is(.text-\[10px\]):not(.mt-1):not(.mt-2):not(button *) {
+  font-family: var(--mf-font-display);
+  font-size: 18px !important;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--mf-text-primary) !important;
+}
+/* Field / tile labels */
+.mf-main :is(.text-\[8px\], .text-\[9px\], .text-\[9\.5px\]).uppercase:not(button):not(button *),
+.mf-main label.uppercase {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--mf-text-secondary) !important;
+}
+/* Small body copy */
+.mf-main :is(.text-\[8px\], .text-\[9px\], .text-\[9\.5px\]):not(.uppercase) { font-size: 12px !important; }
+.mf-main :is(.text-\[10px\], .text-\[10\.5px\]):not(.uppercase) { font-size: 12.5px !important; }
+.mf-main :is(.text-\[10px\], .text-\[10\.5px\]).uppercase:not(.block) { font-size: 12.5px !important; }
+.mf-main :is(.text-\[11px\], .text-\[11\.5px\]) { font-size: 13px !important; }
+.mf-main p.text-xs, .mf-main td, .mf-main .text-xs:not(button):not(button *) { font-size: 13px; }
+/* Headline numbers inside tiles use the display face */
+.mf-main :is(.text-lg, .text-xl, .text-2xl).font-bold,
+.mf-main :is(.text-lg, .text-xl, .text-2xl).font-extrabold {
+  font-family: var(--mf-font-display);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+.mf-main .text-xl.font-bold, .mf-main .text-xl.font-extrabold { font-size: 24px; }
+/* Buttons: no shouty uppercase, readable size */
+.mf-main button.uppercase, .mf-main button .uppercase { font-size: 13px !important; font-weight: 600; }

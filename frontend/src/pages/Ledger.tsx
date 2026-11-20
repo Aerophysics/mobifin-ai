@@ -143,7 +143,7 @@ export const Ledger: React.FC = () => {
   const isBalanced = summary?.reconciliation_status === 'Balanced';
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Date Picker Header */}
       <GlassPanel className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-3">

@@ -44,7 +44,7 @@ const AIInsights: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Health Score Summary */}
         <div className="lg:col-span-1 space-y-6">
@@ -94,7 +94,7 @@ const AIInsights: React.FC = () => {
             </h4>
             <p className="text-[10px] text-slate-350 leading-normal">
               Insights are calculated deterministically from raw database records to eliminate hallucinations. 
-              Decisions are coupled with your local XGBoost and Isolation Forest models.
+              Every insight is calculated from your own transaction records.
             </p>
           </div>
         </div>

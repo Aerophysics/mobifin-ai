@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Users, CheckCircle2, X, FileText, Clock, ShieldAlert, KeyRound,
-  Percent, Coins, BarChart3, HelpCircle, Award, Eye, Copy, Check
+  Percent, Coins, BarChart3, HelpCircle, Award, Eye, Copy, Check, Landmark
 } from 'lucide-react';
 import ApiService from '../services/api';
+import { GlassMetric } from '../components/glass/GlassMetric';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
 import { GlassButton } from '../components/glass/GlassButton';
@@ -77,31 +78,13 @@ export const InstitutionalReferrals: React.FC = () => {
   const approved = referrals.filter(r => r.application_status === 'APPROVED').length;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-12 select-none text-white">
-      {/* Header */}
-      <div>
-        <h3 className="text-xl font-extrabold text-[var(--mf-text-primary)] tracking-tight">Credit Underwriting Portfolio</h3>
-        <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Review customer credit referrals, evaluate alternative credit scores, and log lending decisions.</p>
-      </div>
-
+    <div className="space-y-6 animate-fadeIn pb-12 select-none text-white">
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Pending Consent</span>
-          <span className="text-lg font-bold text-amber-400 block mt-1.5">{pendingConsent}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Consent Granted</span>
-          <span className="text-lg font-bold text-sky-400 block mt-1.5">{consentGranted}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Under Review</span>
-          <span className="text-lg font-bold text-white block mt-1.5">{underReview}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Approved Loans</span>
-          <span className="text-lg font-bold text-emerald-400 block mt-1.5">{approved}</span>
-        </GlassCard>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <GlassMetric title="Pending consent" icon={Clock} value={pendingConsent} subtitle="Waiting on the customer" />
+        <GlassMetric title="Consent granted" icon={CheckCircle2} value={consentGranted} subtitle="Profile available" />
+        <GlassMetric title="Under review" icon={FileText} value={underReview} subtitle="Decision in progress" />
+        <GlassMetric title="Approved loans" icon={Landmark} value={approved} subtitle="Decisions made" />
       </div>
 
       {decisionSuccess && (
@@ -299,9 +282,9 @@ export const InstitutionalReferrals: React.FC = () => {
                       </GlassCard>
                     </div>
 
-                    {/* SHAP explanation */}
+                    {/* Factor explanation */}
                     <div className="space-y-2 bg-white/2 border border-white/5 p-3 rounded-2xl">
-                      <span className="text-[9.5px] font-bold text-white/50 uppercase tracking-widest block">Assessment Influencers (SHAP)</span>
+                      <span className="text-[9.5px] font-bold text-white/50 uppercase tracking-widest block">What influenced this assessment</span>
                       <div className="space-y-1.5 text-[10.5px]">
                         {profileData.assessment.factors?.map((exp: any, idx: number) => {
                           const val = exp.value;

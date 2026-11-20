@@ -158,7 +158,7 @@ export const CustomerIntelligence: React.FC = () => {
   const statusInfo = selectedCustomer ? getCustomerStatus(selectedCustomer, assessment) : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100dvh-95px)] lg:h-[calc(100vh-140px)] overflow-hidden animate-fadeIn max-w-6xl mx-auto pb-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100dvh-95px)] lg:h-[calc(100vh-140px)] overflow-hidden animate-fadeIn pb-6">
       {/* Left Sidebar: Profiles & Requests */}
       <GlassPanel className={`lg:col-span-1 p-4 flex flex-col space-y-3 h-full overflow-hidden ${viewState === 'list' ? 'flex' : 'hidden lg:flex'}`}>
         {/* Tab switch header */}

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { 
   CheckCircle, BarChart3, TrendingUp, ShieldAlert,
-  Flame, Sparkles, Coins, Wallet, ArrowRight, Info, Users, Phone, Copy, Check, ExternalLink
+  Flame, Sparkles, Coins, Wallet, Smartphone, ArrowRight, Info, Users, Phone, Copy, Check, ExternalLink
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ApiService from '../services/api';
+import { GlassMetric } from '../components/glass/GlassMetric';
 import { Forecast, LiquidityRecommendations, StressTestScenario, AgentProfile } from '../types';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
@@ -107,51 +108,13 @@ const Liquidity: React.FC<LiquidityProps> = ({ setActivePage }) => {
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn pb-12 select-none text-white">
-      {/* Page Header */}
-      <div>
-        <h3 className="text-xl font-extrabold text-[var(--mf-text-primary)] tracking-tight">Liquidity Command Center</h3>
-        <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Know your position. Predict your needs. Prepare before shortages disrupt your business.</p>
+    <div className="space-y-6 animate-fadeIn pb-12 select-none text-white">
+      {/* Current position */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+        <GlassMetric title="Cash on hand" icon={Wallet} value={`GH₵${cashOnHand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} subtitle="Available for customer withdrawals" />
+        <GlassMetric title="E-float balance" icon={Smartphone} value={`GH₵${floatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} subtitle="Available for digital transactions" />
+        <GlassMetric title="Total available" icon={Coins} value={`GH₵${totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} subtitle="Cash and e-float combined" />
       </div>
-
-      {/* 1. CURRENT POSITION */}
-      <GlassPanel className="p-6 space-y-4">
-        <div>
-          <span className="text-[10px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-widest block">Current Position</span>
-          <p className="text-[11px] text-[var(--mf-text-secondary)] mt-0.5">Your cash and digital token positions across this branch.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <GlassCard className="p-4 flex flex-col justify-between space-y-2 border-white/5">
-            <div>
-              <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest block">Cash on Hand</span>
-              <span className="text-xl font-bold text-emerald-400 block mt-1">
-                GH₵{cashOnHand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            <span className="text-[9.5px] text-[var(--mf-text-secondary)]">Cash available for customer withdrawals.</span>
-          </GlassCard>
-
-          <GlassCard className="p-4 flex flex-col justify-between space-y-2 border-white/5">
-            <div>
-              <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest block">E-Float Balance</span>
-              <span className="text-xl font-bold text-sky-400 block mt-1">
-                GH₵{floatBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            <span className="text-[9.5px] text-[var(--mf-text-secondary)]">E-float available for digital transactions.</span>
-          </GlassCard>
-
-          <GlassCard className="p-4 flex flex-col justify-between space-y-2 bg-white/2 border-dashed border-white/10">
-            <div>
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest block">Total Available Liquidity</span>
-              <span className="text-lg font-bold text-white/70 block mt-1">
-                GH₵{totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            <span className="text-[9.5px] text-[var(--mf-text-secondary)] text-white/40">Combined branch holdings.</span>
-          </GlassCard>
-        </div>
-      </GlassPanel>
 
       {/* 2. DEMAND FORECAST & 3. LIQUIDITY RISK */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

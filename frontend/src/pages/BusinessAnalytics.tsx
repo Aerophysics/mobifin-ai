@@ -75,7 +75,7 @@ const BusinessAnalytics: React.FC = () => {
   const metrics = health?.metrics;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <GlassMetric 
@@ -161,7 +161,7 @@ const BusinessAnalytics: React.FC = () => {
               Ghanaian Regional Operational Analytics
             </h3>
             <p className="text-[10px] text-[var(--mf-text-secondary)]">
-              Network demand across locales. Not utilized in ML customer credit scoring model.
+              Network demand across locales. Location is never used in credit scoring.
             </p>
           </div>
           

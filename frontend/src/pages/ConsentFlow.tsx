@@ -52,7 +52,7 @@ const ConsentFlow: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Consent Explanation Info */}
       <GlassPanel className="p-5 flex flex-col space-y-4">
         <div className="flex items-center space-x-2 border-b border-[var(--mf-border)] pb-2.5">

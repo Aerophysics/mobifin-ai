@@ -4,6 +4,7 @@ import {
   Sparkles, CheckCircle2, X, FileText, Send, Clock, ShieldAlert
 } from 'lucide-react';
 import ApiService from '../services/api';
+import { GlassMetric } from '../components/glass/GlassMetric';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
 import { GlassButton } from '../components/glass/GlassButton';
@@ -113,13 +114,9 @@ export const Referrals: React.FC = () => {
   const successfulApplications = referrals.filter(r => r.application_status === 'APPROVED').length;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn pb-12 select-none text-white">
+    <div className="space-y-6 animate-fadeIn pb-12 select-none text-white">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-xl font-extrabold text-[var(--mf-text-primary)] tracking-tight">Customer Referrals</h3>
-          <p className="text-xs text-[var(--mf-text-secondary)] mt-1">Connect your returning customers with participating financial institutions through consent-based referrals.</p>
-        </div>
+      <div className="flex justify-end -mt-2">
         <GlassButton 
           variant="primary" 
           onClick={handleOpenAdd}
@@ -138,27 +135,12 @@ export const Referrals: React.FC = () => {
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Total Referred</span>
-          <span className="text-lg font-bold text-white block mt-1.5">{totalReferred}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Consent Granted</span>
-          <span className="text-lg font-bold text-sky-400 block mt-1.5">{consentGranted}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Assessments Done</span>
-          <span className="text-lg font-bold text-white block mt-1.5">{assessmentsCompleted}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Under Review</span>
-          <span className="text-lg font-bold text-amber-400 block mt-1.5">{applicationsUnderReview}</span>
-        </GlassCard>
-        <GlassCard className="p-4 border-white/5 col-span-2 md:col-span-1">
-          <span className="text-[9px] text-[var(--mf-text-secondary)] font-bold uppercase tracking-wider block">Successful Loans</span>
-          <span className="text-lg font-bold text-emerald-400 block mt-1.5">{successfulApplications}</span>
-        </GlassCard>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 sm:gap-5">
+        <GlassMetric title="Total referred" icon={Users} value={totalReferred} subtitle="All referrals" />
+        <GlassMetric title="Consent granted" icon={CheckCircle2} value={consentGranted} subtitle="Approved on USSD" />
+        <GlassMetric title="Assessments done" icon={FileText} value={assessmentsCompleted} subtitle="Profiles reviewed" />
+        <GlassMetric title="Under review" icon={Clock} value={applicationsUnderReview} subtitle="Awaiting a decision" />
+        <GlassMetric title="Successful loans" icon={Sparkles} value={successfulApplications} subtitle="Approved by lender" />
       </div>
 
       {isLoading ? (

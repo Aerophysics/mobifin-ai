@@ -4,6 +4,8 @@ import {
   HelpCircle, RefreshCw, AlertTriangle, CheckCircle2
 } from 'lucide-react';
 import ApiService from '../services/api';
+import { Store, Receipt, BadgeCheck } from 'lucide-react';
+import { GlassMetric } from '../components/glass/GlassMetric';
 import { DataExplorerMetrics } from '../types';
 
 const DataExplorer: React.FC = () => {
@@ -39,7 +41,7 @@ const DataExplorer: React.FC = () => {
   const consentRate = (consentedCount / customerCount) * 100;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn">
       {/* DB Connection Meta Card */}
       <div className="premium-card bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center space-x-3">
@@ -56,30 +58,11 @@ const DataExplorer: React.FC = () => {
       </div>
 
       {/* Grid Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Registered Agents</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.agent_count}</span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Total Customers</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">{metrics?.customer_count}</span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Transaction Ledger</span>
-          <span className="text-xl font-bold text-slate-800 block mt-1.5">
-            {metrics?.transaction_count.toLocaleString()}
-          </span>
-        </div>
-
-        <div className="premium-card bg-white">
-          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Matured credit profiles</span>
-          <span className="text-xl font-bold text-teal-600 block mt-1.5">
-            {metrics?.sufficient_history_count}
-          </span>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <GlassMetric title="Registered agents" icon={Store} value={(metrics?.agent_count ?? 0).toLocaleString()} subtitle="Branch locations" />
+        <GlassMetric title="Total customers" icon={Users} value={(metrics?.customer_count ?? 0).toLocaleString()} subtitle="Anonymised profiles" />
+        <GlassMetric title="Transaction ledger" icon={Receipt} value={(metrics?.transaction_count ?? 0).toLocaleString()} subtitle="Ingested records" />
+        <GlassMetric title="Matured credit profiles" icon={BadgeCheck} value={(metrics?.sufficient_history_count ?? 0).toLocaleString()} subtitle="90 days and 30 transactions" />
       </div>
 
       {/* Consent Statistics Panel */}

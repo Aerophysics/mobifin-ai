@@ -75,7 +75,7 @@ const Transactions: React.FC = () => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Filters Form */}
       <GlassPanel className="p-5">
         <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">

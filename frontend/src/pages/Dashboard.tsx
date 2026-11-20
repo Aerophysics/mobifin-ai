@@ -124,8 +124,8 @@ const AgentOverview: React.FC<{ setActivePage?: (p: string) => void }> = ({ setA
           title="E-float demand, tomorrow"
           icon={TrendingUp}
           value={fmtGHS(demand)}
-          trend={liq?.forecast_confidence ? { value: liq.forecast_confidence, isPositive: !/limited/i.test(liq.forecast_confidence) } : undefined}
-          subtitle="XGBoost forecast"
+          trend={liq?.forecast_confidence ? { value: liq.forecast_confidence.replace(' historical', ''), isPositive: !/limited/i.test(liq.forecast_confidence) } : undefined}
+          subtitle="Based on recent activity"
         />
       </div>
 

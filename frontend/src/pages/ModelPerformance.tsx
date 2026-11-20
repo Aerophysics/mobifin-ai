@@ -49,7 +49,7 @@ const ModelPerformance: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Primary summary KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <GlassMetric 

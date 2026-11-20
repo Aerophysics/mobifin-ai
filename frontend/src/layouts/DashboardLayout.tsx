@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Receipt, Droplet, LineChart, Users, KeyRound,
   BarChart2, Database, Settings as SettingsIcon, Sparkles,
   LogOut, ShieldCheck, Activity, User, ChevronDown, Sun, Moon, Menu, X,
-  BookOpen, Bell, Check, Landmark, MoreHorizontal, FileCheck2, FlaskConical, MapPin
+  BookOpen, Bell, Check, Landmark, MoreHorizontal, FileCheck2, MapPin
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { UserProfile } from '../types';
@@ -59,7 +59,6 @@ const NAV: Record<string, { primary: NavItem[]; more: NavItem[] }> = {
       { name: 'Overview', icon: LayoutDashboard, page: 'admin-dashboard' },
       { name: 'Models', icon: BarChart2, page: 'performance' },
       { name: 'Data explorer', icon: Database, page: 'explorer' },
-      { name: 'Demo data', icon: FlaskConical, page: 'demo-mgmt' },
     ],
     more: [
       { name: 'Customer consent', icon: KeyRound, page: 'consent' },

@@ -26,7 +26,7 @@ const DemoManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn pb-8">
+    <div className="space-y-6 animate-fadeIn pb-8">
       {/* Intro and status info */}
       <GlassPanel className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
