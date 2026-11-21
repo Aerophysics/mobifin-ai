@@ -464,35 +464,40 @@ class ApiService {
 
     // Models performance
     if (cleanUrl === '/models/performance') {
+      // Mirrors the real offline validation results in the backend model registry (v1.0.0)
+      const trained = '2026-08-17T15:03:31';
       return {
         credit_model: {
-          name: "Alternative Credit XGBoost Underwriter",
-          version: "v2.1.4",
+          name: "Alternative credit classifier (XGBoost)",
+          version: "v1.0.0",
+          timestamp: trained,
           metrics: {
-            roc_auc: 0.925,
-            f1: 0.887,
-            precision: 0.892,
-            recall: 0.882,
-            confusion_matrix: [[412, 38], [47, 353]]
+            roc_auc: 0.9445,
+            f1: 0.7333,
+            precision: 0.8462,
+            recall: 0.6471,
+            confusion_matrix: [[60, 2], [6, 11]]
           }
         },
         demand_model: {
-          name: "XGBoost Float Demand Predictor",
-          version: "v1.2.0",
+          name: "Liquidity demand forecaster (XGBoost)",
+          version: "v1.0.0",
+          timestamp: trained,
           metrics: {
-            mae: 180.4,
-            rmse: 245.2,
-            mape: 8.3,
-            baseline_mae: 220.5
+            mae: 10662,
+            rmse: 14234,
+            mape: 40.6,
+            baseline_mae: 22847
           }
         },
         anomaly_model: {
-          name: "Isolation Forest Transaction Auditor",
-          version: "v0.9.1",
+          name: "Transaction anomaly detector (Isolation Forest)",
+          version: "v1.0.0",
+          timestamp: trained,
           metrics: {
-            anomaly_contamination: 0.02,
-            total_anomalies_detected: 47,
-            mean_score: 0.4832
+            anomaly_contamination: 0.03,
+            total_anomalies_detected: 987,
+            mean_score: 0.0708
           }
         }
       } as any;
