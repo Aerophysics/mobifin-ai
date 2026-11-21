@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import {
-  Activity, ArrowUpRight, Menu, X, Wallet, TrendingUp, Repeat, Landmark,
+  Activity, Menu, X, Wallet, TrendingUp, Repeat, Landmark,
   Store, Building2, UserRound, Sparkles,
 } from 'lucide-react';
 
@@ -222,13 +222,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
 
   return (
     <div className="bg-white min-h-screen w-full overflow-x-hidden" style={{ color: C.ink, fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}>
-      {/* News strip */}
-      <button onClick={() => scrollTo('trust')} className="w-full h-11 flex items-center justify-center gap-3 cursor-pointer border-none" style={{ background: C.terracotta }}>
-        <span className="mf-mono text-[10px] tracking-[0.16em] px-1.5 py-0.5 rounded-[3px] bg-[#f5e3c9] text-[#0b1407]">NEW</span>
-        <span className="mf-mono text-[12px] tracking-[0.16em] text-[#0b1407] uppercase">Consent-first credit over USSD</span>
-        <ArrowUpRight className="h-3.5 w-3.5 text-[#0b1407]" />
-      </button>
-
       {/* Navigation */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-[#eef2ea]">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-8 h-[72px] flex items-center justify-between">
