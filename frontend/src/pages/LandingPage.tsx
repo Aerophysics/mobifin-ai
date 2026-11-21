@@ -402,35 +402,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onSignUpClick }
 
       {/* Under the hood */}
       <section className="py-20 sm:py-28 px-4 sm:px-8">
-        <div className="max-w-[1320px] mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <MonoLabel className="text-[#0b1407]">[Under the hood]</MonoLabel>
-            <h2 className="mf-display font-semibold leading-[1.05] tracking-[-0.03em] text-[34px] sm:text-[44px] mt-5">Every score comes with its reasons</h2>
-            <p className="text-[17px] leading-relaxed mt-5 max-w-[520px]" style={{ color: C.sub }}>
-              XGBoost models with native SHAP contributions explain which behaviours moved a score. Leakage controls split data by customer and time, and location is kept out of credit features.
-            </p>
-            <button onClick={onLoginClick} className="mf-mono h-12 px-6 rounded-[6px] text-[14px] text-white cursor-pointer border-none mt-8 hover:opacity-90" style={{ background: C.forest }}>
-              Open the demo
-            </button>
-          </div>
-          <div className="rounded-[12px] overflow-hidden border border-[#0b1407]" style={{ background: '#0b1407' }}>
-            <div className="flex items-center justify-between px-4 h-11 border-b border-white/10">
-              <span className="flex gap-1.5">{[0, 1, 2].map(i => <span key={i} className="h-2 w-2 rounded-full bg-white/60" />)}</span>
-              <span className="mf-mono text-[11px] text-white/60 border border-white/15 rounded px-2 py-0.5">GET /api/credit/assessment/1048</span>
-            </div>
-            <pre className="mf-mono text-[12.5px] leading-[1.7] text-white/85 p-5 overflow-x-auto">{`{
-  "eligible": true,
-  "credit_score": 764,
-  "risk_category": "Low Risk",
-  "repayment_probability": 0.91,
-  "indicative_credit_capacity": 7500.0,
-  "factors": [
-    { "feature": "savings_behavior_score", "impact": `}<span className="text-[#a6e06a]">+0.42</span>{` },
-    { "feature": "inflow_outflow_ratio",   "impact": `}<span className="text-[#a6e06a]">+0.27</span>{` },
-    { "feature": "cashflow_volatility",    "impact": `}<span className="text-[#f0a090]">-0.18</span>{` }
-  ]
-}`}</pre>
-          </div>
+        <div className="max-w-[760px] mx-auto text-center flex flex-col items-center">
+          <MonoLabel className="text-[#0b1407]">[Under the hood]</MonoLabel>
+          <h2 className="mf-display font-semibold leading-[1.05] tracking-[-0.03em] text-[34px] sm:text-[44px] mt-5">Every score comes with its reasons</h2>
+          <p className="text-[17px] leading-relaxed mt-5" style={{ color: C.sub }}>
+            Machine-learning models show which behaviours moved a score, such as steady savings or volatile cash flow. Lenders see the reasons, not just a number, and location is never used in credit scoring.
+          </p>
+          <button onClick={onLoginClick} className="mf-mono h-12 px-6 rounded-[6px] text-[14px] text-white cursor-pointer border-none mt-8 hover:opacity-90" style={{ background: C.forest }}>
+            Open the demo
+          </button>
         </div>
       </section>
 
