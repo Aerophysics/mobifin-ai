@@ -103,7 +103,7 @@ export const Referrals: React.FC = () => {
         ...formData,
         requested_amount: amt
       });
-      setSuccessMsg(`Consent request sent successfully to customer ${formData.name}.`);
+      setSuccessMsg(`Consent request sent to ${formData.name}. They can approve it on USSD.`);
       setIsOpen(false);
       setTimeout(() => setSuccessMsg(null), 4000);
       fetchReferrals();
