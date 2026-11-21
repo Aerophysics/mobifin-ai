@@ -28,6 +28,13 @@ export const Referrals: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Refresh when the customer answers on the USSD simulator
+  useEffect(() => {
+    const onUssd = () => fetchReferrals();
+    window.addEventListener('ussd_update', onUssd);
+    return () => window.removeEventListener('ussd_update', onUssd);
+  }, []);
+
   useEffect(() => {
     fetchReferrals();
     fetchInstitutions();

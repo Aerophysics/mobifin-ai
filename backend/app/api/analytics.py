@@ -51,11 +51,12 @@ VOLUME_CATEGORIES = {
 def get_volume_by_month(
     agent_id: Optional[int] = None,
     months: int = 6,
-    current_user = Depends(agent_or_admin),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Monthly transaction value for a branch, split into deposits, withdrawals, transfers
+    Monthly transaction value for a branch (or the whole platform for lenders/admins
+    when no agent_id is given), split into deposits, withdrawals, transfers
     and payments, for the most recent `months` months that have activity.
     Also returns a trend projection for the next month (trailing 3-month average).
     """
@@ -63,8 +64,6 @@ def get_volume_by_month(
         if not current_user.agent_id:
             raise HTTPException(status_code=400, detail="User is not linked to an agent account.")
         agent_id = current_user.agent_id
-    elif not agent_id:
-        raise HTTPException(status_code=400, detail="agent_id is required.")
 
     months = max(1, min(months, 12))
     month_col = func.strftime("%Y-%m", Transaction.timestamp) if db.bind.dialect.name == "sqlite" \
@@ -75,10 +74,16 @@ def get_volume_by_month(
         Transaction.transaction_type,
         func.sum(Transaction.amount),
         func.count(Transaction.transaction_id),
-    ).filter(Transaction.agent_id == agent_id).group_by("month", Transaction.transaction_type).all()
+    )
+    if agent_id:
+        rows = rows.filter(Transaction.agent_id == agent_id)
+    rows = rows.group_by("month", Transaction.transaction_type).all()
 
     by_month = defaultdict(lambda: {"deposits": 0.0, "withdrawals": 0.0, "transfers": 0.0, "payments": 0.0, "count": 0})
+    type_by_month = defaultdict(lambda: defaultdict(lambda: [0.0, 0]))
     for month, tx_type, total, count in rows:
+        type_by_month[month][tx_type][0] += float(total or 0)
+        type_by_month[month][tx_type][1] += int(count or 0)
         bucket = by_month[month]
         bucket[VOLUME_CATEGORIES.get(tx_type, "payments")] += float(total or 0)
         bucket["count"] += int(count or 0)
@@ -106,4 +111,16 @@ def get_volume_by_month(
             "total": round(sum(x["total"] for x in window) / len(window), 2),
         }
 
-    return {"agent_id": agent_id, "months": series, "projection": projection}
+    # Per-transaction-type totals across the same window (for the mix/donut chart)
+    type_totals = defaultdict(lambda: [0.0, 0])
+    for m in recent:
+        for tx_type, (total, count) in type_by_month[m].items():
+            type_totals[tx_type][0] += total
+            type_totals[tx_type][1] += count
+    grand = sum(v[0] for v in type_totals.values()) or 1.0
+    by_type = sorted(
+        [{"type": t, "value": round(v[0], 2), "count": v[1], "share": round(v[0] / grand * 100, 1)} for t, v in type_totals.items()],
+        key=lambda x: -x["value"],
+    )
+
+    return {"agent_id": agent_id, "months": series, "projection": projection, "by_type": by_type}

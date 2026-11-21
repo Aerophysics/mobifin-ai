@@ -218,3 +218,15 @@ def test_volume_by_month_groups_categories_and_scopes_agent(db_session):
     month = res["months"][-1]
     assert month["deposits"] == 100.0 and month["payments"] == 50.0 and month["total"] == 150.0
     assert res["projection"]["total"] == 150.0
+
+
+def test_volume_by_month_type_mix_and_platform_scope(db_session):
+    from backend.app.api.analytics import get_volume_by_month
+    kwame, _, lender, _ = _seed(db_session)
+    platform = get_volume_by_month(agent_id=None, months=6, current_user=lender, db=db_session)
+    assert platform["agent_id"] is None
+    assert {t["type"] for t in platform["by_type"]} == {"deposit"}
+    assert platform["by_type"][0]["share"] == 100.0
+    assert platform["months"][-1]["deposits"] == 200.0  # both agents' deposits
+    mine = get_volume_by_month(agent_id=None, months=6, current_user=kwame, db=db_session)
+    assert mine["months"][-1]["deposits"] == 100.0

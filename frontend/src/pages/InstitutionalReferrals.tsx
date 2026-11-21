@@ -19,14 +19,19 @@ export const InstitutionalReferrals: React.FC = () => {
   const [decisionSuccess, setDecisionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchReferrals();
+    fetchReferrals(true);
   }, []);
 
-  const fetchReferrals = async () => {
+  const fetchReferrals = async (autoSelect = false) => {
     setIsLoading(true);
     try {
       const res = await ApiService.getInstitutionReferrals();
       setReferrals(res);
+      // Open the application most likely to need attention so the decision controls are visible immediately
+      if (autoSelect && res.length) {
+        const pending = res.find((r: any) => r.consent_status === 'CONSENT_ACTIVE' && !['APPROVED', 'REJECTED'].includes(r.application_status));
+        handleSelectReferral(pending || res[0]);
+      }
     } catch (e) {
       console.error('Failed to load referrals', e);
     } finally {
@@ -44,6 +49,15 @@ export const InstitutionalReferrals: React.FC = () => {
         setProfileData(data);
       } catch (e) {
         console.error(e);
+        // Access was refused (e.g. consent expired or revoked): refresh so the list and panel show the real status
+        try {
+          const fresh = await ApiService.getInstitutionReferrals();
+          setReferrals(fresh);
+          const updated = fresh.find((r: any) => r.referral_id === ref.referral_id);
+          setSelectedRef(updated && updated.consent_status !== 'CONSENT_ACTIVE' ? updated : { ...ref, consent_status: 'CONSENT_EXPIRED' });
+        } catch {
+          setSelectedRef({ ...ref, consent_status: 'CONSENT_EXPIRED' });
+        }
       } finally {
         setIsProfileLoading(false);
       }
@@ -118,10 +132,10 @@ export const InstitutionalReferrals: React.FC = () => {
                   <div 
                     key={r.referral_id}
                     onClick={() => handleSelectReferral(r)}
-                    className={`p-3.5 rounded-xl border transition cursor-pointer text-left ${
+                    className={`p-3.5 rounded-xl border transition cursor-pointer text-left text-[var(--mf-text-primary)] ${
                       isSelected 
-                        ? 'bg-[var(--mf-accent)]/10 border-[var(--mf-accent)] text-white' 
-                        : 'bg-white/2 border-white/5 hover:bg-white/5 text-white/80'
+                        ? 'bg-[var(--mf-accent-soft)] border-[var(--mf-accent)]' 
+                        : 'bg-[var(--mf-card-glass)] border-[var(--mf-border)] hover:border-[var(--mf-border-strong)]'
                     }`}
                   >
                     <div className="flex justify-between items-start">
@@ -134,9 +148,9 @@ export const InstitutionalReferrals: React.FC = () => {
                       </GlassBadge>
                     </div>
 
-                    <div className="flex justify-between items-center mt-2.5 text-[10px] text-white/40">
+                    <div className="flex justify-between items-center mt-2.5 text-[12px] text-[var(--mf-text-secondary)]">
                       <span>Source: {r.agent_name}</span>
-                      <span className="font-bold text-white">GH₵{r.requested_amount?.toLocaleString()}</span>
+                      <span className="font-semibold text-[var(--mf-text-primary)]">GH₵{r.requested_amount?.toLocaleString()}</span>
                     </div>
                   </div>
                 );
@@ -158,15 +172,20 @@ export const InstitutionalReferrals: React.FC = () => {
             ) : selectedRef.consent_status !== 'CONSENT_ACTIVE' ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
                 <KeyRound className="h-12 w-12 text-rose-500 animate-pulse" />
-                <h4 className="font-extrabold text-sm text-white">Consent Access Required</h4>
+                <h4 className="font-extrabold text-sm text-white">
+                  {selectedRef.consent_status === 'CONSENT_EXPIRED' ? 'Consent has expired' : selectedRef.consent_status === 'CONSENT_REVOKED' ? 'Consent was revoked' : 'Consent access required'}
+                </h4>
                 <p className="text-xs text-[var(--mf-text-secondary)] max-w-sm leading-relaxed">
-                  Customer consent is required before financial information can be accessed.
+                  You can only view this customer’s profile and record a decision while their consent is active.
                 </p>
-                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-200 text-[10.5px] p-3 rounded-xl max-w-sm">
-                  {selectedRef.consent_status === 'CONSENT_DECLINED' 
-                    ? "The customer explicitly declined permission to share records via USSD simulator."
-                    : "Awaiting customer approval via the USSD simulation interface."
-                  }
+                <div className="bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)] text-[13px] p-3 rounded-xl max-w-sm">
+                  {selectedRef.consent_status === 'CONSENT_DECLINED'
+                    ? 'The customer declined to share their records on USSD.'
+                    : selectedRef.consent_status === 'CONSENT_EXPIRED'
+                      ? 'Consent lasts 90 days. Ask the referring agent to send a new referral so the customer can approve again.'
+                      : selectedRef.consent_status === 'CONSENT_REVOKED'
+                        ? 'The customer withdrew consent. Access ended immediately.'
+                        : 'Waiting for the customer to approve on USSD.'}
                 </div>
               </div>
             ) : profileData ? (
@@ -177,6 +196,33 @@ export const InstitutionalReferrals: React.FC = () => {
                     <span className="text-[10px] text-white/50">Consent active until: {new Date(profileData.consent_expiry).toLocaleDateString()}</span>
                   </div>
                   <GlassBadge variant="success">Consent Active</GlassBadge>
+                </div>
+
+                {/* Lending decision */}
+                <div className="rounded-2xl bg-[var(--mf-accent-soft)] p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[15px] font-semibold text-[var(--mf-text-primary)]">Lending decision</div>
+                    <div className="text-[13px] text-[var(--mf-text-secondary)] mt-1 flex items-center gap-2">
+                      Current status
+                      <GlassBadge variant={
+                        selectedRef.application_status === 'APPROVED' ? 'success' :
+                        selectedRef.application_status === 'REJECTED' ? 'danger' : 'warning'
+                      }>
+                        {String(selectedRef.application_status || 'PENDING').replace('_', ' ').toLowerCase()}
+                      </GlassBadge>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <GlassButton variant="primary" onClick={() => handleLendingDecision('APPROVED')}>
+                      <CheckCircle2 className="h-4 w-4" /> Approve
+                    </GlassButton>
+                    <GlassButton variant="danger" onClick={() => handleLendingDecision('REJECTED')}>
+                      <X className="h-4 w-4" /> Reject
+                    </GlassButton>
+                    <GlassButton onClick={() => handleLendingDecision('MANUAL_REVIEW')}>
+                      <Eye className="h-4 w-4" /> Manual review
+                    </GlassButton>
+                  </div>
                 </div>
 
                 {/* Consent Audit Trail Section */}
@@ -318,44 +364,9 @@ export const InstitutionalReferrals: React.FC = () => {
                   </div>
                 )}
 
-                {/* Underwriting loan decision buttons */}
-                <div className="space-y-3.5 border-t border-white/5 pt-4">
-                  <p className="text-[10.5px] text-white/40 text-center italic">
-                    Alternative credit assessment is indicative and does not guarantee loan approval. Final lending decisions require appropriate institutional underwriting.
-                  </p>
-                  
-                  <div className="grid grid-cols-3 gap-3">
-                    <GlassButton 
-                      variant="primary" 
-                      onClick={() => handleLendingDecision('APPROVED')}
-                      className="py-2.5 font-bold text-[10px] bg-emerald-600 hover:bg-emerald-500 border-none uppercase tracking-wider text-white"
-                    >
-                      Approve Application
-                    </GlassButton>
-                    <GlassButton 
-                      onClick={() => handleLendingDecision('REJECTED')}
-                      className="py-2.5 font-bold text-[10px] bg-rose-950/50 hover:bg-rose-900 border-rose-500/20 text-rose-200 uppercase tracking-wider"
-                    >
-                      Reject Application
-                    </GlassButton>
-                    <GlassButton 
-                      onClick={() => handleLendingDecision('MANUAL_REVIEW')}
-                      className="py-2.5 font-bold text-[10px] border-white/10 hover:bg-white/5 uppercase tracking-wider"
-                    >
-                      Request Manual Review
-                    </GlassButton>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2 text-[10.5px] text-white/50 bg-white/2 p-2.5 rounded-xl border border-white/5">
-                    <span>Application Underwriting status:</span>
-                    <GlassBadge variant={
-                      selectedRef.application_status === 'APPROVED' ? 'success' :
-                      selectedRef.application_status === 'REJECTED' ? 'danger' : 'warning'
-                    }>
-                      {selectedRef.application_status}
-                    </GlassBadge>
-                  </div>
-                </div>
+                <p className="text-[12px] text-[var(--mf-text-secondary)] text-center border-t border-[var(--mf-border)] pt-4">
+                  The alternative credit assessment is indicative and does not guarantee approval. Final lending decisions rest with your institution’s underwriting.
+                </p>
               </div>
             ) : null}
           </GlassPanel>

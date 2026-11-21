@@ -15,7 +15,15 @@ import { GlassMetric } from '../components/glass/GlassMetric';
 import { GlassTable } from '../components/glass/GlassTable';
 
 // High-contrast color palette for visual readability
-const COLORS = ['#0d9488', '#3b82f6', '#8b5cf6', '#f97316', '#10b981', '#6366f1'];
+// One fixed colour per transaction type (same family as the overview's monthly chart)
+const TYPE_STYLE: Record<string, { label: string; color: string }> = {
+  deposit: { label: 'Cash deposits', color: 'var(--mf-chart-1)' },
+  withdrawal: { label: 'Cash withdrawals', color: 'var(--mf-chart-2)' },
+  transfer: { label: 'Transfers', color: 'var(--mf-chart-3)' },
+  bill_payment: { label: 'Bill payments', color: 'var(--mf-chart-4)' },
+  merchant_payment: { label: 'Merchant payments', color: '#c9713f' },
+  airtime: { label: 'Airtime top-ups', color: '#7c6fd6' },
+};
 
 const BusinessAnalytics: React.FC = () => {
   const [health, setHealth] = useState<BusinessHealth | null>(null);
@@ -32,14 +40,7 @@ const BusinessAnalytics: React.FC = () => {
     { name: 'Sun', Commission: 95 }
   ];
 
-  const typeDistribution = [
-    { name: 'Deposit', value: 45000 },
-    { name: 'Withdrawal', value: 38000 },
-    { name: 'Transfer', value: 15000 },
-    { name: 'Bill Payment', value: 12000 },
-    { name: 'Airtime', value: 8000 },
-    { name: 'Merchant Pay', value: 7000 }
-  ];
+  const [typeDistribution, setTypeDistribution] = useState<{ type: string; value: number; count: number; share: number }[]>([]);
 
   const regionalActivity = [
     { location: 'Greater Accra', 'Tx Volume': 185000, 'Tx Count': 1240 },
@@ -55,8 +56,12 @@ const BusinessAnalytics: React.FC = () => {
 
   const fetchHealthData = async () => {
     try {
-      const res = await ApiService.getBusinessHealth();
+      const [res, vol] = await Promise.all([
+        ApiService.getBusinessHealth(),
+        ApiService.getVolumeByMonth(6).catch(() => null),
+      ]);
       setHealth(res);
+      setTypeDistribution(vol?.by_type || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -127,30 +132,45 @@ const BusinessAnalytics: React.FC = () => {
         {/* Transaction Type Pie Chart */}
         <GlassPanel className="p-5 flex flex-col space-y-4">
           <div>
-            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Transaction Type Distribution</h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">Volumetric share of mobile money services</p>
+            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Transaction mix</h3>
+            <p className="text-[10px] text-[var(--mf-text-secondary)]">Share of transaction value by type, last 6 months</p>
           </div>
-          <div className="h-60 w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={typeDistribution}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {typeDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
-                <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 9 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          {typeDistribution.length === 0 ? (
+            <div className="h-60 flex items-center justify-center text-[13px] text-[var(--mf-text-secondary)]">No transactions in the last 6 months.</div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="relative h-56 w-56 flex-shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={typeDistribution} dataKey="value" nameKey="type" innerRadius={68} outerRadius={100} paddingAngle={2} stroke="var(--mf-surface)" strokeWidth={2} isAnimationActive={false}>
+                      {typeDistribution.map(d => (
+                        <Cell key={d.type} fill={TYPE_STYLE[d.type]?.color || 'var(--mf-text-muted)'} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(v: any, _n: any, item: any) => [`GH₵${Number(v).toLocaleString()} · ${item.payload.share}%`, TYPE_STYLE[item.payload.type]?.label || item.payload.type]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[12px] text-[var(--mf-text-secondary)]">6-month total</span>
+                  <span className="mf-display text-[20px] font-semibold">
+                    GH₵{Math.round(typeDistribution.reduce((a, d) => a + d.value, 0) / 1000).toLocaleString()}K
+                  </span>
+                </div>
+              </div>
+              <ul className="flex-1 w-full space-y-2.5">
+                {typeDistribution.map(d => (
+                  <li key={d.type} className="flex items-center gap-3 text-[13px]">
+                    <span className="h-3 w-3 rounded-[3px] flex-shrink-0" style={{ background: TYPE_STYLE[d.type]?.color || 'var(--mf-text-muted)' }} />
+                    <span className="flex-1 text-[var(--mf-text-primary)]">{TYPE_STYLE[d.type]?.label || d.type}</span>
+                    <span className="mf-tabular text-[var(--mf-text-secondary)]">GH₵{Math.round(d.value).toLocaleString()}</span>
+                    <span className="mf-tabular font-semibold w-12 text-right">{d.share}%</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </GlassPanel>
 
         {/* Ghanaian Regional Activity Bar Chart */}

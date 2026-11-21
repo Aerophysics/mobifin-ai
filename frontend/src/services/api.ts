@@ -19,6 +19,7 @@ export interface VolumeByMonth {
   agent_id: number;
   months: VolumeMonth[];
   projection: { basis: string; total: number } | null;
+  by_type?: { type: string; value: number; count: number; share: number }[];
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -695,10 +696,13 @@ class ApiService {
         return { month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, ...b, total, transaction_count: Math.round(total / 640) };
       });
       const last3 = months.slice(-3);
+      const mix = [['deposit', 1173100], ['withdrawal', 279600], ['merchant_payment', 131200], ['bill_payment', 126400], ['airtime', 101400], ['transfer', 90500]] as [string, number][];
+      const mixTotal = mix.reduce((a, [, v]) => a + v, 0);
       return {
         agent_id: 1,
         months,
-        projection: { basis: 'Trailing 3-month average', total: Math.round(last3.reduce((a, m) => a + m.total, 0) / 3) }
+        projection: { basis: 'Trailing 3-month average', total: Math.round(last3.reduce((a, m) => a + m.total, 0) / 3) },
+        by_type: mix.map(([type, value]) => ({ type, value, count: Math.round(value / 640), share: Math.round((value / mixTotal) * 1000) / 10 }))
       } as any;
     }
 
