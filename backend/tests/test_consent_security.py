@@ -230,3 +230,13 @@ def test_volume_by_month_type_mix_and_platform_scope(db_session):
     assert platform["months"][-1]["deposits"] == 200.0  # both agents' deposits
     mine = get_volume_by_month(agent_id=None, months=6, current_user=kwame, db=db_session)
     assert mine["months"][-1]["deposits"] == 100.0
+
+
+def test_regional_activity_aggregates_by_branch_location(db_session):
+    from backend.app.api.analytics import get_regional_activity
+    kwame, _, _, _ = _seed(db_session)
+    res = get_regional_activity(current_user=kwame, db=db_session)
+    assert len(res["regions"]) == 1  # both seeded branches are in "Accra"
+    assert res["regions"][0]["volume"] == 200.0
+    assert res["regions"][0]["agent_count"] == 2
+    assert res["regions"][0]["share"] == 100.0

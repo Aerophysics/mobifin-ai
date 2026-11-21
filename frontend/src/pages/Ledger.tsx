@@ -9,6 +9,8 @@ import { GlassCard } from '../components/glass/GlassCard';
 import { GlassButton } from '../components/glass/GlassButton';
 import { GlassBadge } from '../components/glass/GlassBadge';
 import { GlassTable } from '../components/glass/GlassTable';
+import { GlassMetric } from '../components/glass/GlassMetric';
+import { SectionCard, PillButton } from '../components/dash/DashKit';
 
 interface LedgerDetail {
   date: string;
@@ -26,9 +28,9 @@ interface LedgerDetail {
 }
 
 export const Ledger: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
-  });
+  // Dates are compared in the user's local time zone, not UTC
+  const localDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const [selectedDate, setSelectedDate] = useState<string>(() => localDay(new Date()));
   
   const [summary, setSummary] = useState<LedgerDetail | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -57,7 +59,7 @@ export const Ledger: React.FC = () => {
       // Filter transactions matching query date
       const targetDateStr = selectedDate;
       const dayTxs = txPaged.transactions.filter(t => {
-        const txDate = new Date(t.timestamp).toISOString().split('T')[0];
+        const txDate = localDay(new Date(t.timestamp));
         return txDate === targetDateStr;
       }).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
@@ -141,246 +143,125 @@ export const Ledger: React.FC = () => {
   }
 
   const isBalanced = summary?.reconciliation_status === 'Balanced';
+  const money = (n: number) => `GH₵${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const selectCls = 'h-9 px-3 rounded-full border border-[var(--mf-border-strong)] bg-[var(--mf-surface)] text-[13px] text-[var(--mf-text-primary)] focus:outline-none focus:border-[var(--mf-accent)] cursor-pointer';
+
+  const Line: React.FC<{ label: string; value: string; tone?: 'in' | 'out' | 'total' | 'muted' }> = ({ label, value, tone = 'muted' }) => (
+    <div className={`flex justify-between items-center py-3 border-t border-[var(--mf-border)] first:border-t-0 text-[14px] ${tone === 'total' ? 'font-semibold' : ''}`}>
+      <span className={tone === 'total' ? 'text-[var(--mf-text-primary)]' : 'text-[var(--mf-text-secondary)]'}>{label}</span>
+      <span className={`mf-tabular ${
+        tone === 'in' ? 'text-[var(--mf-success-ink)] font-semibold' : tone === 'out' ? 'text-[var(--mf-danger-ink)] font-semibold' : 'text-[var(--mf-text-primary)]'
+      } ${tone === 'total' ? 'mf-display text-[18px]' : ''}`}>{value}</span>
+    </div>
+  );
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-8">
-      {/* Date Picker Header */}
-      <GlassPanel className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <BookOpen className="h-5 w-5 text-[var(--mf-accent)]" />
-          <div>
-            <h3 className="font-bold text-sm text-[var(--mf-text-primary)] uppercase tracking-wider">
-              Agent Digital Ledger
-            </h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">Daily bookkeeping and reconciliation audit log</p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
+    <div className="space-y-5 animate-fadeIn">
+      {/* Date */}
+      <div className="flex justify-end -mt-2">
+        <label className="h-10 pl-3.5 pr-2 rounded-full border border-[var(--mf-border-strong)] bg-[var(--mf-surface)] flex items-center gap-2 text-[13px] font-medium">
           <Calendar className="h-4 w-4 text-[var(--mf-text-secondary)]" />
           <input
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl px-3 py-2 text-[var(--mf-text-primary)] focus:outline-none focus:border-[var(--mf-accent)]"
+            className="bg-transparent border-none text-[13px] text-[var(--mf-text-primary)] focus:outline-none"
           />
-        </div>
-      </GlassPanel>
+        </label>
+      </div>
 
-      {/* Ledger Balances Row */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Cash Ledger */}
-          <GlassPanel className="p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-[var(--mf-border)] pb-2.5">
-              <span className="text-[10px] font-bold text-[var(--mf-text-primary)] uppercase tracking-widest flex items-center">
-                <Coins className="h-4 w-4 text-emerald-500 mr-1.5" />
-                Cash Position (GH₵)
-              </span>
-              <GlassBadge variant="success">Hard Cash</GlassBadge>
-            </div>
-            
-            <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between text-[var(--mf-text-secondary)]">
-                <span>Opening Balance</span>
-                <span className="font-mono">GH₵{summary.opening_cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-emerald-500 font-semibold">
-                <span>Cash In</span>
-                <span className="font-mono">+GH₵{summary.cash_in.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-rose-500 font-semibold">
-                <span>Cash Out</span>
-                <span className="font-mono">-GH₵{summary.cash_out.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-amber-500 font-semibold">
-                <span>Commission earned</span>
-                <span className="font-mono">+GH₵{summary.commission.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="border-t border-[var(--mf-border)] my-2" />
-              <div className="flex justify-between font-extrabold text-sm text-[var(--mf-text-primary)]">
-                <span>Closing Balance</span>
-                <span className="font-mono">GH₵{summary.closing_cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-          </GlassPanel>
-
-          {/* E-Float Ledger */}
-          <GlassPanel className="p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-[var(--mf-border)] pb-2.5">
-              <span className="text-[10px] font-bold text-[var(--mf-text-primary)] uppercase tracking-widest flex items-center">
-                <Wallet className="h-4 w-4 text-sky-500 mr-1.5" />
-                E-Float Position (GH₵)
-              </span>
-              <GlassBadge variant="info">Digital Float</GlassBadge>
-            </div>
-            
-            <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between text-[var(--mf-text-secondary)]">
-                <span>Opening Balance</span>
-                <span className="font-mono">GH₵{summary.opening_float.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-emerald-500 font-semibold">
-                <span>Float In (Withdrawal peaks)</span>
-                <span className="font-mono">+GH₵{summary.float_in.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-rose-500 font-semibold">
-                <span>Float Out (Deposits/Transfers)</span>
-                <span className="font-mono">-GH₵{summary.float_out.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="border-t border-[var(--mf-border)] my-2" />
-              <div className="flex justify-between font-extrabold text-sm text-[var(--mf-text-primary)]">
-                <span>Closing Balance</span>
-                <span className="font-mono">GH₵{summary.closing_float.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-          </GlassPanel>
-
-          {/* Reconciliation Status */}
-          <GlassPanel className={`p-5 flex flex-col justify-between ${
-            isBalanced ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-amber-500/20 bg-amber-500/5'
-          }`}>
-            <div className="space-y-3">
-              <span className="text-[10px] font-bold text-[var(--mf-text-primary)] uppercase tracking-widest block border-b border-[var(--mf-border)] pb-2">
-                Ledger Reconciliation
-              </span>
-              
-              <div className="flex items-center space-x-2 pt-2">
-                {isBalanced ? (
-                  <CheckCircle className="h-8 w-8 text-emerald-500 flex-shrink-0 animate-pulse" />
-                ) : (
-                  <AlertTriangle className="h-8 w-8 text-amber-500 flex-shrink-0 animate-pulse" />
-                )}
-                <div>
-                  <h4 className="font-bold text-xs text-[var(--mf-text-primary)]">
-                    {isBalanced ? 'Ledger Balanced' : 'Reconciliation Required'}
-                  </h4>
-                  <p className="text-[9px] text-[var(--mf-text-secondary)] mt-0.5 leading-normal">
-                    {isBalanced 
-                      ? 'Closing balances verify correctly against calculated inflow/outflow offsets.'
-                      : 'Closing cash or float levels do not match daily transaction history aggregates.'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-[10px] space-y-1.5 mt-4">
-              <div className="flex justify-between">
-                <span className="text-[var(--mf-text-secondary)]">Transactions Logged:</span>
-                <span className="font-bold text-[var(--mf-text-primary)]">{summary.transactions_count} ops</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[var(--mf-text-secondary)]">Calculated Match Status:</span>
-                <span className="font-bold text-emerald-500">✓ 100% Match</span>
-              </div>
-            </div>
-          </GlassPanel>
-        </div>
-      )}
-
-      {/* Ledger Table Filters */}
-      <GlassPanel className="p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <Filter className="h-3.5 w-3.5 text-[var(--mf-text-secondary)]" />
-            <span className="text-[10px] font-bold text-[var(--mf-text-primary)] uppercase tracking-wider">Filters:</span>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+            <GlassMetric title="Closing cash" icon={Coins} value={money(summary.closing_cash)} subtitle={`Opened at ${money(summary.opening_cash)}`} />
+            <GlassMetric title="Closing e-float" icon={Wallet} value={money(summary.closing_float)} subtitle={`Opened at ${money(summary.opening_float)}`} />
+            <GlassMetric title="Commission earned" icon={Sparkles} value={money(summary.commission)} subtitle={`${summary.transactions_count} transactions`} />
+            <GlassMetric
+              title="Reconciliation"
+              icon={isBalanced ? CheckCircle : AlertTriangle}
+              value={isBalanced ? 'Balanced' : 'Check needed'}
+              trend={{ value: isBalanced ? 'Matches history' : 'Mismatch', isPositive: isBalanced }}
+              subtitle="Closing vs. transactions"
+            />
           </div>
 
-          <select
-            value={filterType}
-            onChange={e => setFilterType(e.target.value)}
-            className="text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl px-2.5 py-1.5 text-[var(--mf-text-primary)] focus:outline-none dark:text-white dark:bg-[#0c1c09]"
-          >
-            <option value="" className="dark:bg-[#0c1c09]">All Types</option>
-            <option value="deposit" className="dark:bg-[#0c1c09]">Deposit</option>
-            <option value="withdrawal" className="dark:bg-[#0c1c09]">Withdrawal</option>
-            <option value="transfer" className="dark:bg-[#0c1c09]">Transfer</option>
-            <option value="airtime" className="dark:bg-[#0c1c09]">Airtime</option>
-            <option value="bill_payment" className="dark:bg-[#0c1c09]">Bill Payment</option>
-            <option value="merchant_payment" className="dark:bg-[#0c1c09]">Merchant Payment</option>
-          </select>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <SectionCard title="Cash position" icon={Coins} actions={<GlassBadge variant="success">Physical cash</GlassBadge>}>
+              <Line label="Opening balance" value={money(summary.opening_cash)} />
+              <Line label="Cash in" value={`+${money(summary.cash_in)}`} tone="in" />
+              <Line label="Cash out" value={`−${money(summary.cash_out)}`} tone="out" />
+              <Line label="Commission earned" value={`+${money(summary.commission)}`} tone="in" />
+              <Line label="Closing balance" value={money(summary.closing_cash)} tone="total" />
+            </SectionCard>
+            <SectionCard title="E-float position" icon={Wallet} actions={<GlassBadge variant="info">Digital float</GlassBadge>}>
+              <Line label="Opening balance" value={money(summary.opening_float)} />
+              <Line label="Float in (from withdrawals)" value={`+${money(summary.float_in)}`} tone="in" />
+              <Line label="Float out (deposits & transfers)" value={`−${money(summary.float_out)}`} tone="out" />
+              <Line label="Closing balance" value={money(summary.closing_float)} tone="total" />
+            </SectionCard>
+          </div>
+        </>
+      )}
 
-          <select
-            value={filterDirection}
-            onChange={e => setFilterDirection(e.target.value)}
-            className="text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl px-2.5 py-1.5 text-[var(--mf-text-primary)] focus:outline-none dark:text-white dark:bg-[#0c1c09]"
-          >
-            <option value="" className="dark:bg-[#0c1c09]">All Flows</option>
-            <option value="inflow" className="dark:bg-[#0c1c09]">Inflow</option>
-            <option value="outflow" className="dark:bg-[#0c1c09]">Outflow</option>
-          </select>
-
-          <select
-            value={filterAsset}
-            onChange={e => setFilterAsset(e.target.value)}
-            className="text-xs bg-white/5 border border-[var(--mf-border)] rounded-xl px-2.5 py-1.5 text-[var(--mf-text-primary)] focus:outline-none dark:text-white dark:bg-[#0c1c09]"
-          >
-            <option value="" className="dark:bg-[#0c1c09]">Cash & Float</option>
-            <option value="cash" className="dark:bg-[#0c1c09]">Cash-impact Only</option>
-            <option value="float" className="dark:bg-[#0c1c09]">Float-impact Only</option>
-          </select>
-
-          <GlassButton onClick={handleResetFilters} className="px-3 h-8 text-[10px] font-bold">
-            <RotateCcw className="h-3 w-3 mr-1" />
-            Reset
-          </GlassButton>
-        </div>
-      </GlassPanel>
-
-      {/* Ledger Journal Log Table */}
-      <GlassPanel className="p-5">
-        <h4 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider mb-4">Daily Transaction Journal</h4>
-        <GlassTable 
-          headers={["Time", "Type", "Cash Impact", "Float Impact", "Commission", "Running Cash", "Running Float"]}
+      <SectionCard
+        title="Daily journal"
+        icon={BookOpen}
+        actions={
+          <div className="hidden md:flex items-center gap-2">
+            <select value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
+              <option value="">All types</option>
+              <option value="deposit">Deposit</option>
+              <option value="withdrawal">Withdrawal</option>
+              <option value="transfer">Transfer</option>
+              <option value="airtime">Airtime</option>
+              <option value="bill_payment">Bill payment</option>
+              <option value="merchant_payment">Merchant payment</option>
+            </select>
+            <select value={filterDirection} onChange={e => setFilterDirection(e.target.value)} className={selectCls}>
+              <option value="">All flows</option>
+              <option value="inflow">Inflow</option>
+              <option value="outflow">Outflow</option>
+            </select>
+            <select value={filterAsset} onChange={e => setFilterAsset(e.target.value)} className={selectCls}>
+              <option value="">Cash & float</option>
+              <option value="cash">Cash impact</option>
+              <option value="float">Float impact</option>
+            </select>
+            <PillButton icon={RotateCcw} onClick={handleResetFilters}>Reset</PillButton>
+          </div>
+        }
+      >
+        <GlassTable
+          headers={['Time', 'Type', 'Cash impact', 'Float impact', 'Commission', 'Running cash', 'Running float']}
           alignRightIndexes={[2, 3, 4, 5, 6]}
+          className="text-[14px]"
         >
           {filteredTxs.length === 0 ? (
             <tr>
-              <td colSpan={7} className="py-8 text-center text-[var(--mf-text-secondary)] text-xs font-semibold">
-                No ledger transactions logged for this date.
-              </td>
+              <td colSpan={7} className="py-10 text-center text-[var(--mf-text-secondary)]">No transactions recorded for this date.</td>
             </tr>
-          ) : (
-            filteredTxs.map(t => (
-              <tr key={t.transaction_id} className="hover:bg-white/5 transition-colors">
-                <td className="py-3 px-2 text-[var(--mf-text-secondary)] font-mono text-[10px]">
-                  {new Date(t.timestamp).toLocaleTimeString(undefined, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </td>
-                <td className="py-3 px-2 font-semibold capitalize">
-                  {t.transaction_type}
-                  <span className="text-[9px] text-[var(--mf-text-secondary)] font-mono block">
-                    {t.customer_id ? `#${t.customer_id}` : 'Agent Adjust'}
-                  </span>
-                </td>
-                <td className={`py-3 px-2 text-right font-bold ${
-                  t.cashImpact > 0 ? 'text-emerald-500' : t.cashImpact < 0 ? 'text-rose-500' : 'text-[var(--mf-text-secondary)]'
-                }`}>
-                  {t.cashImpact > 0 ? '+' : ''}{t.cashImpact !== 0 ? `GH₵${t.cashImpact.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}
-                </td>
-                <td className={`py-3 px-2 text-right font-bold ${
-                  t.floatImpact > 0 ? 'text-emerald-500' : t.floatImpact < 0 ? 'text-rose-500' : 'text-[var(--mf-text-secondary)]'
-                }`}>
-                  {t.floatImpact > 0 ? '+' : ''}{t.floatImpact !== 0 ? `GH₵${t.floatImpact.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'}
-                </td>
-                <td className="py-3 px-2 text-right text-emerald-500 font-semibold">
-                  GH₵{t.commission.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td className="py-3 px-2 text-right text-[var(--mf-text-secondary)] font-mono">
-                  GH₵{t.runningCash.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td className="py-3 px-2 text-right text-[var(--mf-text-secondary)] font-mono">
-                  GH₵{t.runningFloat.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-              </tr>
-            ))
-          )}
+          ) : filteredTxs.map(t => (
+            <tr key={t.transaction_id} className="hover:bg-[var(--mf-card-glass)] transition-colors">
+              <td className="py-3.5 px-2 text-[var(--mf-text-secondary)] mf-tabular">
+                {new Date(t.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              </td>
+              <td className="py-3.5 px-2">
+                <span className="font-semibold capitalize">{t.transaction_type.replace('_', ' ')}</span>
+                <span className="block text-[12px] text-[var(--mf-text-secondary)]">{t.customer_id ? `Customer #${t.customer_id}` : 'Agent adjustment'}</span>
+              </td>
+              <td className={`py-3.5 px-2 text-right mf-tabular font-semibold ${t.cashImpact > 0 ? 'text-[var(--mf-success-ink)]' : t.cashImpact < 0 ? 'text-[var(--mf-danger-ink)]' : ''}`}>
+                {t.cashImpact === 0 ? '—' : `${t.cashImpact > 0 ? '+' : '−'}${money(Math.abs(t.cashImpact))}`}
+              </td>
+              <td className={`py-3.5 px-2 text-right mf-tabular font-semibold ${t.floatImpact > 0 ? 'text-[var(--mf-success-ink)]' : t.floatImpact < 0 ? 'text-[var(--mf-danger-ink)]' : ''}`}>
+                {t.floatImpact === 0 ? '—' : `${t.floatImpact > 0 ? '+' : '−'}${money(Math.abs(t.floatImpact))}`}
+              </td>
+              <td className="py-3.5 px-2 text-right mf-tabular">{money(t.commission)}</td>
+              <td className="py-3.5 px-2 text-right mf-tabular text-[var(--mf-text-secondary)]">{money(t.runningCash)}</td>
+              <td className="py-3.5 px-2 text-right mf-tabular text-[var(--mf-text-secondary)]">{money(t.runningFloat)}</td>
+            </tr>
+          ))}
         </GlassTable>
-      </GlassPanel>
+      </SectionCard>
     </div>
   );
 };

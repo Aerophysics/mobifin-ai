@@ -706,6 +706,16 @@ class ApiService {
       } as any;
     }
 
+    // Network activity by region
+    if (cleanUrl === '/analytics/regional-activity') {
+      const rows: [string, string, number, number, number][] = [
+        ['Greater Accra', 'Central Accra', 1761654, 2807, 2], ['Northern', 'Tamale', 594305, 1136, 2],
+        ['Volta', 'Ho', 162419, 309, 2], ['Central', 'Cape Coast', 105905, 178, 1],
+      ];
+      const total = rows.reduce((a, r) => a + r[2], 0);
+      return { regions: rows.map(([region, city, volume, transaction_count, agent_count]) => ({ region, city, volume, transaction_count, agent_count, share: Math.round(volume / total * 1000) / 10 })) } as any;
+    }
+
     // Partner lending institutions
     if (cleanUrl === '/institutions') {
       return [{ user_id: 60, name: 'Forms Capital' }] as any;
@@ -1022,6 +1032,10 @@ class ApiService {
 
   static async getVolumeByMonth(months = 6): Promise<VolumeByMonth> {
     return this.request<VolumeByMonth>(`/analytics/volume-by-month?months=${months}`);
+  }
+
+  static async getRegionalActivity(): Promise<{ regions: { region: string; city: string | null; volume: number; transaction_count: number; agent_count: number; share: number }[] }> {
+    return this.request('/analytics/regional-activity');
   }
 
   static async getInstitutions(): Promise<{ user_id: number; name: string }[]> {

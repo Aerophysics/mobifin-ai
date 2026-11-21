@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import ApiService from '../services/api';
 import { GlassMetric } from '../components/glass/GlassMetric';
+import { GlassTable } from '../components/glass/GlassTable';
+import { SectionCard } from '../components/dash/DashKit';
 import { GlassPanel } from '../components/glass/GlassPanel';
 import { GlassCard } from '../components/glass/GlassCard';
 import { GlassButton } from '../components/glass/GlassButton';
@@ -124,197 +126,119 @@ export const Referrals: React.FC = () => {
     <div className="space-y-6 animate-fadeIn pb-12 select-none text-white">
       {/* Header */}
       <div className="flex justify-end -mt-2">
-        <GlassButton 
-          variant="primary" 
-          onClick={handleOpenAdd}
-          className="px-4 py-2 font-bold text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 border-none flex items-center space-x-1.5"
-        >
-          <UserPlus className="h-4 w-4" />
-          <span>Refer Customer</span>
+        <GlassButton variant="primary" onClick={handleOpenAdd}>
+          <UserPlus className="h-4 w-4" /> Refer customer
         </GlassButton>
       </div>
 
       {successMsg && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl p-3.5 text-xs font-semibold flex items-center space-x-2">
-          <CheckCircle2 className="h-4.5 w-4.5" />
+        <div className="bg-[var(--mf-success-soft)] text-[var(--mf-success-ink)] rounded-2xl px-4 py-3 text-[14px] font-medium flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 sm:gap-5">
-        <GlassMetric title="Total referred" icon={Users} value={totalReferred} subtitle="All referrals" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <GlassMetric title="Total referred" icon={Users} value={totalReferred} subtitle={`${assessmentsCompleted} profile${assessmentsCompleted === 1 ? '' : 's'} reviewed`} />
         <GlassMetric title="Consent granted" icon={CheckCircle2} value={consentGranted} subtitle="Approved on USSD" />
-        <GlassMetric title="Assessments done" icon={FileText} value={assessmentsCompleted} subtitle="Profiles reviewed" />
-        <GlassMetric title="Under review" icon={Clock} value={applicationsUnderReview} subtitle="Awaiting a decision" />
+        <GlassMetric title="Under review" icon={Clock} value={applicationsUnderReview} subtitle="Awaiting a lender decision" />
         <GlassMetric title="Successful loans" icon={Sparkles} value={successfulApplications} subtitle="Approved by lender" />
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
-        </div>
-      ) : referrals.length === 0 ? (
-        <GlassPanel className="p-8 text-center space-y-3">
-          <FileText className="h-12 w-12 mx-auto text-white/30" />
-          <h4 className="font-extrabold text-sm text-[var(--mf-text-primary)]">No Referrals Registered Yet</h4>
-          <p className="text-xs text-[var(--mf-text-secondary)] max-w-md mx-auto leading-relaxed">
-            Suggest a loan facility to returning customers and initiate a consent-based review request.
-          </p>
-          <GlassButton 
-            variant="primary" 
-            onClick={handleOpenAdd}
-            className="px-4 py-2 font-bold text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 border-none mx-auto mt-2"
-          >
-            + Refer First Customer
-          </GlassButton>
-        </GlassPanel>
-      ) : (
-        <GlassPanel className="overflow-x-auto border border-white/5">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-white/10 text-white/50 uppercase tracking-widest text-[9px] font-bold">
-                <th className="p-4">Customer</th>
-                <th className="p-4">Requested Amount</th>
-                <th className="p-4">Institution</th>
-                <th className="p-4">Consent Status</th>
-                <th className="p-4">Lending Decision</th>
-                <th className="p-4">Date</th>
+      <SectionCard title="Your referrals" icon={FileText}>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="h-8 w-8 rounded-full border-2 border-[var(--mf-border-strong)] border-t-[var(--mf-accent)] animate-spin" />
+          </div>
+        ) : referrals.length === 0 ? (
+          <div className="py-10 text-center space-y-3">
+            <FileText className="h-8 w-8 mx-auto text-[var(--mf-text-muted)]" />
+            <p className="text-[15px] font-semibold">No referrals yet</p>
+            <p className="text-[14px] text-[var(--mf-text-secondary)] max-w-md mx-auto">Refer a returning customer to a partner lender. They approve sharing their history on USSD.</p>
+            <GlassButton variant="primary" onClick={handleOpenAdd} className="mx-auto mt-2">Refer your first customer</GlassButton>
+          </div>
+        ) : (
+          <GlassTable headers={['Customer', 'Requested', 'Lender', 'Consent', 'Decision', 'Date']} className="text-[14px]">
+            {referrals.map(r => (
+              <tr key={r.referral_id} className="hover:bg-[var(--mf-card-glass)] transition-colors">
+                <td className="py-3.5 px-2 font-semibold">{r.customer_name}</td>
+                <td className="py-3.5 px-2 mf-tabular">GH₵{r.requested_amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                <td className="py-3.5 px-2 text-[var(--mf-text-secondary)]">{r.institution_name || 'Forms Capital'}</td>
+                <td className="py-3.5 px-2">
+                  <GlassBadge variant={r.consent_status === 'CONSENT_ACTIVE' ? 'success' : r.consent_status === 'CONSENT_DECLINED' || r.consent_status === 'CONSENT_REVOKED' ? 'danger' : 'warning'}>
+                    {String(r.consent_status || '').replace('CONSENT_', '').replace('_', ' ').toLowerCase()}
+                  </GlassBadge>
+                </td>
+                <td className="py-3.5 px-2">
+                  <GlassBadge variant={r.application_status === 'APPROVED' ? 'success' : r.application_status === 'REJECTED' ? 'danger' : 'warning'}>
+                    {String(r.application_status || '').replace('_', ' ').toLowerCase()}
+                  </GlassBadge>
+                </td>
+                <td className="py-3.5 px-2 text-[var(--mf-text-secondary)]">{new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
               </tr>
-            </thead>
-            <tbody>
-              {referrals.map((r) => (
-                <tr key={r.referral_id} className="border-b border-white/5 hover:bg-white/2 transition">
-                  <td className="p-4 font-bold text-white">{r.customer_name}</td>
-                  <td className="p-4 font-bold text-emerald-400">GH₵{r.requested_amount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                  <td className="p-4 text-white/70">Forms Capital</td>
-                  <td className="p-4">
-                    <GlassBadge variant={
-                      r.consent_status === 'CONSENT_ACTIVE' ? 'success' :
-                      r.consent_status === 'CONSENT_DECLINED' ? 'danger' : 'warning'
-                    }>
-                      {r.consent_status?.replace('_', ' ')}
-                    </GlassBadge>
-                  </td>
-                  <td className="p-4">
-                    <GlassBadge variant={
-                      r.application_status === 'APPROVED' ? 'success' :
-                      r.application_status === 'REJECTED' ? 'danger' : 'warning'
-                    }>
-                      {r.application_status?.replace('_', ' ')}
-                    </GlassBadge>
-                  </td>
-                  <td className="p-4 text-white/40">{new Date(r.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </GlassPanel>
-      )}
+            ))}
+          </GlassTable>
+        )}
+      </SectionCard>
 
-      {/* Add Modal */}
+      {/* Refer customer modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-3xl w-full max-w-md p-6 relative shadow-2xl animate-scaleIn text-white">
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-5 right-5 text-white/50 hover:text-white transition border-none bg-transparent cursor-pointer"
-            >
+        <div className="fixed inset-0 bg-[#0b1407]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--mf-surface)] border border-[var(--mf-border)] rounded-[22px] w-full max-w-md p-6 relative shadow-[var(--mf-shadow-pop)] text-[var(--mf-text-primary)]">
+            <button onClick={() => setIsOpen(false)} className="absolute top-5 right-5 text-[var(--mf-text-secondary)] hover:text-[var(--mf-text-primary)] cursor-pointer" aria-label="Close">
               <X className="h-5 w-5" />
             </button>
-
-            <div className="mb-4">
-              <h4 className="font-extrabold text-base text-white flex items-center space-x-2">
-                <Send className="h-5 w-5 text-emerald-400 animate-pulse" />
-                <span>Refer Customer for Loan</span>
-              </h4>
-              <p className="text-[11px] text-white/50 mt-0.5">
-                Suggest an underwriting assessment. The customer must approve transaction data sharing on their mobile device via USSD.
-              </p>
-            </div>
+            <h4 className="mf-display text-[20px] font-semibold flex items-center gap-2">
+              <Send className="h-5 w-5 text-[var(--mf-accent-ink)]" /> Refer a customer
+            </h4>
+            <p className="text-[13px] text-[var(--mf-text-secondary)] mt-1">The customer approves sharing their transaction history on their phone via USSD.</p>
 
             {errorMsg && (
-              <div className="mb-4 bg-rose-500/20 border border-rose-500/30 text-rose-200 rounded-xl p-3 text-xs font-semibold">
-                {errorMsg}
-              </div>
+              <div className="mt-4 bg-[var(--mf-danger-soft)] text-[var(--mf-danger-ink)] rounded-xl px-3.5 py-2.5 text-[13px] font-medium">{errorMsg}</div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Customer Identifier / Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g. Customer #1048"
-                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                />
-              </div>
-
-              <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Customer Phone Number</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="e.g. +233 24 111 2222"
-                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                />
-              </div>
-
-              <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Requested Loan Amount (GH₵)</label>
-                <input
-                  type="number"
-                  value={formData.requested_amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, requested_amount: e.target.value }))}
-                  placeholder="e.g. 5000"
-                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30"
-                />
-              </div>
-
-              <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Lending Institution</label>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-5">
+              {([
+                ['Customer name or ID', 'name', 'text', 'e.g. Customer #1048'],
+                ['Phone number', 'phone', 'text', 'e.g. +233 24 111 2222'],
+                ['Requested amount (GH₵)', 'requested_amount', 'number', 'e.g. 5000'],
+              ] as const).map(([label, key, type, ph]) => (
+                <label key={key} className="block">
+                  <span className="text-[13px] font-medium">{label}</span>
+                  <input
+                    type={type}
+                    value={(formData as any)[key]}
+                    onChange={e => setFormData(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={ph}
+                    className="mt-1.5 w-full h-11 px-3.5 rounded-xl border border-[var(--mf-border-strong)] bg-[var(--mf-surface)] text-[14px] placeholder-[var(--mf-text-muted)] focus:outline-none focus:border-[var(--mf-accent)]"
+                  />
+                </label>
+              ))}
+              <label className="block">
+                <span className="text-[13px] font-medium">Lender</span>
                 <select
                   value={formData.institution_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, institution_id: parseInt(e.target.value) }))}
-                  className="w-full text-xs bg-slate-900 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white"
+                  onChange={e => setFormData(prev => ({ ...prev, institution_id: parseInt(e.target.value) }))}
+                  className="mt-1.5 w-full h-11 px-3 rounded-xl border border-[var(--mf-border-strong)] bg-[var(--mf-surface)] text-[14px] focus:outline-none focus:border-[var(--mf-accent)]"
                 >
-                  {institutions.length === 0 && (
-                    <option value={0} className="bg-slate-900 text-white">No partner institutions available</option>
-                  )}
-                  {institutions.map(inst => (
-                    <option key={inst.user_id} value={inst.user_id} className="bg-slate-900 text-white">{inst.name}</option>
-                  ))}
+                  {institutions.length === 0 && <option value={0}>No partner lenders available</option>}
+                  {institutions.map(inst => <option key={inst.user_id} value={inst.user_id}>{inst.name}</option>)}
                 </select>
-              </div>
-
-              <div>
-                <label className="text-[9px] font-bold text-white/70 uppercase tracking-widest block mb-1">Purpose (Optional)</label>
+              </label>
+              <label className="block">
+                <span className="text-[13px] font-medium">Purpose (optional)</span>
                 <textarea
                   value={formData.purpose}
-                  onChange={(e) => setFormData(prev => ({ ...prev, purpose: e.target.value }))}
-                  placeholder="e.g. Working Capital expansion"
+                  onChange={e => setFormData(prev => ({ ...prev, purpose: e.target.value }))}
+                  placeholder="e.g. Working capital"
                   rows={2}
-                  className="w-full text-xs bg-slate-950/40 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-emerald-450 text-white placeholder-white/30 resize-none"
+                  className="mt-1.5 w-full px-3.5 py-2.5 rounded-xl border border-[var(--mf-border-strong)] bg-[var(--mf-surface)] text-[14px] placeholder-[var(--mf-text-muted)] focus:outline-none focus:border-[var(--mf-accent)] resize-none"
                 />
-              </div>
-
-              <div className="pt-2 flex space-x-3">
-                <GlassButton
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="flex-1 py-2.5 font-bold text-xs uppercase tracking-wider border-white/10 hover:bg-white/5"
-                >
-                  Cancel
-                </GlassButton>
-                <GlassButton
-                  type="submit"
-                  variant="primary"
-                  className="flex-1 py-2.5 font-bold text-xs uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 border-none"
-                >
-                  Request Consent
-                </GlassButton>
+              </label>
+              <div className="pt-1 flex gap-3">
+                <GlassButton type="button" onClick={() => setIsOpen(false)} className="flex-1">Cancel</GlassButton>
+                <GlassButton type="submit" variant="primary" className="flex-1">Send consent request</GlassButton>
               </div>
             </form>
           </div>

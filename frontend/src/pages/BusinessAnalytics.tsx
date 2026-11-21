@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+import {
+  AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { 
-  TrendingUp, Percent, ArrowUpRight, CheckSquare, 
-  DollarSign, Globe2, Activity 
-} from 'lucide-react';
-import ApiService from '../services/api';
+import { Activity, Coins, TrendingUp, Receipt, LineChart as LineIcon, PieChart as PieIcon, Globe2 } from 'lucide-react';
+import ApiService, { VolumeByMonth } from '../services/api';
 import { BusinessHealth } from '../types';
-import { GlassPanel } from '../components/glass/GlassPanel';
-import { GlassCard } from '../components/glass/GlassCard';
 import { GlassMetric } from '../components/glass/GlassMetric';
-import { GlassTable } from '../components/glass/GlassTable';
+import { SectionCard, ProgressRow, LoadingBlock, fmtGHS, fmtCompactGHS, monthLabel } from '../components/dash/DashKit';
 
-// High-contrast color palette for visual readability
 // One fixed colour per transaction type (same family as the overview's monthly chart)
 const TYPE_STYLE: Record<string, { label: string; color: string }> = {
   deposit: { label: 'Cash deposits', color: 'var(--mf-chart-1)' },
@@ -25,198 +18,135 @@ const TYPE_STYLE: Record<string, { label: string; color: string }> = {
   airtime: { label: 'Airtime top-ups', color: '#7c6fd6' },
 };
 
+type Region = { region: string; city: string | null; volume: number; transaction_count: number; agent_count: number; share: number };
+
 const BusinessAnalytics: React.FC = () => {
   const [health, setHealth] = useState<BusinessHealth | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Seeded graphical metrics
-  const commissionTrend = [
-    { name: 'Mon', Commission: 120 },
-    { name: 'Tue', Commission: 150 },
-    { name: 'Wed', Commission: 180 },
-    { name: 'Thu', Commission: 140 },
-    { name: 'Fri', Commission: 280 },
-    { name: 'Sat', Commission: 210 },
-    { name: 'Sun', Commission: 95 }
-  ];
-
-  const [typeDistribution, setTypeDistribution] = useState<{ type: string; value: number; count: number; share: number }[]>([]);
-
-  const regionalActivity = [
-    { location: 'Greater Accra', 'Tx Volume': 185000, 'Tx Count': 1240 },
-    { location: 'Ashanti Region', 'Tx Volume': 142000, 'Tx Count': 980 },
-    { location: 'Western Region', 'Tx Volume': 68000, 'Tx Count': 450 },
-    { location: 'Northern Region', 'Tx Volume': 42000, 'Tx Count': 290 },
-    { location: 'Volta Region', 'Tx Volume': 35000, 'Tx Count': 210 }
-  ];
+  const [volume, setVolume] = useState<VolumeByMonth | null>(null);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const isAgent = ApiService.getCurrentUser()?.role === 'AGENT';
 
   useEffect(() => {
-    fetchHealthData();
+    (async () => {
+      const [h, v, r] = await Promise.all([
+        ApiService.getBusinessHealth().catch(() => null),
+        ApiService.getVolumeByMonth(6).catch(() => null),
+        ApiService.getRegionalActivity().catch(() => null),
+      ]);
+      setHealth(h); setVolume(v); setRegions(r?.regions || []);
+      setIsLoading(false);
+    })();
   }, []);
 
-  const fetchHealthData = async () => {
-    try {
-      const [res, vol] = await Promise.all([
-        ApiService.getBusinessHealth(),
-        ApiService.getVolumeByMonth(6).catch(() => null),
-      ]);
-      setHealth(res);
-      setTypeDistribution(vol?.by_type || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isLoading) return <LoadingBlock />;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[var(--mf-accent)]"></div>
-      </div>
-    );
-  }
-
-  const metrics = health?.metrics;
+  const m = health?.metrics;
+  const months = volume?.months || [];
+  const mix = volume?.by_type || [];
+  const mixTotal = mix.reduce((a, d) => a + d.value, 0);
+  const txCount = months.reduce((a, x) => a + x.transaction_count, 0);
+  const trend = months.map(x => ({ label: monthLabel(x.month), month: x.month, total: x.total, count: x.transaction_count }));
+  const maxRegion = Math.max(1, ...regions.map(r => r.volume));
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-8">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <GlassMetric 
-          title="Total 14d Volume"
-          value={`GH₵${metrics?.recent_volume.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-          icon={Activity}
-          iconColorClass="text-sky-500"
-          subtitle="Aggregate cashflow processed"
+    <div className="space-y-5 animate-fadeIn">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        <GlassMetric title="Volume, last 14 days" icon={Activity} value={fmtGHS(m?.recent_volume ?? 0)} subtitle={isAgent ? 'Processed at this branch' : 'Reference branch'} />
+        <GlassMetric title="Commission, last 14 days" icon={Coins} value={fmtGHS(m?.recent_commission ?? 0, { decimals: 2 })} subtitle="Earned on transactions" />
+        <GlassMetric
+          title="Volume growth score"
+          icon={TrendingUp}
+          value={`${Math.round(m?.volume_growth ?? 0)} / 100`}
+          trend={{ value: (m?.volume_growth ?? 0) >= 60 ? 'Growing' : 'Slowing', isPositive: (m?.volume_growth ?? 0) >= 60 }}
+          subtitle="Week over week"
         />
-
-        <GlassMetric 
-          title="Commission Earned"
-          value={`GH₵${metrics?.recent_commission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={DollarSign}
-          iconColorClass="text-emerald-500"
-          subtitle="Total platform net earnings"
-        />
-
-        <GlassMetric 
-          title="Weekly Growth Score"
-          value={`${metrics?.volume_growth || 0} / 100`}
-          icon={Percent}
-          iconColorClass="text-purple-500"
-          subtitle="Relative week-over-week growth rate"
-        />
+        <GlassMetric title="Transactions, 6 months" icon={Receipt} value={txCount.toLocaleString()} subtitle={isAgent ? 'At this branch' : 'Across the network'} />
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Commission Growth Line Chart */}
-        <GlassPanel className="p-5 flex flex-col space-y-4">
-          <div>
-            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Weekly Commission Growth</h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">Daily commission values earned over the week</p>
-          </div>
-          <div className="h-60 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={commissionTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
-                <Line type="monotone" dataKey="Commission" stroke="var(--mf-accent)" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassPanel>
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-5">
+        <SectionCard title="Monthly transaction value" icon={LineIcon}>
+          {trend.length ? (
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trend} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="mfArea" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--mf-chart-1)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--mf-chart-1)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="var(--mf-chart-grid)" />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: 'var(--mf-text-secondary)' }} dy={8} />
+                  <YAxis axisLine={false} tickLine={false} width={64} tick={{ fontSize: 12, fill: 'var(--mf-text-muted)' }} tickFormatter={fmtCompactGHS} />
+                  <Tooltip
+                    formatter={(v: any, _n: any, item: any) => [`${fmtGHS(Number(v))} · ${item.payload.count.toLocaleString()} transactions`, monthLabel(item.payload.month, true)]}
+                    labelFormatter={() => ''}
+                  />
+                  <Area type="monotone" dataKey="total" stroke="var(--mf-chart-1)" strokeWidth={2.5} fill="url(#mfArea)" dot={{ r: 4, fill: 'var(--mf-surface)', stroke: 'var(--mf-chart-1)', strokeWidth: 2 }} isAnimationActive={false} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-[14px] text-[var(--mf-text-secondary)]">No transactions in the last 6 months.</p>
+          )}
+        </SectionCard>
 
-        {/* Transaction Type Pie Chart */}
-        <GlassPanel className="p-5 flex flex-col space-y-4">
-          <div>
-            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider">Transaction mix</h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">Share of transaction value by type, last 6 months</p>
-          </div>
-          {typeDistribution.length === 0 ? (
-            <div className="h-60 flex items-center justify-center text-[13px] text-[var(--mf-text-secondary)]">No transactions in the last 6 months.</div>
+        <SectionCard title="Transaction mix" icon={PieIcon}>
+          {mix.length === 0 ? (
+            <p className="text-[14px] text-[var(--mf-text-secondary)]">No transactions in the last 6 months.</p>
           ) : (
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="relative h-56 w-56 flex-shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={typeDistribution} dataKey="value" nameKey="type" innerRadius={68} outerRadius={100} paddingAngle={2} stroke="var(--mf-surface)" strokeWidth={2} isAnimationActive={false}>
-                      {typeDistribution.map(d => (
-                        <Cell key={d.type} fill={TYPE_STYLE[d.type]?.color || 'var(--mf-text-muted)'} />
-                      ))}
+                    <Pie data={mix} dataKey="value" nameKey="type" innerRadius={68} outerRadius={100} paddingAngle={2} stroke="var(--mf-surface)" strokeWidth={2} isAnimationActive={false}>
+                      {mix.map(d => <Cell key={d.type} fill={TYPE_STYLE[d.type]?.color || 'var(--mf-text-muted)'} />)}
                     </Pie>
-                    <Tooltip
-                      formatter={(v: any, _n: any, item: any) => [`GH₵${Number(v).toLocaleString()} · ${item.payload.share}%`, TYPE_STYLE[item.payload.type]?.label || item.payload.type]}
-                    />
+                    <Tooltip formatter={(v: any, _n: any, item: any) => [`${fmtGHS(Number(v))} · ${item.payload.share}%`, TYPE_STYLE[item.payload.type]?.label || item.payload.type]} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[12px] text-[var(--mf-text-secondary)]">6-month total</span>
-                  <span className="mf-display text-[20px] font-semibold">
-                    GH₵{Math.round(typeDistribution.reduce((a, d) => a + d.value, 0) / 1000).toLocaleString()}K
-                  </span>
+                  <span className="mf-display text-[20px] font-semibold">{fmtCompactGHS(mixTotal)}</span>
                 </div>
               </div>
-              <ul className="flex-1 w-full space-y-2.5">
-                {typeDistribution.map(d => (
-                  <li key={d.type} className="flex items-center gap-3 text-[13px]">
+              <ul className="flex-1 w-full">
+                {mix.map(d => (
+                  <li key={d.type} className="flex items-center gap-3 text-[14px] py-2 border-t border-[var(--mf-border)] first:border-t-0">
                     <span className="h-3 w-3 rounded-[3px] flex-shrink-0" style={{ background: TYPE_STYLE[d.type]?.color || 'var(--mf-text-muted)' }} />
-                    <span className="flex-1 text-[var(--mf-text-primary)]">{TYPE_STYLE[d.type]?.label || d.type}</span>
-                    <span className="mf-tabular text-[var(--mf-text-secondary)]">GH₵{Math.round(d.value).toLocaleString()}</span>
-                    <span className="mf-tabular font-semibold w-12 text-right">{d.share}%</span>
+                    <span className="flex-1">{TYPE_STYLE[d.type]?.label || d.type}</span>
+                    <span className="mf-tabular text-[var(--mf-text-secondary)] hidden sm:inline">{fmtGHS(d.value)}</span>
+                    <span className="mf-tabular font-semibold w-14 text-right">{d.share}%</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-        </GlassPanel>
-
-        {/* Ghanaian Regional Activity Bar Chart */}
-        <GlassPanel className="p-5 flex flex-col space-y-4 lg:col-span-2">
-          <div>
-            <h3 className="font-bold text-[var(--mf-text-primary)] text-xs uppercase tracking-wider flex items-center">
-              <Globe2 className="h-4.5 w-4.5 text-[var(--mf-accent)] mr-1.5" />
-              Ghanaian Regional Operational Analytics
-            </h3>
-            <p className="text-[10px] text-[var(--mf-text-secondary)]">
-              Network demand across locales. Location is never used in credit scoring.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            {/* Table */}
-            <div className="lg:col-span-1">
-              <GlassTable 
-                headers={["Region", "Volume", "Count"]}
-                alignRightIndexes={[1, 2]}
-              >
-                {regionalActivity.map(reg => (
-                  <tr key={reg.location} className="hover:bg-white/5 transition-colors">
-                    <td className="py-2.5 px-2 font-medium">{reg.location}</td>
-                    <td className="py-2.5 px-2 text-right font-semibold">GH₵{reg['Tx Volume'].toLocaleString()}</td>
-                    <td className="py-2.5 px-2 text-right font-mono text-[var(--mf-text-secondary)]">{reg['Tx Count']}</td>
-                  </tr>
-                ))}
-              </GlassTable>
-            </div>
-
-            {/* Chart */}
-            <div className="lg:col-span-2 h-60 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={regionalActivity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mf-border)" />
-                  <XAxis dataKey="location" tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                  <YAxis tick={{ fontSize: 9, fill: 'var(--mf-text-secondary)' }} stroke="var(--mf-border)" />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--mf-surface)', borderColor: 'var(--mf-border)', borderRadius: '10px' }} />
-                  <Bar dataKey="Tx Volume" fill="var(--mf-accent)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </GlassPanel>
+        </SectionCard>
       </div>
+
+      <SectionCard title="Network activity by region" icon={Globe2}>
+        {regions.length === 0 ? (
+          <p className="text-[14px] text-[var(--mf-text-secondary)]">No regional activity yet.</p>
+        ) : (
+          <>
+            {regions.map(r => (
+              <ProgressRow
+                key={`${r.region}-${r.city}`}
+                label={r.city ? `${r.region} · ${r.city}` : r.region}
+                value={(r.volume / maxRegion) * 100}
+                valueText={`${fmtGHS(r.volume)} · ${r.transaction_count.toLocaleString()} txns`}
+                chipText={`${r.share}%`}
+                tone="success"
+              />
+            ))}
+            <p className="text-[13px] text-[var(--mf-text-secondary)] mt-3 pt-3 border-t border-[var(--mf-border)]">
+              Aggregated across all agent branches. Location is never used in credit scoring.
+            </p>
+          </>
+        )}
+      </SectionCard>
     </div>
   );
 };

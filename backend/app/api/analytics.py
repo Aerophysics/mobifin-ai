@@ -124,3 +124,36 @@ def get_volume_by_month(
     )
 
     return {"agent_id": agent_id, "months": series, "projection": projection, "by_type": by_type}
+
+
+@router.get("/regional-activity")
+def get_regional_activity(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Network-wide transaction value and count by branch region (aggregated across
+    all agents; no individual branch figures are exposed).
+    """
+    from backend.app.models.db_models import Agent
+    rows = db.query(
+        Agent.location,
+        func.sum(Transaction.amount),
+        func.count(Transaction.transaction_id),
+        func.count(func.distinct(Agent.agent_id)),
+    ).join(Agent, Agent.agent_id == Transaction.agent_id).group_by(Agent.location).all()
+
+    total = sum(float(r[1] or 0) for r in rows) or 1.0
+    regions = []
+    for location, volume, count, agents in rows:
+        region, _, city = (location or "Unknown").partition(" - ")
+        regions.append({
+            "region": region.strip(),
+            "city": city.strip() or None,
+            "volume": round(float(volume or 0), 2),
+            "transaction_count": int(count or 0),
+            "agent_count": int(agents or 0),
+            "share": round(float(volume or 0) / total * 100, 1),
+        })
+    regions.sort(key=lambda r: -r["volume"])
+    return {"regions": regions}
