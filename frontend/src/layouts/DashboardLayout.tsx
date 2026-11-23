@@ -90,7 +90,7 @@ const PAGE_COPY: Record<string, Record<string, [string, string]>> = {
     settings: ['Settings', 'Underwriting parameters and connection keys.'],
   },
   ADMIN: {
-    'admin-dashboard': ['Platform overview', 'Data volumes, consent coverage and model status.'],
+    'admin-dashboard': ['Platform overview', 'What MobiFin’s AI achieves, and how customer data is protected.'],
     performance: ['Model performance', 'Offline validation metrics for every production model.'],
     explorer: ['Data explorer', 'Inspect the underlying platform dataset.'],
     'demo-mgmt': ['Demo data', 'Reset and reseed the demo environment.'],
