@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Smartphone, Send, Check, X, RefreshCw, AlertCircle } from 'lucide-react';
 import ApiService from '../services/api';
 import { GlassPanel } from './glass/GlassPanel';
@@ -16,6 +16,10 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }
   const [isMinimized, setIsMinimized] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [screenState, setScreenState] = useState<'prompt' | 'success' | 'declined' | 'idle'>('idle');
+  // After the customer answers, keep the result on screen (with "View in Forms Capital")
+  // instead of letting the follow-up refresh replace it. Only a genuinely new request,
+  // or a manual refresh, moves the phone on. Holds the pending ids seen at answer time.
+  const heldIds = useRef<Set<number> | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -30,11 +34,16 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }
     };
   }, []);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (force = false) => {
     setLoading(true);
     try {
       const res = await ApiService.ussdGetPendingRequests();
       setRequests(res);
+      if (heldIds.current && !force) {
+        const hasNew = res.some((r: any) => !heldIds.current!.has(r.referral_id));
+        if (!hasNew) return;
+      }
+      heldIds.current = null;
       if (res.length > 0) {
         const req = res[0];
         setActiveReq(req);
@@ -72,7 +81,8 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }
 
     try {
       setLoading(true);
-      const res = await ApiService.ussdConsentRespond(activeReq.referral_id, choice);
+      heldIds.current = new Set(requests.map((r: any) => r.referral_id).filter((id: number) => id !== activeReq.referral_id));
+      await ApiService.ussdConsentRespond(activeReq.referral_id, choice);
       if (choice === 1) {
         setSimulatedScreen('Consent granted successfully.\n\nForms Capital now has access to alternative financial profile.');
         setScreenState('success');
@@ -101,7 +111,7 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }
       setSimulatedScreen('Consent revoked.\n\nForms Capital access blocked.');
       setScreenState('idle');
       setTimeout(() => {
-        fetchRequests();
+        fetchRequests(true);
       }, 2000);
     } catch (e) {
       console.error(e);
@@ -132,7 +142,7 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ handleRoleSwitch }
             </div>
             <div className="flex items-center space-x-2">
               <button 
-                onClick={fetchRequests} 
+                onClick={() => fetchRequests(true)} 
                 className="text-white/40 hover:text-white transition border-none bg-transparent cursor-pointer"
                 title="Refresh requests"
               >
